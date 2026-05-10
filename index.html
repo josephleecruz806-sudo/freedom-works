@@ -10,6 +10,9 @@
     <!-- Stripe.js   loaded securely from Stripe's CDN -->
     <script src="https://js.stripe.com/v3/"></script>
     <style>
+        *, *::before, *::after {
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
@@ -80,11 +83,7 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
             background-clip: text;
-            animation:
-                shimmer 1s linear infinite,
-                titlePop 0.8s cubic-bezier(0.175,0.885,0.32,1.275) both,
-                titleGlowPulse 0.4s ease-in-out infinite alternate,
-                titleWiggle 2.5s ease-in-out 1.2s infinite;
+            animation: titlePop 0.45s cubic-bezier(0.175,0.885,0.32,1.275) both;
             filter: drop-shadow(0 0 12px rgba(110,198,255,0.7)) drop-shadow(0 0 30px rgba(255,110,199,0.5));
         }
         .header-cart-display {
@@ -931,11 +930,13 @@
         .shirt-scale-wrap {
             overflow: hidden;
             position: relative;
+            width: min(700px, 100%);
+            aspect-ratio: 1 / 1;
         }
         /* Single mode: full size, no scaling */
         .shirt-scale-wrap.single {
-            width: 700px;
-            height: 700px;
+            width: min(700px, 100%);
+            height: auto;
             overflow: visible;
         }
         .shirt-scale-wrap.single .tshirt-base {
@@ -945,6 +946,11 @@
         /* Both mode: zoom so two full shirts fit side by side */
         .shirt-scale-wrap.both {
             zoom: 0.46;
+        }
+        .tshirt-base {
+            position: relative;
+            width: 100%;
+            height: 100%;
         }
         .tshirt-img {
             width: 100%;
@@ -1503,6 +1509,133 @@
             #custom-live-total,
             #mockup-live-total {
                 font-size: 1.2rem;
+            }
+
+            header {
+                --header-scale: 1.1;
+                padding-bottom: 2.2rem;
+            }
+            header > p {
+                margin-top: 30px;
+                font-size: 1rem;
+            }
+            header h1 {
+                font-size: 2rem;
+                letter-spacing: 2px;
+            }
+
+            .container {
+                padding: 12px;
+            }
+            .products {
+                gap: 16px;
+                margin: 22px 0;
+            }
+            .product {
+                width: 100%;
+                max-width: 520px;
+                padding: 16px;
+            }
+
+            .custom-design,
+            .front-back-mockup,
+            .cart {
+                padding: 16px;
+                margin: 20px 0;
+            }
+
+            .shirt-scale-wrap,
+            .shirt-scale-wrap.single {
+                width: min(100%, 420px);
+            }
+            .shirt-scale-wrap.both {
+                zoom: 0.36;
+            }
+
+            .mockup-controls {
+                grid-template-columns: 1fr;
+            }
+            .mockup-cards-row {
+                gap: 12px;
+            }
+            .mockup-cards-row .mockup-card {
+                min-width: 0;
+                width: 100%;
+            }
+            .mockup-shirt {
+                width: min(100%, 360px);
+                height: auto;
+                aspect-ratio: 1 / 1;
+            }
+
+            #front-upload-wrap button,
+            #back-upload-wrap button,
+            #front-pocket-upload + button,
+            #back-design-upload + button {
+                margin: 10px auto 0 !important;
+                display: block;
+                width: fit-content;
+            }
+
+            .cart-item {
+                flex-wrap: wrap;
+                align-items: flex-start;
+            }
+            .cart-item button {
+                width: 100%;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .header-cart-display {
+                font-size: 0.64rem;
+                padding: 5px 8px;
+                right: 6px;
+                top: 8px;
+            }
+            #header-cart-thumbs {
+                display: none;
+            }
+
+            .logo-wrap {
+                margin-top: 26px;
+                height: 170px;
+            }
+
+            .qp-img-wrap .qp-thumb {
+                height: 210px;
+            }
+            #qp-all-gallery {
+                grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+                gap: 12px;
+                padding: 0 8px;
+            }
+
+            .size-controls {
+                gap: 14px;
+            }
+            .size-clicker {
+                gap: 8px;
+            }
+            .size-btn {
+                width: 32px;
+                height: 32px;
+                font-size: 1.2rem;
+            }
+            .print-location-option {
+                font-size: 0.86rem;
+            }
+
+            .mockup-shirt {
+                width: min(100%, 310px);
+            }
+            .mockup-upload-preview {
+                min-height: 70px;
+            }
+
+            #stripe-modal {
+                margin: 10px;
+                padding: 22px 16px 18px;
             }
         }
 
@@ -2291,6 +2424,7 @@
         (function() {
             let muted = false;
             const synth = window.speechSynthesis;
+            let _speechUnlocked = false;
 
             // User-selected voices   null means auto-pick
             let _guyVoice  = null;
@@ -2377,12 +2511,51 @@
                 console.log('[Voices] Guy:', _guyVoice && _guyVoice.name, '| Girl:', _girlVoice && _girlVoice.name);
             }
 
+            function tryUnlockSpeech() {
+                if (!synth || _speechUnlocked) return;
+                try {
+                    const warmup = new SpeechSynthesisUtterance(' ');
+                    warmup.volume = 0;
+                    warmup.rate = 1;
+                    warmup.pitch = 1;
+                    warmup.onend = () => {
+                        _speechUnlocked = true;
+                        resolveVoices();
+                    };
+                    warmup.onerror = () => {
+                        // Keep unlocked so queue flow stays consistent even if a silent warmup is blocked.
+                        _speechUnlocked = true;
+                    };
+                    synth.cancel();
+                    synth.speak(warmup);
+                    setTimeout(() => {
+                        if (!_speechUnlocked) _speechUnlocked = true;
+                    }, 500);
+                } catch (_e) {
+                    _speechUnlocked = true;
+                }
+            }
+
+            function bindSpeechUnlockGestures() {
+                const unlock = () => {
+                    tryUnlockSpeech();
+                    if (!_speechUnlocked) return;
+                    ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                        document.removeEventListener(evt, unlock, true);
+                    });
+                };
+                ['pointerdown', 'touchstart', 'click', 'keydown'].forEach(evt => {
+                    document.addEventListener(evt, unlock, true);
+                });
+            }
+
             if (synth) {
                 resolveVoices();
                 synth.addEventListener('voiceschanged', resolveVoices);
                 const wu = new SpeechSynthesisUtterance(' ');
                 wu.volume = 0; wu.onend = resolveVoices;
                 synth.speak(wu);
+                bindSpeechUnlockGestures();
             }
 
             let _speechBusy = false;
@@ -2496,6 +2669,7 @@
             }
 
             window.speakAs = function(who, text, onDone) {
+                tryUnlockSpeech();
                 if (muted || !synth) { if (onDone) setTimeout(onDone, 0); return; }
                 _speechQueue.push({ who, text, onDone });
                 if (!_speechBusy) _playNextSpeech();
@@ -2634,7 +2808,7 @@
         function resolveAssetUrl(src) {
             if (!src) return '';
             if (/^(?:data:|https?:|\/)/i.test(src)) return src;
-            return '/assets/' + encodeURIComponent(src);
+            return src.split('/').map(part => encodeURIComponent(part)).join('/');
         }
 
         qpGallery.forEach(item => {
@@ -6872,7 +7046,7 @@
     <script>
         /* Remove black background from Freedom Works logo */
         (function() {
-            var logoSrc = '/assets/' + encodeURIComponent('Freedom Works logo (15 x 15 in).jpg');
+            var logoSrc = encodeURIComponent('Freedom Works logo (15 x 15 in).jpg');
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
