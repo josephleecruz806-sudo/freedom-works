@@ -38,8 +38,12 @@
             }
 
             window.__FW_API_BASE = resolveInitialApiBase();
-            const configSrc = (window.__FW_API_BASE || '') + '/app-config.js';
-            document.write('<script src="' + configSrc + '"><\\/script>');
+            window.STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string'
+                ? window.STRIPE_PUBLISHABLE_KEY
+                : '';
+            window.STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
+                ? window.STRIPE_TEMP_DOWN
+                : true;
         })();
     </script>
     <style>
@@ -12004,17 +12008,58 @@
         const ORDER_API_ENDPOINT = API_BASE + '/api/orders';
         const CASH_APP_CASHTAG = '$freedomworksstore';
         const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
-        const STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
+        let STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
             ? window.STRIPE_PUBLISHABLE_KEY.trim()
             : 'YOUR_PUBLISHABLE_KEY';
-        const STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
+        let STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
             ? window.STRIPE_TEMP_DOWN
             : STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY');
+        let stripeConfigPromise = null;
 
         let stripeInstance = null;
         let stripeElements = null;
         let stripeCardElement = null;
         let stripeCardMounted = false;
+
+        function applyStripeConfigFromWindow() {
+            const publishableKey = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' ? window.STRIPE_PUBLISHABLE_KEY.trim() : '';
+            STRIPE_PUBLISHABLE_KEY = publishableKey || 'YOUR_PUBLISHABLE_KEY';
+            STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
+                ? window.STRIPE_TEMP_DOWN
+                : STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY');
+        }
+
+        async function loadStripeConfig() {
+            applyStripeConfigFromWindow();
+            if (!STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) return;
+            if (!stripeConfigPromise) {
+                const configUrl = (API_BASE || '') + '/app-config.js';
+                stripeConfigPromise = new Promise((resolve) => {
+                    const existing = document.querySelector('script[data-fw-stripe-config="true"]');
+                    if (existing) {
+                        existing.addEventListener('load', () => {
+                            applyStripeConfigFromWindow();
+                            resolve();
+                        }, { once: true });
+                        existing.addEventListener('error', () => resolve(), { once: true });
+                        return;
+                    }
+                    const script = document.createElement('script');
+                    script.src = configUrl;
+                    script.async = true;
+                    script.dataset.fwStripeConfig = 'true';
+                    script.onload = function() {
+                        applyStripeConfigFromWindow();
+                        resolve();
+                    };
+                    script.onerror = function() {
+                        resolve();
+                    };
+                    document.head.appendChild(script);
+                });
+            }
+            await stripeConfigPromise;
+        }
 
         function isLikelyMobileDevice() {
             const ua = navigator.userAgent || '';
@@ -12029,6 +12074,7 @@
         }
 
         async function initStripe() {
+            await loadStripeConfig();
             if (STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) return; // key not set yet
             if (typeof window.Stripe !== 'function') return;
             if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
@@ -12061,8 +12107,9 @@
             }
         }
 
-        function openStripeModal() {
+        async function openStripeModal() {
             // Reset form state
+            await loadStripeConfig();
             document.getElementById('stripe-form-wrap').style.display = '';
             document.getElementById('stripe-success-msg').style.display = 'none';
             document.getElementById('stripe-error-msg').textContent = STRIPE_TEMP_DOWN
@@ -12107,7 +12154,7 @@
                 alert('Your cart is empty. Add at least one item before checkout.');
                 return;
             }
-            openStripeModal();
+            void openStripeModal();
         }
 
         function buildCashAppHttpsUrl(total) {
@@ -12829,6 +12876,8 @@
             e.preventDefault();
             const payBtn = document.getElementById('stripe-pay-btn');
             const errEl = document.getElementById('stripe-error-msg');
+
+            await loadStripeConfig();
 
             if (STRIPE_TEMP_DOWN) {
                 errEl.textContent = 'Card checkout is temporarily unavailable. Please use Cash App below.';
