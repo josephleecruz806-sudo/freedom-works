@@ -4128,6 +4128,7 @@
                         reader.onload = function(e) {
                             const target = document.getElementById(previewId);
                             if (!target) return;
+                            target.dataset.uploadName = file.name || '';
                             if (uploadPreview) {
                                 uploadPreview.src = e.target.result;
                                 uploadPreview.hidden = false;
@@ -4241,6 +4242,7 @@
                             preview.style.display = 'block';
                             preview.dataset.hasImage = '';
                             preview.dataset.aspectRatio = '';
+                            preview.dataset.uploadName = '';
                             preview.classList.remove('active');
                         }
                         updateMockupPriceDisplay();
@@ -7584,6 +7586,25 @@
             }
         }
 
+        function getColorLabelByHex(hexColor, isMockup) {
+            const normalized = String(hexColor || '').trim().toLowerCase();
+            if (!normalized) return '';
+            const scope = isMockup ? '.mockup-color-picker' : '.color-picker-row:not(.mockup-color-picker)';
+            const swatch = document.querySelector(`${scope} .color-swatch[data-color="${normalized}"]`);
+            if (!swatch) return normalized;
+            const title = (swatch.getAttribute('title') || '').trim();
+            if (title) return title;
+            return (swatch.textContent || normalized).replace(/\s+/g, ' ').trim();
+        }
+
+        function getCurrentShirtColorDetails(isMockup) {
+            const hex = String(isMockup ? (activeMockupColor || '#ffffff') : (activeShirtColor || '#ffffff')).trim().toLowerCase();
+            return {
+                shirtColorHex: hex,
+                shirtColorName: getColorLabelByHex(hex, !!isMockup)
+            };
+        }
+
         // Mascot: pop up, talk, run off
         (function() {
             if (window.__disableMascots) return;
@@ -9789,7 +9810,15 @@
             const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
             const overlayEl = document.getElementById('design-overlay');
             const _thumb = captureThumb(overlayEl);
-            cart.push({ name, price, type: 'standard', shirtSize: selectedSize });
+            const colorInfo = getCurrentShirtColorDetails(false);
+            cart.push({
+                name,
+                price,
+                type: 'standard',
+                shirtSize: selectedSize,
+                ...colorInfo,
+                designPreview: _thumb,
+            });
             cartThumbs.push(_thumb);
             try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
             updateCart();
@@ -10867,6 +10896,7 @@
                     const targetOverlay = document.getElementById(overlayId);
                     if (!targetOverlay) return;
                     targetOverlay.dataset.catalogSrc = '';
+                    targetOverlay.dataset.uploadName = file.name || '';
                     const imageProbe = new Image();
                     imageProbe.onload = function() {
                         const aspectRatio = imageProbe.naturalWidth / Math.max(imageProbe.naturalHeight, 1);
@@ -11423,9 +11453,13 @@
 
 
         function addCustomToCart() {
-            const frontDesignImg = document.getElementById('design-overlay')?.src || '';
-            const backDesignImg = document.getElementById('design-overlay-back')?.src || '';
-            const frontCatalogSrc = document.getElementById('design-overlay')?.dataset?.catalogSrc || '';
+            const frontOverlay = document.getElementById('design-overlay');
+            const backOverlay = document.getElementById('design-overlay-back');
+            const frontDesignImg = frontOverlay?.src || '';
+            const backDesignImg = backOverlay?.src || '';
+            const frontCatalogSrc = frontOverlay?.dataset?.catalogSrc || '';
+            const frontUploadName = frontOverlay?.dataset?.uploadName || '';
+            const backUploadName = backOverlay?.dataset?.uploadName || '';
             const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
             const printLocation = document.querySelector('input[name="print-location"]:checked')?.value || 'Front';
             const hasFront = !!frontDesignImg && frontDesignImg !== window.location.href;
@@ -11439,9 +11473,10 @@
             }
 
             const customPrice = getCurrentCustomPrice();
-            const _frontEl = document.getElementById('design-overlay');
-            const _backEl = document.getElementById('design-overlay-back');
+            const _frontEl = frontOverlay;
+            const _backEl = backOverlay;
             const _thumb = hasFront ? captureThumb(_frontEl) : (hasBack ? captureThumb(_backEl) : '');
+            const colorInfo = getCurrentShirtColorDetails(false);
             const catalogItem = frontCatalogSrc && !hasBack && printLocation === 'Front'
                 ? (activeCatalogDesignMeta && getCatalogAssetKey(activeCatalogDesignMeta.src || '') === getCatalogAssetKey(frontCatalogSrc)
                     ? activeCatalogDesignMeta
@@ -11459,8 +11494,14 @@
                     designBack: '',
                     shirtSize: selectedSize,
                     printLocation: 'Front',
+                    ...colorInfo,
                     basePriceHidden: 0,
                     laborIncluded: true,
+                    designName: catalogItem.name || 'Catalog Design',
+                    designType: 'catalog',
+                    designFrontFile: catalogItem.src || '',
+                    designBackFile: '',
+                    designPreview: _thumb,
                     catalogDesignSrc: catalogItem.src,
                     saleOfferType: catalogItem.saleOfferType || '',
                     salePrice: String(catalogItem.saleOfferType || '') === 'bundle' ? 0 : Number(catalogSalePrice || 0),
@@ -11480,8 +11521,14 @@
                     designBack: hasBack ? backDesignImg : '',
                     shirtSize: selectedSize,
                     printLocation,
+                    ...colorInfo,
                     basePriceHidden: 0,
-                    laborIncluded: true
+                    laborIncluded: true,
+                    designType: 'upload',
+                    designName: 'Uploaded custom design',
+                    designFrontFile: frontUploadName || '',
+                    designBackFile: backUploadName || '',
+                    designPreview: _thumb,
                 });
             }
             cartThumbs.push(_thumb);
@@ -11673,6 +11720,14 @@
                     type: item.type || 'standard',
                     shirtSize: item.shirtSize || '',
                     printLocation: item.printLocation || '',
+                    shirtColorName: item.shirtColorName || '',
+                    shirtColorHex: item.shirtColorHex || '',
+                    designType: item.designType || '',
+                    designName: item.designName || '',
+                    designFrontFile: item.designFrontFile || '',
+                    designBackFile: item.designBackFile || '',
+                    catalogDesignSrc: item.catalogDesignSrc || '',
+                    designPreview: item.designPreview || cartThumbs[index] || '',
                     price: Number(pricingState.lineTotals[index] || 0)
                 }))
             };
@@ -11870,6 +11925,8 @@
             }
             const frontPrint = document.getElementById('mockup-front-print');
             const backPrint  = document.getElementById('mockup-back-print');
+            const frontUploadName = frontPrint?.dataset?.uploadName || '';
+            const backUploadName = backPrint?.dataset?.uploadName || '';
             const hasFront = frontPrint && frontPrint.dataset.hasImage === '1';
             const hasBack  = backPrint  && backPrint.dataset.hasImage  === '1';
 
@@ -11883,12 +11940,21 @@
             const _mockupThumb = hasFront
                 ? (window._mockupThumbFront || '')
                 : (window._mockupThumbBack  || '');
+            const colorInfo = getCurrentShirtColorDetails(true);
             cart.push({
                 name: 'Mockup T-Shirt (' + label + ', Size: ' + mockupSize + ')',
                 price: price,
                 type: 'mockup',
+                shirtSize: mockupSize,
+                printLocation: hasFront && hasBack ? 'Both' : (hasFront ? 'Front' : 'Back'),
+                ...colorInfo,
                 basePriceHidden: 0,
-                laborIncluded: true
+                laborIncluded: true,
+                designType: 'upload',
+                designName: hasFront && hasBack ? 'Front + Back uploaded designs' : (hasFront ? 'Front pocket upload' : 'Back upload'),
+                designFrontFile: hasFront ? frontUploadName : '',
+                designBackFile: hasBack ? backUploadName : '',
+                designPreview: _mockupThumb,
             });
             cartThumbs.push(_mockupThumb);
             try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
