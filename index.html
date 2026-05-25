@@ -2083,6 +2083,17 @@
             animation: qpSpin 0.9s linear infinite;
             z-index: 2;
         }
+        .qp-loading-shell[data-error="true"]::before {
+            content: '';
+            position: absolute;
+            inset: 0;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(36,10,10,0.9), rgba(92,32,32,0.72));
+            z-index: 1;
+        }
+        .qp-loading-shell[data-error="true"]::after {
+            display: none;
+        }
         .qp-loading-label {
             position: absolute;
             left: 50%;
@@ -2102,6 +2113,9 @@
             transition: opacity 0.2s ease;
         }
         .qp-loading-shell[data-loading="true"] .qp-loading-label {
+            opacity: 1;
+        }
+        .qp-loading-shell[data-error="true"] .qp-loading-label {
             opacity: 1;
         }
         .qp-img-wrap .qp-thumb {
@@ -6282,8 +6296,9 @@
             const value = String(src || '').trim();
             if (!value) return '';
             if (/^(?:data:|https?:)/i.test(value)) return value;
+            const base = getActiveApiBase();
             if (value.charAt(0) === '/') {
-                return (API_BASE || '') + value;
+                return base + value;
             }
             const rawFilename = value.split('/').pop() || '';
             let filename = rawFilename;
@@ -6291,7 +6306,7 @@
                 filename = decodeURIComponent(rawFilename);
             } catch (_) {}
             if (!filename) return '';
-            return (API_BASE || '') + '/assets/' + encodeURIComponent(filename);
+            return base + '/assets/' + encodeURIComponent(filename);
         }
 
         function getQuickPickCategories() {
@@ -6326,9 +6341,7 @@
 
         async function initializeQuickPickCatalog() {
             try {
-                const response = await fetch(DESIGN_CATALOG_ENDPOINT, { cache: 'no-store' });
-                if (!response.ok) throw new Error('Design catalog request failed');
-                const payload = await response.json();
+                const payload = await loadDesignCatalogPayload();
                 qpGallery = applyCatalogSales(mergeCatalogFiles(payload?.files), payload?.sales);
             } catch (_) {
                 qpGallery = applyCatalogSales(mergeCatalogFiles(null), null);
@@ -6536,21 +6549,38 @@
             shell.dataset.loading = isLoading ? 'true' : 'false';
         }
 
+        function setImageErrorState(img, hasError, message) {
+            const shell = img && typeof img.closest === 'function' ? img.closest('.qp-loading-shell') : null;
+            if (!shell) return;
+            shell.dataset.error = hasError ? 'true' : 'false';
+            const label = shell.querySelector('.qp-loading-label');
+            if (!label) return;
+            if (!label.dataset.defaultText) {
+                label.dataset.defaultText = label.textContent || 'Loading design...';
+            }
+            label.textContent = hasError
+                ? (message || 'Preview unavailable')
+                : label.dataset.defaultText;
+        }
+
         function bindImageLoadingState(img, onError) {
             if (!img) return;
             setImageLoadingState(img, true);
+            setImageErrorState(img, false);
             let settled = false;
 
             function settleLoaded() {
                 if (settled) return;
                 settled = true;
                 setImageLoadingState(img, false);
+                setImageErrorState(img, false);
             }
 
             function settleError() {
                 if (settled) return;
                 settled = true;
                 setImageLoadingState(img, false);
+                setImageErrorState(img, true, 'Preview unavailable');
                 if (typeof onError === 'function') onError();
             }
 
@@ -6604,10 +6634,7 @@
                         <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
                     `;
                     const galleryImg = div.querySelector('img');
-                    bindImageLoadingState(galleryImg, function() {
-                        const card = galleryImg.closest('.qp-all-item');
-                        if (card) card.remove();
-                    });
+                    bindImageLoadingState(galleryImg);
                     gridEl.appendChild(div);
                     galleryImg.src = item.src;
                 });
@@ -6679,10 +6706,7 @@
                     <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
                 `;
                 const image = card.querySelector('img');
-                bindImageLoadingState(image, function() {
-                    const currentCard = image.closest('.qp-all-item');
-                    if (currentCard) currentCard.remove();
-                });
+                bindImageLoadingState(image);
                 image.src = item.src;
                 grid.appendChild(card);
             });
@@ -6784,6 +6808,7 @@
                 if (retries >= 12) {
                     thumbEl.onerror = null;
                     thumbEl.style.visibility = 'hidden';
+                    setImageErrorState(thumbEl, true, 'Preview unavailable');
                     box.querySelector('.qp-name').textContent = 'Design unavailable';
                     box.querySelector('.qp-price').innerHTML = '';
                     return;
@@ -7017,6 +7042,80 @@
         }
 
         const API_BASE = resolveApiBase();
+        let activeApiBase = normalizeApiBase(API_BASE);
+        let apiBaseProbePromise = null;
+
+        function rememberApiBase(base) {
+            activeApiBase = normalizeApiBase(base);
+            try {
+                if (activeApiBase) localStorage.setItem('fwApiBase', activeApiBase);
+            } catch (e) {}
+            return activeApiBase;
+        }
+
+        function getActiveApiBase() {
+            return normalizeApiBase(activeApiBase || API_BASE || '');
+        }
+
+        function getApiBaseCandidates(pathSuffix) {
+            const candidates = [];
+            const seen = new Set();
+            const suffix = String(pathSuffix || '');
+            const pushCandidate = (base) => {
+                const normalizedBase = normalizeApiBase(base);
+                const url = normalizedBase + suffix;
+                if (seen.has(url)) return;
+                seen.add(url);
+                candidates.push({ base: normalizedBase, url });
+            };
+
+            const isHttp = /^https?:$/i.test(window.location.protocol || '');
+            const host = String(window.location.hostname || '').trim();
+            const port = String(window.location.port || '').trim();
+
+            if (isHttp && window.location.origin) {
+                pushCandidate(window.location.origin);
+            }
+            pushCandidate(activeApiBase || API_BASE || '');
+            if (isHttp && host && port && port !== '3000') {
+                pushCandidate(window.location.protocol + '//' + host + ':3000');
+            }
+
+            return candidates;
+        }
+
+        async function discoverWorkingApiBase() {
+            if (!apiBaseProbePromise) {
+                apiBaseProbePromise = (async function() {
+                    const candidates = getApiBaseCandidates('/api/health');
+                    for (const candidate of candidates) {
+                        try {
+                            const response = await fetch(candidate.url, { cache: 'no-store' });
+                            if (!response.ok) continue;
+                            return rememberApiBase(candidate.base);
+                        } catch (e) {}
+                    }
+                    return getActiveApiBase();
+                })();
+            }
+            return apiBaseProbePromise;
+        }
+
+        async function loadDesignCatalogPayload() {
+            await discoverWorkingApiBase();
+            const candidates = getApiBaseCandidates('/api/design-catalog');
+            for (const candidate of candidates) {
+                try {
+                    const response = await fetch(candidate.url, { cache: 'no-store' });
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    rememberApiBase(candidate.base);
+                    return payload;
+                } catch (e) {}
+            }
+            throw new Error('Design catalog request failed');
+        }
+
         const CUSTOMER_AUTH_ENDPOINT = API_BASE + '/api/customers';
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
         const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
