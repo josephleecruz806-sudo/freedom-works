@@ -6159,7 +6159,7 @@
 
         async function initializeQuickPickCatalog() {
             try {
-                const response = await fetch('/api/design-catalog', { cache: 'no-store' });
+                const response = await fetch(DESIGN_CATALOG_ENDPOINT, { cache: 'no-store' });
                 if (!response.ok) throw new Error('Design catalog request failed');
                 const payload = await response.json();
                 qpGallery = applyCatalogSales(mergeCatalogFiles(payload?.files), payload?.sales);
@@ -6820,11 +6820,40 @@
         let cartThumbs = [];
         const CUSTOMER_AUTH_STORAGE_KEY = 'fwCustomerSession';
         const GUEST_STORE_ACCESS_KEY = 'fwGuestStoreAccess';
-        const CUSTOMER_AUTH_ENDPOINT = '/api/customers';
+        function normalizeApiBase(input) {
+            const value = String(input || '').trim();
+            if (!value) return '';
+            return value.replace(/\/+$/, '');
+        }
+
+        function resolveApiBase() {
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
+                if (fromUrl) {
+                    try { localStorage.setItem('fwApiBase', fromUrl); } catch (e) {}
+                    return fromUrl;
+                }
+                const fromStorage = normalizeApiBase(localStorage.getItem('fwApiBase'));
+                if (fromStorage) return fromStorage;
+            } catch (e) {}
+
+            const isHttp = /^https?:$/i.test(window.location.protocol || '');
+            const host = String(window.location.hostname || '').trim();
+            const port = String(window.location.port || '').trim();
+            if (isHttp && host && port && port !== '3000') {
+                return window.location.protocol + '//' + host + ':3000';
+            }
+            return '';
+        }
+
+        const API_BASE = resolveApiBase();
+        const CUSTOMER_AUTH_ENDPOINT = API_BASE + '/api/customers';
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
+        const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
         const STORE_PAGES = ['home', 'quick-picks', 'on-sale', 'custom-builder', 'company-builder', 'cart'];
         const ADMIN_AUTH_STORAGE_KEY = 'fwAdminSession';
-        const ADMIN_AUTH_ENDPOINT = '/api/admin';
+        const ADMIN_AUTH_ENDPOINT = API_BASE + '/api/admin';
         const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
         const ADMIN_INVENTORY_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/inventory';
         const CUSTOMER_GUIDE_STORAGE_KEY = 'fwCustomerGuideSeen';
@@ -11824,8 +11853,8 @@
         // Example (Node/Express): POST /create-payment-intent
         //   const paymentIntent = await stripe.paymentIntents.create({ amount, currency: 'usd' });
         //   res.json({ clientSecret: paymentIntent.client_secret });
-        const PAYMENT_INTENT_ENDPOINT = '/create-payment-intent'; // server endpoint
-        const ORDER_API_ENDPOINT = '/api/orders';
+        const PAYMENT_INTENT_ENDPOINT = API_BASE + '/create-payment-intent'; // server endpoint
+        const ORDER_API_ENDPOINT = API_BASE + '/api/orders';
         const CASH_APP_CASHTAG = '$freedomworksstore';
         const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
         const STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
@@ -12795,3 +12824,20 @@
                         canvas.width = trimW;
                         canvas.height = trimH;
                         ctx = canvas.getContext('2d');
+                        ctx.putImageData(trimmed, 0, 0);
+                    }
+                };
+                img.src = logoSrc;
+            }
+
+            // Full logo (header)
+            var doveCanvas = document.getElementById('dove-canvas');
+            if (doveCanvas) removeBg(doveCanvas, 0, 0, 1, 1);
+
+            // ── (bird animation removed) ──
+            function _unused() {
+            }
+        })();
+    </script>
+</body>
+</html>
