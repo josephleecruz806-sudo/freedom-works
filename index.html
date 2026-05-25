@@ -7045,6 +7045,106 @@
             updateStoreAccessUi();
         }
 
+        const LOCAL_CUSTOMER_STORAGE_KEY = 'fwLocalCustomers';
+        const LOCAL_CUSTOMER_ORDER_STORAGE_KEY = 'fwLocalCustomerOrders';
+
+        function readLocalCustomers() {
+            try {
+                const raw = localStorage.getItem(LOCAL_CUSTOMER_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                return Array.isArray(parsed) ? parsed : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function writeLocalCustomers(customers) {
+            try {
+                localStorage.setItem(LOCAL_CUSTOMER_STORAGE_KEY, JSON.stringify(Array.isArray(customers) ? customers : []));
+            } catch (e) {}
+        }
+
+        function buildLocalCustomerSession(customer) {
+            return {
+                token: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10),
+                customer: {
+                    id: customer.id || ('local_' + Date.now()),
+                    name: customer.name || '',
+                    email: customer.email || '',
+                },
+                localOnly: true,
+            };
+        }
+
+        function upsertLocalCustomerRecord(record) {
+            const customers = readLocalCustomers();
+            const email = String(record.email || '').trim().toLowerCase();
+            const nextRecord = {
+                id: record.id || ('local_' + Date.now()),
+                name: String(record.name || '').trim(),
+                email,
+                password: String(record.password || ''),
+                createdAt: record.createdAt || new Date().toISOString(),
+            };
+            const index = customers.findIndex((item) => String(item.email || '').toLowerCase() === email);
+            if (index >= 0) customers[index] = nextRecord;
+            else customers.unshift(nextRecord);
+            writeLocalCustomers(customers);
+            return nextRecord;
+        }
+
+        function findLocalCustomer(email, password) {
+            const targetEmail = String(email || '').trim().toLowerCase();
+            const targetPassword = String(password || '');
+            return readLocalCustomers().find((item) => String(item.email || '').toLowerCase() === targetEmail && String(item.password || '') === targetPassword) || null;
+        }
+
+        function readLocalCustomerOrders(email) {
+            const targetEmail = String(email || '').trim().toLowerCase();
+            if (!targetEmail) return [];
+            try {
+                const raw = localStorage.getItem(LOCAL_CUSTOMER_ORDER_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                const records = Array.isArray(parsed) ? parsed : [];
+                return records.filter((order) => String(order?.customer?.email || '').trim().toLowerCase() === targetEmail);
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function appendLocalCustomerOrder(order) {
+            const customerEmail = String(order?.customer?.email || order?.shipping?.email || '').trim().toLowerCase();
+            if (!customerEmail) return '';
+            try {
+                const raw = localStorage.getItem(LOCAL_CUSTOMER_ORDER_STORAGE_KEY);
+                const parsed = raw ? JSON.parse(raw) : [];
+                const records = Array.isArray(parsed) ? parsed : [];
+                const nextOrder = {
+                    id: order?.id || ('ord_' + Date.now()),
+                    status: order?.status || 'paid',
+                    source: order?.source || 'local',
+                    paymentIntentId: order?.paymentIntentId || '',
+                    fulfillmentMethod: order?.fulfillmentMethod || 'delivery',
+                    customer: {
+                        id: order?.customer?.id || '',
+                        name: String(order?.customer?.name || '').trim(),
+                        email: customerEmail,
+                    },
+                    shippingAmount: Number(order?.shippingAmount || 0),
+                    shipping: order?.shipping || {},
+                    items: Array.isArray(order?.items) ? order.items : [],
+                    total: Number(order?.total || 0),
+                    createdAt: order?.createdAt || new Date().toISOString(),
+                    updatedAt: order?.updatedAt || new Date().toISOString(),
+                };
+                records.unshift(nextOrder);
+                localStorage.setItem(LOCAL_CUSTOMER_ORDER_STORAGE_KEY, JSON.stringify(records));
+                return nextOrder.id;
+            } catch (e) {
+                return '';
+            }
+        }
+
         function enterStoreAsGuest() {
             persistGuestStoreAccess(true);
             closeAuthModal();
@@ -7371,6 +7471,15 @@
                 statusEl.textContent = 'Loading your orders...';
                 statusEl.classList.remove('success');
             }
+            if (customerSession?.localOnly) {
+                const localOrders = readLocalCustomerOrders(customerSession?.customer?.email || '');
+                renderCustomerOrders(localOrders);
+                if (statusEl) {
+                    statusEl.textContent = localOrders.length ? 'Recent orders loaded.' : '';
+                    statusEl.classList.toggle('success', !!localOrders.length);
+                }
+                return;
+            }
             try {
                 const resp = await fetch(CUSTOMER_ORDERS_ENDPOINT, {
                     headers: getCustomerAuthHeaders(),
@@ -7608,6 +7717,10 @@
             }
             if (!stored?.token) {
                 persistCustomerSession(null);
+                return;
+            }
+            if (stored.localOnly) {
+                persistCustomerSession(stored);
                 return;
             }
             try {
@@ -12113,18 +12226,73 @@
                 }))
             };
 
-            const resp = await fetch(ORDER_API_ENDPOINT, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(payload)
-            });
-
-            if (!resp.ok) {
-                throw new Error('Payment succeeded, but saving the order failed. Please contact support.');
+            if (customerSession?.localOnly) {
+                const localOrderId = appendLocalCustomerOrder({
+                    id: 'ord_' + Date.now(),
+                    status: paymentIntentId ? 'paid' : 'pending',
+                    source: source || 'stripe',
+                    paymentIntentId,
+                    fulfillmentMethod: payload.fulfillmentMethod,
+                    customer: payload.customer,
+                    shippingAmount: payload.shippingAmount,
+                    shipping: payload.shipping,
+                    items: payload.items,
+                    total,
+                    createdAt: new Date().toISOString(),
+                    updatedAt: new Date().toISOString(),
+                });
+                return localOrderId || '';
             }
 
-            const data = await resp.json();
-            return data.orderId || '';
+            try {
+                const resp = await fetch(ORDER_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (!resp.ok) {
+                    if (resp.status === 404 || resp.status >= 500) {
+                        return appendLocalCustomerOrder({
+                            id: 'ord_' + Date.now(),
+                            status: paymentIntentId ? 'paid' : 'pending',
+                            source: source || 'stripe',
+                            paymentIntentId,
+                            fulfillmentMethod: payload.fulfillmentMethod,
+                            customer: payload.customer,
+                            shippingAmount: payload.shippingAmount,
+                            shipping: payload.shipping,
+                            items: payload.items,
+                            total,
+                            createdAt: new Date().toISOString(),
+                            updatedAt: new Date().toISOString(),
+                        });
+                    }
+                    const data = await resp.json().catch(() => ({}));
+                    throw new Error(data.error || 'Payment succeeded, but saving the order failed. Please contact support.');
+                }
+
+                const data = await resp.json();
+                return data.orderId || '';
+            } catch (err) {
+                if (err && err.name === 'TypeError') {
+                    return appendLocalCustomerOrder({
+                        id: 'ord_' + Date.now(),
+                        status: paymentIntentId ? 'paid' : 'pending',
+                        source: source || 'stripe',
+                        paymentIntentId,
+                        fulfillmentMethod: payload.fulfillmentMethod,
+                        customer: payload.customer,
+                        shippingAmount: payload.shippingAmount,
+                        shipping: payload.shipping,
+                        items: payload.items,
+                        total,
+                        createdAt: new Date().toISOString(),
+                        updatedAt: new Date().toISOString(),
+                    });
+                }
+                throw err;
+            }
         }
 
         function getBundleDistribution(bundlePrice, bundleQuantity) {
@@ -12458,6 +12626,43 @@
                     customerPayload
                 );
                 let data = await parseApiResponseJson(resp);
+
+                const canUseLocalFallback = isRegisterMode || authMode === 'login';
+                const shouldFallbackLocally = canUseLocalFallback && (resp.status === 404 || resp.status >= 500);
+                if (shouldFallbackLocally) {
+                    if (isRegisterMode) {
+                        const localCustomer = upsertLocalCustomerRecord({ name, email, password });
+                        const localSession = buildLocalCustomerSession(localCustomer);
+                        persistCustomerSession(localSession);
+                        statusEl.textContent = 'Account created on this device.';
+                        statusEl.classList.add('success');
+                        prefillCheckoutFromCustomer();
+                        setTimeout(() => {
+                            closeAuthModal();
+                            document.getElementById('auth-form').reset();
+                            setAuthMode('login');
+                        }, 700);
+                        return;
+                    }
+
+                    const localCustomer = findLocalCustomer(email, password);
+                    if (localCustomer) {
+                        persistCustomerSession(buildLocalCustomerSession(localCustomer));
+                        statusEl.textContent = 'Logged in on this device.';
+                        statusEl.classList.add('success');
+                        prefillCheckoutFromCustomer();
+                        setTimeout(() => {
+                            closeAuthModal();
+                            document.getElementById('auth-form').reset();
+                            setAuthMode('login');
+                        }, 700);
+                        return;
+                    }
+                }
+
+                if (!resp.ok && resp.status < 500) {
+                    throw new Error(data.error || (isRegisterMode ? 'Unable to create account.' : 'Unable to complete sign-in.'));
+                }
 
                 if (!resp.ok && !isRegisterMode) {
                     const ownerResp = await tryLogin(ADMIN_AUTH_ENDPOINT + '/login', { email, password });
