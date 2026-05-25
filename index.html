@@ -9,7 +9,39 @@
     <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&display=swap" rel="stylesheet">
     <!-- Stripe.js � loaded securely from Stripe's CDN -->
     <script src="https://js.stripe.com/v3/"></script>
-    <script src="/app-config.js"></script>
+    <script>
+        (function() {
+            function normalizeApiBase(input) {
+                const value = String(input || '').trim();
+                return value ? value.replace(/\/+$/, '') : '';
+            }
+
+            function resolveInitialApiBase() {
+                try {
+                    const params = new URLSearchParams(window.location.search || '');
+                    const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
+                    if (fromUrl) {
+                        try { localStorage.setItem('fwApiBase', fromUrl); } catch (e) {}
+                        return fromUrl;
+                    }
+                    const fromStorage = normalizeApiBase(localStorage.getItem('fwApiBase'));
+                    if (fromStorage) return fromStorage;
+                } catch (e) {}
+
+                const isHttp = /^https?:$/i.test(window.location.protocol || '');
+                const host = String(window.location.hostname || '').trim();
+                const port = String(window.location.port || '').trim();
+                if (isHttp && host && port && port !== '3000') {
+                    return window.location.protocol + '//' + host + ':3000';
+                }
+                return '';
+            }
+
+            window.__FW_API_BASE = resolveInitialApiBase();
+            const configSrc = (window.__FW_API_BASE || '') + '/app-config.js';
+            document.write('<script src="' + configSrc + '"><\\/script>');
+        })();
+    </script>
     <style>
         html {
             scroll-behavior: smooth;
@@ -6827,6 +6859,8 @@
         }
 
         function resolveApiBase() {
+            const initialBase = normalizeApiBase(window.__FW_API_BASE || '');
+            if (initialBase) return initialBase;
             try {
                 const params = new URLSearchParams(window.location.search || '');
                 const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
