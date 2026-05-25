@@ -6279,9 +6279,17 @@
         }
 
         function resolveAssetUrl(src) {
-            if (!src) return '';
-            if (/^(?:data:|https?:|\/)/i.test(src)) return src;
-            const filename = String(src || '').split('/').pop() || '';
+            const value = String(src || '').trim();
+            if (!value) return '';
+            if (/^(?:data:|https?:)/i.test(value)) return value;
+            if (value.charAt(0) === '/') {
+                return (API_BASE || '') + value;
+            }
+            const rawFilename = value.split('/').pop() || '';
+            let filename = rawFilename;
+            try {
+                filename = decodeURIComponent(rawFilename);
+            } catch (_) {}
             if (!filename) return '';
             return (API_BASE || '') + '/assets/' + encodeURIComponent(filename);
         }
@@ -8016,9 +8024,9 @@
                     : '';
                 let imgHtml = '';
                 if (item.designFront) {
-                    imgHtml = `<img src="${item.designFront}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
+                    imgHtml = `<img src="${escapeHtml(resolveAssetUrl(item.designFront))}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
                 } else if (item.designBack) {
-                    imgHtml = `<img src="${item.designBack}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
+                    imgHtml = `<img src="${escapeHtml(resolveAssetUrl(item.designBack))}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
                 }
                 row.innerHTML = `${imgHtml}<span>${item.name || item.design || 'Custom Tee'}${sizeLabel}</span><span>$${Number(pricingState.lineTotals[index] || 0).toFixed(2)}</span>`;
                 summaryEl.appendChild(row);
@@ -12780,7 +12788,7 @@
                 div.className = 'cart-item';
                 let label = item.name || 'Item';
                 if (item.shirtSize) label += ' (Size: ' + item.shirtSize + ')';
-                const thumbSrc = cartThumbs[index] || '';
+                const thumbSrc = resolveAssetUrl(cartThumbs[index] || '');
                 const thumbHtml = thumbSrc
                     ? `<img class="cart-item-thumb" src="${thumbSrc}" alt="${label}">`
                     : `<div class="cart-item-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;">&#x1F455;</div>`;
@@ -12798,7 +12806,7 @@
                 // Show up to 3 most recent thumbnails from the in-memory thumbs array
                 const startIdx = Math.max(0, cart.length - 3);
                 for (let i = startIdx; i < cart.length; i++) {
-                    const src = cartThumbs[i] || '';
+                    const src = resolveAssetUrl(cartThumbs[i] || '');
                     if (!src) continue;
                     const img = document.createElement('img');
                     img.src = src;
@@ -13230,7 +13238,7 @@
     <script>
         /* Remove black background from Freedom Works logo */
         (function() {
-            var logoSrc = encodeURIComponent('Freedom Works logo (15 x 15 in).jpg');
+            var logoSrc = resolveAssetUrl('Freedom Works logo (15 x 15 in).jpg');
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
