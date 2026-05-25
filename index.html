@@ -3758,36 +3758,10 @@
 
 </head>
 <body>
-        <!-- Orientation notification for mobile users -->
-        <div id="orientation-warning" style="display:none;position:fixed;z-index:99999;top:0;left:0;width:100vw;height:100vh;background:rgba(20,20,40,0.97);color:#fff;font-family:'Segoe UI',sans-serif;align-items:center;justify-content:center;text-align:center;padding:32px 12px;font-size:1.25rem;line-height:1.5;">
-            <div style="max-width:420px;margin:0 auto;">
-                <span style="font-size:2.2rem;">🔄</span><br>
-                For the best experience, please turn your phone <b>horizontal</b> (landscape) to use this app.
-            </div>
-        </div>
         <div id="image-zoom-panel" class="image-zoom-panel" aria-hidden="true">
             <div id="image-zoom-stage" class="image-zoom-stage"></div>
             <div class="image-zoom-hint">Hover to zoom</div>
         </div>
-
-        <script>
-        // Show orientation warning on mobile portrait
-        function checkOrientationWarning() {
-            var warn = document.getElementById('orientation-warning');
-            var isMobile = /Mobi|Android/i.test(navigator.userAgent);
-            var isPortrait = window.matchMedia('(orientation: portrait)').matches;
-            if (isMobile && isPortrait) {
-                warn.style.display = 'flex';
-                document.body.style.overflow = 'hidden';
-            } else {
-                warn.style.display = 'none';
-                document.body.style.overflow = '';
-            }
-        }
-        window.addEventListener('orientationchange', checkOrientationWarning);
-        window.addEventListener('resize', checkOrientationWarning);
-        window.addEventListener('DOMContentLoaded', checkOrientationWarning);
-        </script>
     <div id="global-sale-countdown" class="global-sale-countdown" aria-live="polite">
         <span class="countdown-value" id="global-sale-countdown-value">Sale ends in 24h 00m 00s</span>
     </div>
@@ -4133,14 +4107,14 @@
                                 uploadPreview.src = e.target.result;
                                 uploadPreview.hidden = false;
                             }
-                            // Store data URL for reliable thumbnail capture at add-to-cart time
-                            if (side === 'front') window._mockupThumbFront = e.target.result;
-                            else window._mockupThumbBack = e.target.result;
                             target.style.backgroundImage = `url("${e.target.result}")`;
                             target.style.display = 'block';
                             target.dataset.hasImage = '1';
                             const placementProbe = new Image();
                             placementProbe.onload = function() {
+                                const previewThumb = createPreviewDataUrlFromImage(placementProbe, 220) || '';
+                                if (side === 'front') window._mockupThumbFront = previewThumb;
+                                else window._mockupThumbBack = previewThumb;
                                 target.dataset.aspectRatio = String(placementProbe.naturalWidth / Math.max(placementProbe.naturalHeight, 1));
                                 autoPlaceMockupInZone(side, placementProbe.naturalWidth, placementProbe.naturalHeight);
                                 target.classList.add('active');
@@ -4151,6 +4125,9 @@
                                     : 'Back mockup design uploaded.');
                             };
                             placementProbe.onerror = function() {
+                                const fallbackThumb = uploadPreview ? captureThumb(uploadPreview) : '';
+                                if (side === 'front') window._mockupThumbFront = fallbackThumb;
+                                else window._mockupThumbBack = fallbackThumb;
                                 target.dataset.aspectRatio = '1';
                                 autoPlaceMockupInZone(side, 1, 1);
                                 target.classList.add('active');
@@ -7583,6 +7560,27 @@
             } catch(e) {
                 // Cross-origin canvas taint or other error — fall back to src
                 return (imgEl.src && imgEl.src !== window.location.href) ? imgEl.src : '';
+            }
+        }
+
+        function createPreviewDataUrlFromImage(imgEl, maxEdge = 220) {
+            try {
+                if (!imgEl) return '';
+                const sourceW = Number(imgEl.naturalWidth || imgEl.width || 0);
+                const sourceH = Number(imgEl.naturalHeight || imgEl.height || 0);
+                if (!sourceW || !sourceH) return '';
+                const scale = Math.min(1, maxEdge / Math.max(sourceW, sourceH));
+                const targetW = Math.max(1, Math.round(sourceW * scale));
+                const targetH = Math.max(1, Math.round(sourceH * scale));
+                const canvas = document.createElement('canvas');
+                canvas.width = targetW;
+                canvas.height = targetH;
+                const ctx = canvas.getContext('2d');
+                if (!ctx) return '';
+                ctx.drawImage(imgEl, 0, 0, targetW, targetH);
+                return canvas.toDataURL('image/jpeg', 0.72);
+            } catch (e) {
+                return '';
             }
         }
 
@@ -11691,6 +11689,14 @@
             }
         }
 
+        function normalizeOrderPreviewValue(value) {
+            const raw = String(value || '');
+            if (!raw) return '';
+            // Keep order payload light for mobile browsers.
+            if (raw.length > 180000) return '';
+            return raw;
+        }
+
         async function saveOrderRecord(source, items, total, paymentIntentId, name, email, shipping) {
             const pricingState = getCartPricingState(items);
             const payload = {
@@ -11727,7 +11733,7 @@
                     designFrontFile: item.designFrontFile || '',
                     designBackFile: item.designBackFile || '',
                     catalogDesignSrc: item.catalogDesignSrc || '',
-                    designPreview: item.designPreview || cartThumbs[index] || '',
+                    designPreview: normalizeOrderPreviewValue(item.designPreview || cartThumbs[index] || ''),
                     price: Number(pricingState.lineTotals[index] || 0)
                 }))
             };
