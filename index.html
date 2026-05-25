@@ -3416,30 +3416,17 @@
             #mockup-front-print,
             #mockup-back-print {
                 position: absolute !important;
-                left: 50% !important;
-                top: 50% !important;
-                width: 80vw !important;
-                max-width: 80vw !important;
-                height: 80vw !important;
-                max-height: 80vw !important;
                 min-height: 0 !important;
-                background-size: contain !important;
-                background-repeat: no-repeat !important;
-                background-position: center !important;
                 display: block !important;
                 margin: 0;
                 z-index: 3;
                 overflow: visible !important;
-                transform: translate(-50%, -50%) !important;
             }
             .mockup-card {
                 overflow: visible !important;
             }
             @media (max-width: 340px) {
-                .mockup-shirt,
-                .mockup-print,
-                #mockup-front-print,
-                #mockup-back-print {
+                .mockup-shirt {
                     min-height: 120px !important;
                 }
             }
@@ -3737,6 +3724,228 @@
             }
             .image-zoom-panel {
                 display: none !important;
+            }
+        }
+
+        /* Final mobile auto-fit safety layer */
+        @media (max-width: 760px) {
+            html,
+            body {
+                width: 100%;
+                max-width: 100%;
+                overflow-x: hidden !important;
+            }
+
+            .container,
+            .home-landing,
+            .custom-design,
+            .front-back-mockup,
+            .cart,
+            .product,
+            .mockup-card,
+            .quick-pick-colors {
+                width: 100% !important;
+                max-width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            .cart {
+                grid-template-columns: 1fr !important;
+                grid-template-areas:
+                    'title'
+                    'summary'
+                    'items' !important;
+            }
+
+            .products,
+            .home-landing-top,
+            .home-page-grid,
+            .mockup-cards-row,
+            .admin-dashboard-grid,
+            .admin-form-grid,
+            .size-controls,
+            .print-location-options {
+                min-width: 0 !important;
+            }
+
+            .shirt-scale-wrap,
+            .shirt-scale-wrap.single,
+            .mockup-shirt,
+            .tshirt-base,
+            .tshirt-img,
+            .design-overlay,
+            .design-overlay-back,
+            .mockup-base-canvas {
+                max-width: 100% !important;
+                box-sizing: border-box;
+            }
+
+            #mic-question-panel,
+            #voice-settings-panel {
+                min-width: 0 !important;
+                width: calc(100vw - 20px) !important;
+                max-width: calc(100vw - 20px) !important;
+            }
+
+            #mic-question-panel {
+                left: 10px !important;
+                right: 10px !important;
+                transform: none !important;
+            }
+
+            #voice-settings-panel {
+                right: 10px !important;
+                left: 10px !important;
+            }
+        }
+
+        /* Desktop-parity responsive polish: keep desktop look, scale to fit phones/tablets */
+        @media (max-width: 1180px) {
+            html {
+                font-size: clamp(14px, 1.35vw, 16px);
+            }
+            body {
+                overflow-x: hidden;
+            }
+            .container {
+                width: min(1120px, calc(100vw - 24px));
+                max-width: min(1120px, calc(100vw - 24px));
+                margin-inline: auto;
+                padding: clamp(10px, 1.8vw, 18px);
+            }
+            .home-landing,
+            .product,
+            .custom-design,
+            .front-back-mockup,
+            .cart,
+            .mockup-card,
+            .quick-pick-colors {
+                border-radius: clamp(14px, 2vw, 22px);
+            }
+            #stripe-modal,
+            #auth-modal,
+            #account-modal,
+            #admin-modal {
+                width: min(560px, calc(100vw - 24px));
+                max-width: min(560px, calc(100vw - 24px));
+            }
+        }
+
+        @media (min-width: 761px) and (max-width: 1180px) {
+            .products {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 16px;
+            }
+            .product {
+                width: 100%;
+                max-width: none;
+            }
+            .mockup-cards-row {
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                align-items: start;
+            }
+            .mockup-cards-row .mockup-card {
+                width: 100%;
+                max-width: none;
+                min-width: 0;
+            }
+            .mockup-shirt {
+                width: min(100%, 390px);
+                margin-inline: auto;
+            }
+        }
+
+        @media (max-width: 760px) {
+            header {
+                --header-scale: 1.16;
+                padding-bottom: 1.6rem;
+            }
+            header h1 {
+                font-size: clamp(1.65rem, 6vw, 2.1rem);
+            }
+            .side-quick-menu {
+                position: sticky;
+                top: 10px;
+                width: min(100%, 520px) !important;
+                max-width: min(100%, 520px) !important;
+                margin: 12px auto 0 !important;
+                z-index: 20;
+            }
+            .side-menu-links a,
+            .side-menu-links button {
+                flex: 1 1 calc(50% - 6px);
+                min-width: 0;
+            }
+            .home-landing,
+            .custom-design,
+            .front-back-mockup,
+            .cart,
+            .product,
+            .mockup-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 16px 0 !important;
+                padding: 14px !important;
+            }
+            .products {
+                display: grid;
+                grid-template-columns: 1fr;
+                gap: 14px;
+                margin: 18px 0;
+            }
+            .mockup-cards-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+                align-items: stretch !important;
+            }
+            .mockup-cards-row .mockup-card {
+                min-width: 0;
+            }
+            .mockup-shirt {
+                width: min(100%, 360px) !important;
+                max-width: min(100%, 360px) !important;
+                margin-inline: auto;
+            }
+            .shirt-scale-wrap,
+            .shirt-scale-wrap.single {
+                width: min(100%, 430px);
+            }
+            #stripe-modal,
+            #auth-modal,
+            #account-modal,
+            #admin-modal {
+                width: min(520px, calc(100vw - 20px)) !important;
+                max-width: min(520px, calc(100vw - 20px)) !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                width: calc(100vw - 14px) !important;
+                max-width: calc(100vw - 14px) !important;
+                padding: 7px !important;
+            }
+            .side-menu-links a,
+            .side-menu-links button {
+                flex-basis: 100%;
+            }
+            .home-preview-grid,
+            .home-page-grid {
+                grid-template-columns: 1fr !important;
+            }
+            .mockup-shirt {
+                width: min(100%, 318px) !important;
+                max-width: min(100%, 318px) !important;
+            }
+            #stripe-modal {
+                width: calc(100vw - 12px) !important;
+                max-width: calc(100vw - 12px) !important;
+                margin: 6px auto !important;
+                padding: 42px 12px 14px !important;
+                max-height: calc(100vh - 12px) !important;
             }
         }
 
@@ -11098,6 +11307,7 @@
 
             // Scale zones and reposition designs based on selected size
             updateMockupZonesForSize();
+            enforceAllMockupPrintBounds();
         }
 
         function updateMockupZonesForSize() {
@@ -11168,6 +11378,63 @@
                 backPrint.style.top    = fitted.top + 'px';
                 updateMockupSizeReadout('back');
             }
+
+            enforceAllMockupPrintBounds();
+        }
+
+        function clampMockupPrintToZone(side) {
+            const wrapId = side === 'front' ? 'mockup-front-shirt' : 'mockup-back-shirt';
+            const printId = side === 'front' ? 'mockup-front-print' : 'mockup-back-print';
+            const zoneSelector = side === 'front' ? '.pocket-zone' : '.back-zone';
+            const wrap = document.getElementById(wrapId);
+            const printEl = document.getElementById(printId);
+            const zone = wrap ? wrap.querySelector(zoneSelector) : null;
+            if (!wrap || !printEl || !zone || printEl.dataset.hasImage !== '1') return;
+
+            const zoneLeft = zone.offsetLeft;
+            const zoneTop = zone.offsetTop;
+            const zoneWidth = Math.max(1, zone.offsetWidth);
+            const zoneHeight = Math.max(1, zone.offsetHeight);
+            const ratioFromDataset = parseFloat(printEl.dataset.aspectRatio || '');
+            const currentWidth = Math.max(1, printEl.offsetWidth || 1);
+            const currentHeight = Math.max(1, printEl.offsetHeight || 1);
+            const ratio = Number.isFinite(ratioFromDataset) && ratioFromDataset > 0
+                ? ratioFromDataset
+                : (currentWidth / Math.max(currentHeight, 1));
+
+            const minWidth = Math.max(1, Math.min(zoneWidth, MOCKUP_MIN_SIZE[side] || 1));
+            const maxWidth = Math.max(minWidth, Math.min(zoneWidth, MOCKUP_MAX_SIZE[side] || zoneWidth));
+            const maxHeight = Math.max(1, Math.min(zoneHeight, (MOCKUP_MAX_SIZE[side] || zoneHeight) * 1.4));
+
+            let width = Math.min(maxWidth, Math.max(minWidth, currentWidth));
+            let height = Math.max(1, width / Math.max(ratio, 0.0001));
+            if (height > maxHeight) {
+                height = maxHeight;
+                width = Math.max(minWidth, Math.min(maxWidth, height * ratio));
+            }
+            if (height > zoneHeight) {
+                height = zoneHeight;
+                width = Math.max(minWidth, Math.min(maxWidth, height * ratio));
+            }
+
+            const collarTop = Math.round((MOCKUP_COLLAR_TOP_RATIO[side] || 0.06) * (wrap.clientHeight || 0));
+            const minTop = Math.max(collarTop, zoneTop);
+            const maxTop = Math.max(minTop, zoneTop + zoneHeight - height);
+            const currentTop = parseFloat(printEl.style.top || String(zoneTop));
+            const nextTop = Math.max(minTop, Math.min(maxTop, currentTop));
+
+            printEl.style.width = Math.round(width) + 'px';
+            printEl.style.height = Math.round(height) + 'px';
+            printEl.style.left = Math.round(zoneLeft + (zoneWidth - width) / 2) + 'px';
+            printEl.style.top = Math.round(nextTop) + 'px';
+        }
+
+        function enforceAllMockupPrintBounds() {
+            if (!window.matchMedia('(max-width: 760px)').matches) return;
+            clampMockupPrintToZone('front');
+            clampMockupPrintToZone('back');
+            updateMockupSizeReadout('front');
+            updateMockupSizeReadout('back');
         }
 
         function getMockupZoneFit(side, imageW, imageH) {
@@ -11554,29 +11821,53 @@
             : STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY');
 
         let stripeInstance = null;
+        let stripeElements = null;
         let stripeCardElement = null;
+        let stripeCardMounted = false;
 
-        function initStripe() {
+        function isLikelyMobileDevice() {
+            const ua = navigator.userAgent || '';
+            const hasTouch = (navigator.maxTouchPoints || 0) > 0;
+            return /Android|iPhone|iPad|iPod|Mobile/i.test(ua) || (hasTouch && window.matchMedia('(max-width: 900px)').matches);
+        }
+
+        function waitForStripeMountFrame() {
+            return new Promise((resolve) => {
+                requestAnimationFrame(() => requestAnimationFrame(resolve));
+            });
+        }
+
+        async function initStripe() {
             if (STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) return; // key not set yet
-            stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
-            const elements = stripeInstance.elements();
-            stripeCardElement = elements.create('card', {
-                style: {
-                    base: {
-                        color: '#f0f0f0',
-                        fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
-                        fontSize: '15px',
-                        '::placeholder': { color: '#666' },
-                        iconColor: '#4a90e2',
-                    },
-                    invalid: { color: '#ff6b6b', iconColor: '#ff6b6b' }
-                }
-            });
-            stripeCardElement.mount('#stripe-card-element');
-            stripeCardElement.on('change', function(event) {
-                const errEl = document.getElementById('stripe-error-msg');
-                errEl.textContent = event.error ? event.error.message : '';
-            });
+            if (typeof window.Stripe !== 'function') return;
+            if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
+            if (!stripeElements) stripeElements = stripeInstance.elements();
+            if (!stripeCardElement) {
+                stripeCardElement = stripeElements.create('card', {
+                    style: {
+                        base: {
+                            color: '#f0f0f0',
+                            fontFamily: "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif",
+                            fontSize: '15px',
+                            '::placeholder': { color: '#666' },
+                            iconColor: '#4a90e2',
+                        },
+                        invalid: { color: '#ff6b6b', iconColor: '#ff6b6b' }
+                    }
+                });
+                stripeCardElement.on('change', function(event) {
+                    const errEl = document.getElementById('stripe-error-msg');
+                    if (errEl) errEl.textContent = event.error ? event.error.message : '';
+                });
+            }
+
+            if (!stripeCardMounted) {
+                const mountPoint = document.getElementById('stripe-card-element');
+                if (!mountPoint) return;
+                await waitForStripeMountFrame();
+                stripeCardElement.mount('#stripe-card-element');
+                stripeCardMounted = true;
+            }
         }
 
         function openStripeModal() {
@@ -11606,7 +11897,9 @@
             const overlay = document.getElementById('stripe-modal-overlay');
             overlay.classList.add('open');
             updateModalBodyLock();
-            if (!stripeCardElement) initStripe();
+            if (!stripeCardElement || !stripeCardMounted) {
+                void initStripe();
+            }
 
             // Mascot checkout reaction
             if (typeof window._mascotCheckout === 'function') window._mascotCheckout();
@@ -11626,20 +11919,56 @@
             openStripeModal();
         }
 
-        function buildCashAppCheckoutUrl(total) {
+        function buildCashAppHttpsUrl(total) {
             const normalizedTotal = Number(total || 0);
-            const amountPath = normalizedTotal > 0 ? '/' + normalizedTotal.toFixed(2) : '';
-            return 'https://cash.app/$' + CASH_APP_CASHTAG_PATH + amountPath;
+            const amount = normalizedTotal > 0 ? normalizedTotal.toFixed(2) : '';
+            const params = amount ? ('?amount=' + encodeURIComponent(amount)) : '';
+            return 'https://cash.app/$' + CASH_APP_CASHTAG_PATH + params;
+        }
+
+        function buildCashAppDeepLink(total) {
+            const normalizedTotal = Number(total || 0);
+            const amount = normalizedTotal > 0 ? normalizedTotal.toFixed(2) : '';
+            const params = [
+                'recipient=' + encodeURIComponent(CASH_APP_CASHTAG_PATH)
+            ];
+            if (amount) params.push('amount=' + encodeURIComponent(amount));
+            return 'cashapp://pay?' + params.join('&');
+        }
+
+        function buildCashAppCheckoutUrl(total) {
+            return buildCashAppHttpsUrl(total);
         }
 
         function launchCashAppCheckout(total) {
-            const cashAppUrl = buildCashAppCheckoutUrl(total);
-            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent || '');
+            const httpsUrl = buildCashAppHttpsUrl(total);
+            const deepLinkUrl = buildCashAppDeepLink(total);
+            const isMobile = isLikelyMobileDevice();
+
             if (isMobile) {
-                window.location.href = cashAppUrl;
+                window.location.assign(deepLinkUrl);
+                setTimeout(() => {
+                    if (document.visibilityState === 'visible') {
+                        window.location.assign(httpsUrl);
+                    }
+                }, 900);
                 return;
             }
-            window.open(cashAppUrl, '_blank', 'noopener');
+
+            const popup = window.open(httpsUrl, '_blank', 'noopener,noreferrer');
+            if (!popup) {
+                window.location.assign(httpsUrl);
+            }
+        }
+
+        function setCashAppNote(noteEl, total, infoParts, shipping, orderRef) {
+            if (!noteEl) return;
+            noteEl.textContent = 'Opening Cash App for $' + Number(total || 0).toFixed(2) + ' to ' + CASH_APP_CASHTAG + '.'
+                + (infoParts.length
+                    ? ' Include this in your Cash App note: ' + infoParts.join(' | ')
+                    : '')
+                + ' ' + (shipping.fulfillmentMethod === 'pickup' ? 'Pickup: ' : 'Delivery: ') + formatShippingAddress(shipping)
+                + (orderRef ? ' Order Ref: ' + orderRef : '');
         }
 
         async function startCashAppCheckout() {
@@ -11653,20 +11982,22 @@
             const infoParts = [];
             if (name) infoParts.push('Name: ' + name);
             if (email) infoParts.push('Email: ' + email);
-            let orderRef = '';
-            try {
-                const itemsSnapshot = cart.map(item => ({ ...item }));
-                orderRef = await saveOrderRecord('cashapp', itemsSnapshot, total, '', name, email, shipping);
-            } catch (e) {
-                // If order save fails, still let customer proceed to Cash App.
-            }
-            note.textContent = 'Opening Cash App for $' + total.toFixed(2) + ' to ' + CASH_APP_CASHTAG + '.'
-                + (infoParts.length
-                    ? ' Include this in your Cash App note: ' + infoParts.join(' | ')
-                    : '')
-                + ' ' + (shipping.fulfillmentMethod === 'pickup' ? 'Pickup: ' : 'Delivery: ') + formatShippingAddress(shipping)
-                + (orderRef ? ' Order Ref: ' + orderRef : '');
+
+            setCashAppNote(note, total, infoParts, shipping, '');
             launchCashAppCheckout(total);
+
+            const itemsSnapshot = cart.map(item => ({ ...item }));
+            void (async function saveCashAppOrder() {
+                let orderRef = '';
+                try {
+                    orderRef = await saveOrderRecord('cashapp', itemsSnapshot, total, '', name, email, shipping);
+                } catch (e) {
+                    // If order save fails, still let customer proceed to Cash App.
+                }
+                if (orderRef) {
+                    setCashAppNote(note, total, infoParts, shipping, orderRef);
+                }
+            })();
         }
 
         function toggleCheckoutInfoFields() {
@@ -12041,6 +12372,16 @@
             if (e.target === this) closeAdminModal();
         });
 
+        async function parseApiResponseJson(resp) {
+            const raw = await resp.text().catch(() => '');
+            if (!raw) return {};
+            try {
+                return JSON.parse(raw);
+            } catch (e) {
+                return { error: raw.slice(0, 220) };
+            }
+        }
+
         document.getElementById('auth-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('auth-submit-btn');
@@ -12054,6 +12395,14 @@
 
             try {
                 const isRegisterMode = authMode === 'register';
+                if (isRegisterMode) {
+                    if (!name) throw new Error('Please enter your name.');
+                    if (!email || !email.includes('@')) throw new Error('Please enter a valid email address.');
+                    if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+                } else {
+                    if (!email || !password) throw new Error('Email and password are required.');
+                }
+
                 const tryLogin = async (endpoint, payload) => fetch(endpoint, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -12064,11 +12413,11 @@
                     CUSTOMER_AUTH_ENDPOINT + (isRegisterMode ? '/register' : '/login'),
                     customerPayload
                 );
-                let data = await resp.json().catch(() => ({}));
+                let data = await parseApiResponseJson(resp);
 
                 if (!resp.ok && !isRegisterMode) {
                     const ownerResp = await tryLogin(ADMIN_AUTH_ENDPOINT + '/login', { email, password });
-                    const ownerData = await ownerResp.json().catch(() => ({}));
+                    const ownerData = await parseApiResponseJson(ownerResp);
                     if (ownerResp.ok) {
                         resp = ownerResp;
                         data = ownerData;
@@ -12076,7 +12425,12 @@
                 }
 
                 const isOwnerLogin = resp.ok && data?.admin;
-                if (!resp.ok) throw new Error(data.error || (isOwnerLogin ? 'Unable to sign in as owner.' : 'Unable to complete sign-in.'));
+                if (!resp.ok) {
+                    const fallback = resp.status >= 500
+                        ? 'Server error while signing in. Please try again in a moment.'
+                        : (isOwnerLogin ? 'Unable to sign in as owner.' : 'Unable to complete sign-in.');
+                    throw new Error(data.error || fallback);
+                }
                 if (isOwnerLogin) {
                     persistAdminSession({ token: data.token, admin: data.admin });
                     statusEl.textContent = 'Owner login successful.';
@@ -12100,7 +12454,10 @@
                     }
                 }, 700);
             } catch (err) {
-                statusEl.textContent = err.message || 'Unable to complete sign-in.';
+                const normalizedMessage = err && err.name === 'TypeError'
+                    ? 'Unable to reach the sign-in server. Check your connection and try again.'
+                    : (err.message || 'Unable to complete sign-in.');
+                statusEl.textContent = normalizedMessage;
             } finally {
                 submitBtn.disabled = false;
             }
@@ -12201,6 +12558,14 @@
 
             if (STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) {
                 errEl.textContent = 'Stripe is not configured yet. Add your publishable key to enable payments.';
+                return;
+            }
+
+            if (!stripeInstance || !stripeCardElement || !stripeCardMounted) {
+                await initStripe();
+            }
+            if (!stripeInstance || !stripeCardElement || !stripeCardMounted) {
+                errEl.textContent = 'Secure card form is still loading. Please wait a moment and try again.';
                 return;
             }
 
