@@ -6309,6 +6309,76 @@
             return base + '/assets/' + encodeURIComponent(filename);
         }
 
+        function getAssetUrlCandidates(src) {
+            const value = String(src || '').trim();
+            if (!value) return [];
+            if (/^data:/i.test(value)) return [value];
+
+            const candidates = [];
+            const seen = new Set();
+            const pushCandidate = (url) => {
+                const normalized = String(url || '').trim();
+                if (!normalized || seen.has(normalized)) return;
+                seen.add(normalized);
+                candidates.push(normalized);
+            };
+
+            const activeBase = getActiveApiBase();
+            const pageOrigin = /^https?:$/i.test(window.location.protocol || '') && window.location.origin
+                ? String(window.location.origin).replace(/\/+$/, '')
+                : '';
+
+            if (/^https?:/i.test(value)) {
+                pushCandidate(value);
+            }
+
+            const rawFilename = value.split('/').pop() || '';
+            let filename = rawFilename;
+            try {
+                filename = decodeURIComponent(rawFilename);
+            } catch (_) {}
+            const encodedFilename = filename ? encodeURIComponent(filename) : '';
+
+            if (value.charAt(0) === '/') {
+                if (activeBase) pushCandidate(activeBase + value);
+                if (pageOrigin) pushCandidate(pageOrigin + value);
+                pushCandidate(value);
+            } else {
+                if (activeBase && encodedFilename) pushCandidate(activeBase + '/assets/' + encodedFilename);
+                if (pageOrigin && encodedFilename) pushCandidate(pageOrigin + '/assets/' + encodedFilename);
+                if (pageOrigin && encodedFilename) pushCandidate(pageOrigin + '/' + encodedFilename);
+                if (encodedFilename) pushCandidate('/' + encodedFilename);
+                if (encodedFilename) pushCandidate(encodedFilename);
+            }
+
+            return candidates;
+        }
+
+        function loadImageWithFallback(img, src, onFinalError) {
+            if (!img) return;
+            const candidates = getAssetUrlCandidates(src);
+            if (!candidates.length) {
+                bindImageLoadingState(img, onFinalError);
+                img.removeAttribute('src');
+                return;
+            }
+
+            let candidateIndex = 0;
+            const tryCandidate = () => {
+                bindImageLoadingState(img, function() {
+                    candidateIndex += 1;
+                    if (candidateIndex < candidates.length) {
+                        tryCandidate();
+                        return;
+                    }
+                    if (typeof onFinalError === 'function') onFinalError();
+                });
+                img.src = candidates[candidateIndex];
+            };
+
+            tryCandidate();
+        }
+
         function getQuickPickCategories() {
             const categories = ['All'];
             const seen = new Set();
@@ -6348,6 +6418,7 @@
             }
 
             qpGallery.forEach((item) => {
+                item.assetSrc = item.src;
                 item.src = resolveAssetUrl(item.src);
             });
             renderQuickPickCategoryButtons();
@@ -6410,7 +6481,7 @@
             grid.innerHTML = items.map((item) => {
                 return '<button type="button" class="home-preview-item" onclick="navigateToPage(\'quick-picks\')">'
                     + '<span class="home-preview-media">'
-                    + '<img src="' + escapeHtml(item.src) + '" alt="' + escapeHtml((item.cat || 'Featured') + ' design') + '" loading="lazy">'
+                    + '<img alt="' + escapeHtml((item.cat || 'Featured') + ' design') + '" loading="lazy" data-asset-src="' + escapeHtml(item.assetSrc || item.src) + '">'
                     + getCatalogSaleFlagMarkup(item, 'home-preview-flag')
                     + '</span>'
                     + '<div class="home-preview-caption">'
@@ -6419,6 +6490,9 @@
                     + '</div>'
                     + '</button>';
             }).join('');
+            grid.querySelectorAll('img[data-asset-src]').forEach((img) => {
+                loadImageWithFallback(img, img.getAttribute('data-asset-src') || '');
+            });
         }
 
         function initCatalogImageZoom() {
@@ -6634,9 +6708,8 @@
                         <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
                     `;
                     const galleryImg = div.querySelector('img');
-                    bindImageLoadingState(galleryImg);
                     gridEl.appendChild(div);
-                    galleryImg.src = item.src;
+                    loadImageWithFallback(galleryImg, item.assetSrc || item.src);
                 });
             }
 
@@ -6706,8 +6779,7 @@
                     <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
                 `;
                 const image = card.querySelector('img');
-                bindImageLoadingState(image);
-                image.src = item.src;
+                loadImageWithFallback(image, item.assetSrc || item.src);
                 grid.appendChild(card);
             });
         }
@@ -6735,7 +6807,7 @@
                 const event = new Event('change', { bubbles: true });
                 frontRadio.dispatchEvent(event);
             }
-            loadCatalogDesignIntoBuilder(item.src);
+            loadCatalogDesignIntoBuilder(item.assetSrc || item.src);
             // Scroll to builder
             scrollToPageSection('custom-builder', '.custom-design');
             if (typeof window._mascotWarn === 'function') {
@@ -6747,6 +6819,8 @@
             const overlay = document.getElementById('design-overlay');
             if (!overlay || !src) return;
             activeCatalogDesignMeta = findCatalogItemBySrc(src);
+            const candidates = getAssetUrlCandidates(src);
+            let candidateIndex = 0;
 
             function applyPresetSizing(aspectRatio) {
                 const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
@@ -6763,21 +6837,26 @@
             }
 
             overlay.dataset.catalogSrc = src;
-            overlay.src = src;
             overlay.style.display = 'block';
             frontDesignUploaded = true;
 
             const imageProbe = new Image();
             imageProbe.onload = function() {
+                overlay.src = imageProbe.src;
                 const aspectRatio = imageProbe.naturalWidth / Math.max(imageProbe.naturalHeight, 1);
                 overlay.dataset.aspectRatio = String(aspectRatio);
                 applyPresetSizing(aspectRatio);
             };
             imageProbe.onerror = function() {
+                candidateIndex += 1;
+                if (candidateIndex < candidates.length) {
+                    imageProbe.src = candidates[candidateIndex];
+                    return;
+                }
                 overlay.dataset.aspectRatio = '1';
                 applyPresetSizing(1);
             };
-            imageProbe.src = src;
+            imageProbe.src = candidates[0] || src;
         }
 
         function getFilteredIndices() {
@@ -6804,7 +6883,8 @@
             const item = qpGallery[galleryIdx];
             const thumbEl = box.querySelector('.qp-thumb');
             const wrapEl = box.querySelector('.qp-img-wrap');
-            bindImageLoadingState(thumbEl, function() {
+            thumbEl.style.visibility = '';
+            loadImageWithFallback(thumbEl, item.assetSrc || item.src, function() {
                 if (retries >= 12) {
                     thumbEl.onerror = null;
                     thumbEl.style.visibility = 'hidden';
@@ -6817,8 +6897,6 @@
                 if (nextIdx === null) return;
                 setQuickPickBox(boxIdx, nextIdx, retries + 1);
             });
-            thumbEl.style.visibility = '';
-            thumbEl.src = item.src;
             const existingSaleFlag = wrapEl ? wrapEl.querySelector('.catalog-design-sale-flag.quick-pick-flag') : null;
             if (existingSaleFlag) existingSaleFlag.remove();
             if (wrapEl && item?.onSale) {
@@ -6894,7 +6972,7 @@
                 const event = new Event('change', { bubbles: true });
                 frontRadio.dispatchEvent(event);
             }
-            loadCatalogDesignIntoBuilder(item.src);
+            loadCatalogDesignIntoBuilder(item.assetSrc || item.src);
             // Scroll to the custom design section
             scrollToPageSection('custom-builder', '.custom-design');
 
