@@ -41,9 +41,6 @@
             window.STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string'
                 ? window.STRIPE_PUBLISHABLE_KEY
                 : '';
-            window.STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
-                ? window.STRIPE_TEMP_DOWN
-                : true;
         })();
     </script>
     <style>
@@ -4000,6 +3997,130 @@
             }
         }
 
+        @media (max-width: 760px) {
+            #home-page,
+            #quick-pick-colors-section,
+            #quick-pick-section,
+            #on-sale-gallery-wrap,
+            #builder-section,
+            #mockup-section,
+            #cart-section {
+                scroll-margin-top: 12px;
+            }
+
+            .side-quick-menu {
+                position: static !important;
+                top: auto !important;
+                width: calc(100vw - 16px) !important;
+                max-width: calc(100vw - 16px) !important;
+                margin: 12px auto 0 !important;
+                padding: 10px !important;
+                border-radius: 16px !important;
+            }
+
+            .side-menu-links {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px !important;
+            }
+
+            .side-menu-links a,
+            .side-menu-links button {
+                display: flex !important;
+                align-items: center;
+                justify-content: center;
+                min-height: 44px;
+                text-align: center !important;
+                padding: 10px 12px !important;
+            }
+
+            .header-cart-display {
+                width: calc(100vw - 16px) !important;
+                max-width: calc(100vw - 16px) !important;
+                border-radius: 18px !important;
+                padding: 10px !important;
+                gap: 10px !important;
+            }
+
+            .header-cart-summary,
+            .header-cart-action-group,
+            .header-account-copy {
+                align-items: stretch !important;
+            }
+
+            .header-cart-topline {
+                justify-content: flex-start !important;
+                text-align: left;
+            }
+
+            .cart-action-row,
+            .checkout-nav-row {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .cart-nav-btn,
+            .cart-checkout-btn,
+            .checkout-back-btn,
+            #header-account-action,
+            #header-account-logout,
+            .header-checkout-btn {
+                width: 100%;
+            }
+
+            .color-picker-row {
+                gap: 8px;
+            }
+
+            .color-swatch {
+                width: 54px;
+                height: 54px;
+                font-size: 0.58rem;
+            }
+
+            .mockup-color-picker .color-swatch {
+                width: 50px;
+                height: 50px;
+            }
+
+            .front-back-mockup > div[style*="display:flex"] {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+
+            .front-back-mockup > div[style*="display:flex"] label {
+                white-space: normal !important;
+            }
+
+            #mockup-shirt-size,
+            .custom-design select,
+            .custom-design input[type="file"],
+            .mockup-control input[type="file"] {
+                width: 100%;
+                max-width: 100%;
+            }
+
+            #front-upload-wrap button,
+            #back-upload-wrap button,
+            .mockup-control button[onclick*="clearMockupDesign"] {
+                width: 100%;
+                margin: 10px 0 0 !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .side-menu-links {
+                grid-template-columns: 1fr !important;
+            }
+
+            .color-swatch {
+                width: 48px;
+                height: 48px;
+                font-size: 0.54rem;
+            }
+        }
+
         #shirt-runner,
         #shirt-runner2,
         #mascot-bubble,
@@ -4062,12 +4183,12 @@
     <nav class="side-quick-menu" aria-label="Page menu">
         <p class="side-menu-title">Browse</p>
         <div class="side-menu-links">
-            <a href="#home" data-store-page-link="home" onclick="navigateToPage('home'); return false;">Home</a>
-            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateToPage('quick-picks'); return false;">Quick Picks</a>
-            <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateToPage('on-sale'); return false;">On Sale</a>
-            <a href="#custom-builder" data-store-page-link="custom-builder" onclick="navigateToPage('custom-builder'); return false;">Custom Builder</a>
-            <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateToPage('company-builder'); return false;">Company T-Shirt Builder</a>
-            <a href="#cart" data-store-page-link="cart" onclick="navigateToPage('cart'); return false;">Cart</a>
+            <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
+            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
+            <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
+            <a href="#custom-builder" data-store-page-link="custom-builder" onclick="navigateMenuToPage('custom-builder'); return false;">Custom Builder</a>
+            <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder'); return false;">Company T-Shirt Builder</a>
+            <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
             <button type="button" onclick="openMenuAccount()">Account</button>
         </div>
         <p class="side-menu-note">Each menu item opens its own page view.</p>
@@ -6160,7 +6281,9 @@
         function resolveAssetUrl(src) {
             if (!src) return '';
             if (/^(?:data:|https?:|\/)/i.test(src)) return src;
-            return String(src).split('/').map(part => encodeURIComponent(part)).join('/');
+            const filename = String(src || '').split('/').pop() || '';
+            if (!filename) return '';
+            return (API_BASE || '') + '/assets/' + encodeURIComponent(filename);
         }
 
         function getQuickPickCategories() {
@@ -6890,6 +7013,14 @@
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
         const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
         const STORE_PAGES = ['home', 'quick-picks', 'on-sale', 'custom-builder', 'company-builder', 'cart'];
+        const MENU_PAGE_TARGETS = {
+            home: '#home-page',
+            'quick-picks': '#quick-pick-colors-section',
+            'on-sale': '#on-sale-gallery-wrap',
+            'custom-builder': '#builder-section',
+            'company-builder': '#mockup-section',
+            cart: '#cart-section'
+        };
         const ADMIN_AUTH_STORAGE_KEY = 'fwAdminSession';
         const ADMIN_AUTH_ENDPOINT = API_BASE + '/api/admin';
         const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
@@ -7424,12 +7555,25 @@
             renderStorePage(page, true);
         }
 
+        function navigateMenuToPage(page) {
+            const selector = MENU_PAGE_TARGETS[page] || '';
+            if (selector) {
+                scrollToPageSection(page, selector);
+                return;
+            }
+            navigateToPage(page);
+        }
+
         function scrollToPageSection(page, selector) {
             if (page !== 'home' && !requireCustomerAccess('register')) return;
             navigateToPage(page);
             requestAnimationFrame(() => {
-                const target = document.querySelector(selector);
-                if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                requestAnimationFrame(() => {
+                    const target = document.querySelector(selector);
+                    if (target) {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                });
             });
         }
 
@@ -12008,12 +12152,11 @@
         const ORDER_API_ENDPOINT = API_BASE + '/api/orders';
         const CASH_APP_CASHTAG = '$freedomworksstore';
         const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
+        const STRIPE_FALLBACK_PUBLISHABLE_KEY = 'pk_live_51TMhARJzsHZWlogYk3lZ6rjvGa7uBvpZEdc62gakBUG3o2rH1z5WzQW2V3VTWcUWNj7e2h0LFSAu0nYVKb53TlF100qnm45FMf';
         let STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
             ? window.STRIPE_PUBLISHABLE_KEY.trim()
-            : 'YOUR_PUBLISHABLE_KEY';
-        let STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
-            ? window.STRIPE_TEMP_DOWN
-            : STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY');
+            : STRIPE_FALLBACK_PUBLISHABLE_KEY;
+        let STRIPE_TEMP_DOWN = !STRIPE_PUBLISHABLE_KEY;
         let stripeConfigPromise = null;
 
         let stripeInstance = null;
@@ -12023,39 +12166,63 @@
 
         function applyStripeConfigFromWindow() {
             const publishableKey = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' ? window.STRIPE_PUBLISHABLE_KEY.trim() : '';
-            STRIPE_PUBLISHABLE_KEY = publishableKey || 'YOUR_PUBLISHABLE_KEY';
-            STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
-                ? window.STRIPE_TEMP_DOWN
-                : STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY');
+            STRIPE_PUBLISHABLE_KEY = publishableKey || STRIPE_FALLBACK_PUBLISHABLE_KEY;
+            STRIPE_TEMP_DOWN = !STRIPE_PUBLISHABLE_KEY;
+        }
+
+        function parseStripeConfigScriptText(scriptText) {
+            const source = String(scriptText || '');
+            const keyMatch = source.match(/STRIPE_PUBLISHABLE_KEY\s*=\s*["']([^"']+)["']/);
+            const downMatch = source.match(/STRIPE_TEMP_DOWN\s*=\s*(true|false)/i);
+            const publishableKey = keyMatch && keyMatch[1] ? String(keyMatch[1]).trim() : '';
+            const tempDown = downMatch ? String(downMatch[1]).toLowerCase() === 'true' : !publishableKey;
+            return { publishableKey, tempDown };
+        }
+
+        function getStripeConfigCandidateUrls() {
+            const candidates = [];
+            const seen = new Set();
+            const pushCandidate = (base) => {
+                const normalizedBase = String(base || '').replace(/\/+$/, '');
+                const url = (normalizedBase || '') + '/app-config.js';
+                if (seen.has(url)) return;
+                seen.add(url);
+                candidates.push(url);
+            };
+
+            pushCandidate(API_BASE || '');
+            pushCandidate(window.location.origin || '');
+
+            const isHttp = /^https?:$/i.test(window.location.protocol || '');
+            const host = String(window.location.hostname || '').trim();
+            const port = String(window.location.port || '').trim();
+            if (isHttp && host && port && port !== '3000') {
+                pushCandidate(window.location.protocol + '//' + host + ':3000');
+            }
+
+            return candidates;
         }
 
         async function loadStripeConfig() {
             applyStripeConfigFromWindow();
-            if (!STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) return;
+            if (STRIPE_PUBLISHABLE_KEY) return;
             if (!stripeConfigPromise) {
-                const configUrl = (API_BASE || '') + '/app-config.js';
-                stripeConfigPromise = new Promise((resolve) => {
-                    const existing = document.querySelector('script[data-fw-stripe-config="true"]');
-                    if (existing) {
-                        existing.addEventListener('load', () => {
+                stripeConfigPromise = (async function() {
+                    const candidateUrls = getStripeConfigCandidateUrls();
+                    for (const configUrl of candidateUrls) {
+                        try {
+                            const resp = await fetch(configUrl, { cache: 'no-store' });
+                            if (!resp.ok) continue;
+                            const scriptText = await resp.text();
+                            const parsed = parseStripeConfigScriptText(scriptText);
+                            if (!parsed.publishableKey) continue;
+                            window.STRIPE_PUBLISHABLE_KEY = parsed.publishableKey;
+                            window.STRIPE_TEMP_DOWN = parsed.tempDown;
                             applyStripeConfigFromWindow();
-                            resolve();
-                        }, { once: true });
-                        existing.addEventListener('error', () => resolve(), { once: true });
-                        return;
+                            return;
+                        } catch (e) {}
                     }
-                    const script = document.createElement('script');
-                    script.src = configUrl;
-                    script.async = true;
-                    script.dataset.fwStripeConfig = 'true';
-                    script.onload = function() {
-                        applyStripeConfigFromWindow();
-                        resolve();
-                    };
-                    script.onerror = function() {
-                        resolve();
-                    };
-                    document.head.appendChild(script);
+                    applyStripeConfigFromWindow();
                 });
             }
             await stripeConfigPromise;
@@ -12075,7 +12242,7 @@
 
         async function initStripe() {
             await loadStripeConfig();
-            if (STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) return; // key not set yet
+            if (!STRIPE_PUBLISHABLE_KEY) return; // key not set yet
             if (typeof window.Stripe !== 'function') return;
             if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
             if (!stripeElements) stripeElements = stripeInstance.elements();
@@ -12890,7 +13057,7 @@
             const shipping = getCheckoutShippingDetails();
             const receiptEmail = email || shipping.email || customerSession?.customer?.email || '';
 
-            if (STRIPE_PUBLISHABLE_KEY.includes('YOUR_PUBLISHABLE_KEY')) {
+            if (!STRIPE_PUBLISHABLE_KEY) {
                 errEl.textContent = 'Stripe is not configured yet. Add your publishable key to enable payments.';
                 return;
             }
