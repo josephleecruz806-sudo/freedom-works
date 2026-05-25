@@ -2671,6 +2671,9 @@
             backdrop-filter: blur(6px);
             align-items: center;
             justify-content: center;
+            overflow-y: auto;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
         }
         #auth-modal-overlay.open {
             display: flex;
@@ -2682,6 +2685,8 @@
             padding: 28px 24px 24px;
             width: 100%;
             max-width: 430px;
+            max-height: calc(100dvh - 28px);
+            overflow-y: auto;
             box-shadow: 0 24px 60px rgba(0,0,0,0.7);
             color: #f0f0f0;
             position: relative;
@@ -3357,6 +3362,16 @@
             .admin-form-actions,
             .home-login-actions {
                 flex-direction: column;
+            }
+            #auth-modal-overlay {
+                align-items: flex-start;
+                padding: max(10px, env(safe-area-inset-top)) 10px max(10px, env(safe-area-inset-bottom));
+            }
+            #auth-modal {
+                margin-top: 6px;
+                border-radius: 16px;
+                max-height: calc(100dvh - 22px);
+                padding: 24px 14px 14px;
             }
             .print-location-option,
             .auth-tab-btn,
@@ -4742,15 +4757,15 @@
                 <div class="stripe-field-group">
                     <div class="stripe-field" id="auth-name-field" style="display:none;">
                         <label for="auth-name">Full Name</label>
-                        <input id="auth-name" type="text" placeholder="Jane Smith" autocomplete="name">
+                        <input id="auth-name" type="text" placeholder="Jane Smith" autocomplete="name" autocapitalize="words">
                     </div>
                     <div class="stripe-field">
                         <label for="auth-email">Email</label>
-                        <input id="auth-email" type="email" placeholder="jane@example.com" autocomplete="email">
+                        <input id="auth-email" type="email" placeholder="jane@example.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                     <div class="stripe-field">
                         <label for="auth-password">Password</label>
-                        <input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="current-password">
+                        <input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                 </div>
                 <button id="auth-submit-btn" type="submit">Log In</button>
@@ -12455,7 +12470,9 @@
                 }, 700);
             } catch (err) {
                 const normalizedMessage = err && err.name === 'TypeError'
-                    ? 'Unable to reach the sign-in server. Check your connection and try again.'
+                    ? (window.location.protocol === 'file:'
+                        ? 'Account requests need the live server URL (not a local file). Open this site from your server link and try again.'
+                        : ('Unable to reach the sign-in server at ' + window.location.origin + '. Make sure your phone is on the same network and using the same site URL.'))
                     : (err.message || 'Unable to complete sign-in.');
                 statusEl.textContent = normalizedMessage;
             } finally {
@@ -12778,20 +12795,3 @@
                         canvas.width = trimW;
                         canvas.height = trimH;
                         ctx = canvas.getContext('2d');
-                        ctx.putImageData(trimmed, 0, 0);
-                    }
-                };
-                img.src = logoSrc;
-            }
-
-            // Full logo (header)
-            var doveCanvas = document.getElementById('dove-canvas');
-            if (doveCanvas) removeBg(doveCanvas, 0, 0, 1, 1);
-
-            // ── (bird animation removed) ──
-            function _unused() {
-            }
-        })();
-    </script>
-</body>
-</html>
