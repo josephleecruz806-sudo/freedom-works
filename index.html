@@ -698,6 +698,26 @@
                 flex-direction: column;
                 align-items: center;
             }
+            .logo-wrap {
+                width: auto;
+                height: 36px !important;
+                min-height: 36px !important;
+                max-width: 140px;
+                margin: 18px auto 0;
+            }
+            .dove-logo,
+            .dove-logo-fallback {
+                width: auto;
+                height: 100%;
+                max-width: min(140px, 80vw) !important;
+                max-height: 100%;
+            }
+            .dove-logo {
+                display: none !important;
+            }
+            .dove-logo-fallback {
+                display: block !important;
+            }
             .side-quick-menu {
                 position: static;
                 left: auto;
@@ -3574,7 +3594,7 @@
 
             .logo-wrap {
                 margin-top: 18px;
-                height: 150px;
+                height: 36px !important;
             }
 
             .container {
@@ -13473,10 +13493,12 @@
         /* Remove black background from Freedom Works logo */
         (function() {
             var logoSrc = resolveAssetUrl('Freedom Works logo (15 x 15 in).jpg');
+            var logoTransparentSrc = resolveAssetUrl('Freedom Works logo transparent.png');
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
                 var fallbackImg = document.getElementById('dove-logo-fallback');
+                var prefersFallback = window.matchMedia('(max-width: 760px)').matches;
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
                     var IW = img.naturalWidth;
@@ -13524,6 +13546,13 @@
                         ctx = canvas.getContext('2d');
                         ctx.putImageData(trimmed, 0, 0);
                     }
+                    if (prefersFallback) {
+                        canvas.classList.remove('is-ready');
+                        if (fallbackImg) fallbackImg.style.display = 'block';
+                        return;
+                    }
+                    canvas.style.width = '';
+                    canvas.style.height = '';
                     canvas.classList.add('is-ready');
                     if (fallbackImg) fallbackImg.style.display = 'none';
                 };
@@ -13532,7 +13561,7 @@
                     if (fallbackImg) fallbackImg.style.display = 'block';
                 };
                 if (fallbackImg) {
-                    fallbackImg.src = logoSrc;
+                    fallbackImg.src = logoTransparentSrc;
                     fallbackImg.style.display = 'block';
                 }
                 img.src = logoSrc;
