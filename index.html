@@ -3408,7 +3408,7 @@
             }
         }
 
-        @media (max-height: 860px) {
+        @media (min-width: 761px) and (max-height: 860px) {
             header {
                 --header-scale: 1.28;
                 padding-bottom: 1.75rem;
@@ -3656,10 +3656,9 @@
                 height: 120px;
                 max-width: 100%;
             }
-            #qp-all-gallery {
+            .qp-all-grid {
                 grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
                 gap: 6px;
-                padding: 0 2px;
             }
             .size-controls {
                 gap: 8px;
@@ -4055,6 +4054,34 @@
                 scroll-margin-top: 12px;
             }
 
+            header {
+                --header-scale: 1;
+                padding: 14px 12px 12px !important;
+            }
+
+            .logo-wrap {
+                height: 44px !important;
+                min-height: 44px !important;
+                max-width: 170px !important;
+                margin: 10px auto 0 !important;
+            }
+
+            .dove-logo,
+            .dove-logo-fallback {
+                max-width: min(170px, 72vw) !important;
+            }
+
+            #site-logo-tagline {
+                max-width: 280px;
+                margin: 8px auto 0 !important;
+                font-size: 0.82rem !important;
+                line-height: 1.45;
+            }
+
+            .side-menu-note {
+                display: none;
+            }
+
             .side-quick-menu {
                 position: static !important;
                 top: auto !important;
@@ -4087,6 +4114,7 @@
                 border-radius: 18px !important;
                 padding: 10px !important;
                 gap: 10px !important;
+                margin: 10px auto 0 !important;
             }
 
             .header-cart-summary,
@@ -4112,6 +4140,21 @@
             #header-account-action,
             #header-account-logout,
             .header-checkout-btn {
+                width: 100%;
+            }
+
+            #home-page {
+                min-height: 0 !important;
+                display: block !important;
+            }
+
+            .home-landing {
+                margin-top: 14px !important;
+                padding: 16px 12px !important;
+            }
+
+            .home-landing-top.login-only {
+                grid-template-columns: 1fr !important;
                 width: 100%;
             }
 
@@ -6737,12 +6780,14 @@
                 sectionEl.innerHTML = '<h3 class="qp-all-section-title">' + groupName + '</h3><div class="qp-all-grid"></div>';
                 const gridEl = sectionEl.querySelector('.qp-all-grid');
                 allGallery.appendChild(sectionEl);
-                entries.forEach(({ item, idx }) => {
+                entries.forEach(({ item, idx }, entryIndex) => {
+                    const imageLoading = entryIndex < 4 ? 'eager' : 'lazy';
+                    const imagePriority = entryIndex < 2 ? 'high' : 'low';
                     const div = document.createElement('div');
                     div.className = 'qp-all-item';
                     div.innerHTML = `
                         <div class="qp-loading-shell" data-loading="true">
-                            <img alt="${groupName} design" loading="eager" decoding="async" fetchpriority="high">
+                            <img alt="${groupName} design" loading="${imageLoading}" decoding="async" fetchpriority="${imagePriority}">
                             <span class="qp-loading-label">Loading design...</span>
                             ${getCatalogSaleFlagMarkup(item, 'gallery-flag')}
                         </div>
@@ -6808,12 +6853,14 @@
             gallery.classList.add('visible');
             gallery.innerHTML = '<section class="qp-all-section"><h3 class="qp-all-section-title">On Sale</h3><div class="qp-all-grid"></div></section>';
             const grid = gallery.querySelector('.qp-all-grid');
-            saleEntries.forEach(({ item, idx }) => {
+            saleEntries.forEach(({ item, idx }, entryIndex) => {
+                const imageLoading = entryIndex < 4 ? 'eager' : 'lazy';
+                const imagePriority = entryIndex < 2 ? 'high' : 'low';
                 const card = document.createElement('div');
                 card.className = 'qp-all-item';
                 card.innerHTML = `
                     <div class="qp-loading-shell" data-loading="true">
-                        <img alt="On sale design" loading="eager" decoding="async" fetchpriority="high">
+                        <img alt="On sale design" loading="${imageLoading}" decoding="async" fetchpriority="${imagePriority}">
                         <span class="qp-loading-label">Loading design...</span>
                         ${getCatalogSaleFlagMarkup(item, 'gallery-flag')}
                     </div>
@@ -7454,7 +7501,7 @@
             const authOpen = document.getElementById('auth-modal-overlay')?.classList.contains('open');
             const accountOpen = document.getElementById('account-modal-overlay')?.classList.contains('open');
             const adminOpen = document.getElementById('admin-modal-overlay')?.classList.contains('open');
-            document.body.style.overflow = (stripeOpen || authOpen || accountOpen || adminOpen || currentStorePage === 'home') ? 'hidden' : '';
+            document.body.style.overflow = (stripeOpen || authOpen || accountOpen || adminOpen) ? 'hidden' : '';
         }
 
         function persistCustomerSession(session) {
@@ -7491,6 +7538,16 @@
             try {
                 localStorage.setItem(LOCAL_CUSTOMER_STORAGE_KEY, JSON.stringify(Array.isArray(customers) ? customers : []));
             } catch (e) {}
+        }
+
+        function getPersistedCustomerSession() {
+            if (customerSession?.customer) return customerSession;
+            try {
+                const stored = JSON.parse(localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY) || 'null');
+                return stored?.customer ? stored : null;
+            } catch (_) {
+                return null;
+            }
         }
 
         function buildLocalCustomerSession(customer) {
@@ -11916,28 +11973,58 @@
             const baseScale = SIZE_VISUAL_SCALE['Adult M'] || 1.04;
             const sizeScale = (SIZE_VISUAL_SCALE[size] || 1.04) / baseScale;
             const baseMockupSize = 420;
-            const wrapperSize = Math.round(baseMockupSize * sizeScale);
+            const desiredWrapperSize = Math.round(baseMockupSize * sizeScale);
+
+            function getMockupRenderMetrics(wrap) {
+                if (!wrap) {
+                    return {
+                        width: desiredWrapperSize,
+                        height: desiredWrapperSize,
+                        scaleX: desiredWrapperSize / baseMockupSize,
+                        scaleY: desiredWrapperSize / baseMockupSize,
+                    };
+                }
+
+                wrap.style.width = desiredWrapperSize + 'px';
+                wrap.style.height = desiredWrapperSize + 'px';
+
+                const computed = window.getComputedStyle(wrap);
+                const computedWidth = parseFloat(computed.width || '0');
+                const computedHeight = parseFloat(computed.height || '0');
+                const measuredWidth = Math.round(computedWidth || wrap.getBoundingClientRect().width || wrap.clientWidth || desiredWrapperSize);
+                const measuredHeight = Math.round(computedHeight || wrap.getBoundingClientRect().height || wrap.clientHeight || measuredWidth || desiredWrapperSize);
+
+                return {
+                    width: measuredWidth,
+                    height: measuredHeight,
+                    scaleX: measuredWidth / baseMockupSize,
+                    scaleY: measuredHeight / baseMockupSize,
+                };
+            }
+
+            const frontWrap = document.getElementById('mockup-front-shirt');
+            const backWrap  = document.getElementById('mockup-back-shirt');
+            const frontMetrics = getMockupRenderMetrics(frontWrap);
+            const backMetrics = getMockupRenderMetrics(backWrap);
 
             // Pocket zone
             const pz = MOCKUP_BASE_ZONES.pocket;
-            const pW = Math.round(pz.w * sizeScale);
-            const pH = Math.round(pz.h * sizeScale);
-            const pLeft = Math.round((pz.cx * sizeScale) - pW / 2);
-            const pTop  = Math.round((pz.cy * sizeScale) - pH / 2);
+            const pW = Math.round(pz.w * frontMetrics.scaleX);
+            const pH = Math.round(pz.h * frontMetrics.scaleY);
+            const pLeft = Math.round((pz.cx * frontMetrics.scaleX) - pW / 2);
+            const pTop  = Math.round((pz.cy * frontMetrics.scaleY) - pH / 2);
 
             // Back zone
             const bz = MOCKUP_BASE_ZONES.back;
-            const bW = Math.round(bz.w * sizeScale);
-            const bH = Math.round(bz.h * sizeScale);
-            const bLeft = Math.round((bz.cx * sizeScale) - bW / 2);
-            const bTop  = Math.round((bz.cy * sizeScale) - bH / 2);
+            const bW = Math.round(bz.w * backMetrics.scaleX);
+            const bH = Math.round(bz.h * backMetrics.scaleY);
+            const bLeft = Math.round((bz.cx * backMetrics.scaleX) - bW / 2);
+            const bTop  = Math.round((bz.cy * backMetrics.scaleY) - bH / 2);
 
             // Apply to zone guides
-            const frontWrap = document.getElementById('mockup-front-shirt');
-            const backWrap  = document.getElementById('mockup-back-shirt');
             if (frontWrap) {
-                frontWrap.style.width = wrapperSize + 'px';
-                frontWrap.style.height = wrapperSize + 'px';
+                frontWrap.style.width = frontMetrics.width + 'px';
+                frontWrap.style.height = frontMetrics.height + 'px';
                 const pZone = frontWrap.querySelector('.pocket-zone');
                 if (pZone) {
                     pZone.style.width = pW + 'px';
@@ -11947,8 +12034,8 @@
                 }
             }
             if (backWrap) {
-                backWrap.style.width = wrapperSize + 'px';
-                backWrap.style.height = wrapperSize + 'px';
+                backWrap.style.width = backMetrics.width + 'px';
+                backWrap.style.height = backMetrics.height + 'px';
                 const bZone = backWrap.querySelector('.back-zone');
                 if (bZone) {
                     bZone.style.width = bW + 'px';
@@ -12296,6 +12383,9 @@
             document.addEventListener('mousemove', onPointerMove);
             document.addEventListener('mouseup', endPointer);
             window.addEventListener('resize', () => {
+                if (typeof updateMockupZonesForSize === 'function') {
+                    updateMockupZonesForSize();
+                }
                 [front, back].forEach(clampToWrap);
                 updateMockupSizeReadout('front');
                 updateMockupSizeReadout('back');
@@ -12694,6 +12784,7 @@
         }
 
         async function saveOrderRecord(source, items, total, paymentIntentId, name, email, shipping) {
+            const activeCustomerSession = getPersistedCustomerSession();
             const pricingState = getCartPricingState(items);
             const payload = {
                 source: source || 'stripe',
@@ -12702,9 +12793,9 @@
                 fulfillmentMethod: shipping?.fulfillmentMethod || getCheckoutFulfillmentMethod(),
                 shippingAmount: getCheckoutShippingTotal(),
                 customer: {
-                    id: customerSession?.customer?.id || '',
-                    name: name || '',
-                    email: email || ''
+                    id: activeCustomerSession?.customer?.id || '',
+                    name: name || activeCustomerSession?.customer?.name || '',
+                    email: email || activeCustomerSession?.customer?.email || ''
                 },
                 shipping: {
                     fulfillmentMethod: shipping?.fulfillmentMethod || getCheckoutFulfillmentMethod(),
@@ -13168,10 +13259,6 @@
                     }
                 }
 
-                if (!resp.ok && resp.status < 500) {
-                    throw new Error(data.error || (isRegisterMode ? 'Unable to create account.' : 'Unable to complete sign-in.'));
-                }
-
                 if (!resp.ok && !isRegisterMode) {
                     const ownerResp = await tryLogin(ADMIN_AUTH_ENDPOINT + '/login', { email, password });
                     const ownerData = await parseApiResponseJson(ownerResp);
@@ -13179,6 +13266,10 @@
                         resp = ownerResp;
                         data = ownerData;
                     }
+                }
+
+                if (!resp.ok && resp.status < 500) {
+                    throw new Error(data.error || (isRegisterMode ? 'Unable to create account.' : 'Unable to complete sign-in.'));
                 }
 
                 const isOwnerLogin = resp.ok && data?.admin;
@@ -13499,6 +13590,16 @@
                 var img = new Image();
                 var fallbackImg = document.getElementById('dove-logo-fallback');
                 var prefersFallback = window.matchMedia('(max-width: 760px)').matches;
+                if (fallbackImg) {
+                    fallbackImg.src = logoTransparentSrc || logoSrc;
+                    fallbackImg.decoding = 'async';
+                    fallbackImg.loading = 'eager';
+                }
+                if (logoTransparentSrc) {
+                    canvas.classList.remove('is-ready');
+                    if (fallbackImg) fallbackImg.style.display = 'block';
+                    return;
+                }
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
                     var IW = img.naturalWidth;
@@ -13560,10 +13661,7 @@
                     canvas.classList.remove('is-ready');
                     if (fallbackImg) fallbackImg.style.display = 'block';
                 };
-                if (fallbackImg) {
-                    fallbackImg.src = logoTransparentSrc;
-                    fallbackImg.style.display = 'block';
-                }
+                if (fallbackImg) fallbackImg.style.display = 'block';
                 img.src = logoSrc;
             }
 
