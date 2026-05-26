@@ -2307,6 +2307,40 @@
         .qp-all-item .qp-loading-label {
             bottom: 16px;
         }
+        .qp-all-actions {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        .qp-all-count {
+            color: #bcd7ff;
+            font-size: 0.84rem;
+            font-weight: 700;
+            letter-spacing: 0.03em;
+        }
+        .qp-all-load-more {
+            border: 1px solid rgba(127, 216, 255, 0.4);
+            background: linear-gradient(135deg, rgba(34, 71, 140, 0.88), rgba(82, 44, 122, 0.88));
+            color: #f7fbff;
+            border-radius: 999px;
+            padding: 10px 18px;
+            font-size: 0.9rem;
+            font-weight: 800;
+            letter-spacing: 0.02em;
+            cursor: pointer;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.22);
+            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+        }
+        .qp-all-load-more:hover {
+            transform: translateY(-2px);
+            border-color: rgba(127, 216, 255, 0.72);
+            box-shadow: 0 14px 28px rgba(0,0,0,0.28);
+        }
+        .qp-all-load-more[hidden] {
+            display: none;
+        }
         @keyframes qpSpin {
             from { transform: rotate(0deg); }
             to { transform: rotate(360deg); }
@@ -3366,6 +3400,105 @@
                 padding-top: 0;
             }
 
+            #builder-body {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+            .preview {
+                width: 100%;
+                max-width: 100%;
+                gap: 14px;
+                margin: 18px auto 0;
+            }
+            .shirt-preview-slot {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+            .shirt-preview-slot .slot-label {
+                text-align: center;
+            }
+            #front-upload-wrap,
+            #back-upload-wrap,
+            #adjust-side-wrap,
+            #size-controls-wrap,
+            .print-location-wrap {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+            #front-upload-wrap,
+            #back-upload-wrap {
+                display: grid;
+                gap: 10px;
+            }
+            #front-upload-wrap input[type="file"],
+            #back-upload-wrap input[type="file"] {
+                width: 100%;
+                max-width: 100%;
+            }
+            .print-location-options,
+            .size-controls,
+            .adjust-side-options {
+                justify-content: stretch;
+            }
+            .print-location-option,
+            .adjust-side-option,
+            .size-control {
+                min-width: 0;
+            }
+            .size-control {
+                flex: 1 1 140px;
+            }
+
+            .header-cart-display {
+                width: calc(100vw - 16px) !important;
+                max-width: calc(100vw - 16px) !important;
+                padding: 10px;
+            }
+            .header-cart-topline {
+                flex-wrap: wrap;
+                gap: 4px 6px;
+                white-space: normal;
+                line-height: 1.25;
+            }
+            #header-cart-thumbs {
+                flex-wrap: wrap;
+                justify-content: center;
+                margin-right: 0;
+            }
+            #header-account-name,
+            #header-owner-name {
+                max-width: none;
+                width: 100%;
+                white-space: normal;
+                overflow-wrap: anywhere;
+            }
+            .header-checkout-btn,
+            #header-account-action,
+            #header-account-logout,
+            #header-owner-action,
+            #header-owner-logout {
+                white-space: normal;
+            }
+
+            .cart-summary,
+            .cart-items-wrap,
+            .cart-action-row,
+            .checkout-nav-row {
+                width: 100%;
+                max-width: 100%;
+                min-width: 0;
+            }
+            .cart-item-thumb {
+                flex: 0 0 72px;
+            }
+            .cart-item-label {
+                min-width: 0;
+                overflow-wrap: anywhere;
+            }
+
             .shirt-scale-wrap,
             .shirt-scale-wrap.single {
                 width: min(100%, 420px);
@@ -3394,9 +3527,9 @@
             #back-upload-wrap button,
             #front-pocket-upload + button,
             #back-design-upload + button {
-                margin: 10px auto 0 !important;
+                margin: 0 !important;
                 display: block;
-                width: fit-content;
+                width: 100%;
             }
 
             .cart-item {
@@ -3994,6 +4127,21 @@
                 grid-template-columns: 1fr !important;
                 gap: 12px !important;
                 align-items: stretch !important;
+            }
+            #qp-cat-filters {
+                justify-content: flex-start !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto;
+                overflow-y: hidden;
+                padding: 0 4px 4px;
+                scrollbar-width: thin;
+            }
+            .qp-cat-btn {
+                flex: 0 0 auto;
+                white-space: nowrap;
+            }
+            .qp-all-grid {
+                grid-template-columns: minmax(0, 1fr) !important;
             }
             .mockup-cards-row .mockup-card {
                 min-width: 0;
@@ -6661,6 +6809,8 @@
         const qpCurrent = [null, null, null];
         let qpActiveCat = 'All';
         let qpAllGalleryRenderToken = 0;
+        const QP_FILTER_GALLERY_BATCH_SIZE = 24;
+        const QP_ALL_SECTION_PREVIEW_SIZE = 6;
 
         function isQuickPickCategoryMatch(item, cat) {
             if (cat === 'All') return true;
@@ -6674,6 +6824,79 @@
                 if (button.dataset.cat === cat) return button;
             }
             return null;
+        }
+
+        function createGalleryCard(item, idx, groupName, entryIndex) {
+            const imageLoading = entryIndex < 4 ? 'eager' : 'lazy';
+            const imagePriority = entryIndex < 2 ? 'high' : 'low';
+            const div = document.createElement('div');
+            div.className = 'qp-all-item';
+            div.innerHTML = `
+                <div class="qp-loading-shell" data-loading="true">
+                    <img alt="${groupName} design" loading="${imageLoading}" decoding="async" fetchpriority="${imagePriority}">
+                    <span class="qp-loading-label">Loading design...</span>
+                    ${getCatalogSaleFlagMarkup(item, 'gallery-flag')}
+                </div>
+                <div class="qp-all-name">${getCatalogDisplayLabel(item, 'gallery')}</div>
+                <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
+            `;
+            const galleryImg = div.querySelector('img');
+            loadImageWithFallback(galleryImg, item.assetSrc || item.src);
+            return div;
+        }
+
+        function appendGalleryCards(gridEl, entries, groupName, startIndex, count) {
+            if (!gridEl || !Array.isArray(entries) || count <= 0) return startIndex;
+            const fragment = document.createDocumentFragment();
+            const endIndex = Math.min(entries.length, startIndex + count);
+            for (let entryIndex = startIndex; entryIndex < endIndex; entryIndex += 1) {
+                const { item, idx } = entries[entryIndex];
+                fragment.appendChild(createGalleryCard(item, idx, groupName, entryIndex));
+            }
+            gridEl.appendChild(fragment);
+            return endIndex;
+        }
+
+        function renderPaginatedGallerySection(allGallery, entries, groupName, initialCount, batchSize) {
+            const sectionEl = document.createElement('section');
+            sectionEl.className = 'qp-all-section';
+            sectionEl.innerHTML = '<h3 class="qp-all-section-title">' + groupName + '</h3><div class="qp-all-grid"></div>';
+            const gridEl = sectionEl.querySelector('.qp-all-grid');
+            allGallery.appendChild(sectionEl);
+
+            if (!Array.isArray(entries) || !entries.length) {
+                return sectionEl;
+            }
+
+            let renderedCount = appendGalleryCards(gridEl, entries, groupName, 0, initialCount);
+            if (renderedCount >= entries.length) {
+                return sectionEl;
+            }
+
+            const actions = document.createElement('div');
+            actions.className = 'qp-all-actions';
+            const countLabel = document.createElement('span');
+            countLabel.className = 'qp-all-count';
+            const loadMoreButton = document.createElement('button');
+            loadMoreButton.type = 'button';
+            loadMoreButton.className = 'qp-all-load-more';
+            loadMoreButton.textContent = 'Show More';
+
+            const updateActionState = () => {
+                countLabel.textContent = 'Showing ' + renderedCount + ' of ' + entries.length + ' designs';
+                loadMoreButton.hidden = renderedCount >= entries.length;
+            };
+
+            loadMoreButton.addEventListener('click', () => {
+                renderedCount = appendGalleryCards(gridEl, entries, groupName, renderedCount, batchSize);
+                updateActionState();
+            });
+
+            actions.appendChild(countLabel);
+            actions.appendChild(loadMoreButton);
+            sectionEl.appendChild(actions);
+            updateActionState();
+            return sectionEl;
         }
 
         function updateQuickPickResultsSummary(cat) {
@@ -6774,35 +6997,7 @@
             const allGallery = document.getElementById('qp-all-gallery');
             const allGalleryWrap = document.getElementById('qp-all-gallery-wrap');
 
-            function renderGallerySection(entries, groupName) {
-                const sectionEl = document.createElement('section');
-                sectionEl.className = 'qp-all-section';
-                sectionEl.innerHTML = '<h3 class="qp-all-section-title">' + groupName + '</h3><div class="qp-all-grid"></div>';
-                const gridEl = sectionEl.querySelector('.qp-all-grid');
-                allGallery.appendChild(sectionEl);
-                entries.forEach(({ item, idx }, entryIndex) => {
-                    const imageLoading = entryIndex < 4 ? 'eager' : 'lazy';
-                    const imagePriority = entryIndex < 2 ? 'high' : 'low';
-                    const div = document.createElement('div');
-                    div.className = 'qp-all-item';
-                    div.innerHTML = `
-                        <div class="qp-loading-shell" data-loading="true">
-                            <img alt="${groupName} design" loading="${imageLoading}" decoding="async" fetchpriority="${imagePriority}">
-                            <span class="qp-loading-label">Loading design...</span>
-                            ${getCatalogSaleFlagMarkup(item, 'gallery-flag')}
-                        </div>
-                        <div class="qp-all-name">${getCatalogDisplayLabel(item, 'gallery')}</div>
-
-                        <button class="qp-all-use" onclick="loadGalleryItem(${idx})">&#x1F455; Use This Design</button>
-                    `;
-                    const galleryImg = div.querySelector('img');
-                    gridEl.appendChild(div);
-                    loadImageWithFallback(galleryImg, item.assetSrc || item.src);
-                });
-            }
-
             if (cat === 'All') {
-                // Keep quick-pick boxes visible and render the full gallery underneath.
                 section.style.display = '';
                 allGalleryWrap.classList.add('visible');
                 allGallery.innerHTML = '';
@@ -6815,10 +7010,9 @@
                     groupedItems.get(groupName).push({ item, idx });
                 });
                 groupedItems.forEach((entries, groupName) => {
-                    renderGallerySection(entries, groupName);
+                    renderPaginatedGallerySection(allGallery, entries, groupName, QP_ALL_SECTION_PREVIEW_SIZE, QP_FILTER_GALLERY_BATCH_SIZE);
                 });
             } else {
-                // Hide quick-pick boxes for genre views and show only the filtered gallery.
                 qpAllGalleryRenderToken += 1;
                 section.style.display = 'none';
                 allGalleryWrap.classList.add('visible');
@@ -6828,7 +7022,7 @@
                     if (isQuickPickCategoryMatch(item, cat)) entries.push({ item, idx });
                     return entries;
                 }, []);
-                renderGallerySection(filteredEntries, cat);
+                renderPaginatedGallerySection(allGallery, filteredEntries, cat, QP_FILTER_GALLERY_BATCH_SIZE, QP_FILTER_GALLERY_BATCH_SIZE);
             }
         }
 
@@ -11563,6 +11757,9 @@
 
         function handleMockupSizeChange() {
             updateMockupSizeGate();
+            if (hasSelectedMockupSize() && typeof renderFrontBackMockups === 'function') {
+                renderFrontBackMockups();
+            }
             updateMockupVisuals();
             updateMockupPriceDisplay();
         }
@@ -13017,7 +13214,7 @@
             }
             price += shirtCharge;
             if (designCount > 0) {
-                price += designCount * LABOR_COST_PER_SHIRT;
+                price += LABOR_COST_PER_SHIRT;
             }
             return Math.max(0, Math.round(price * 100) / 100);
         }
@@ -13059,7 +13256,7 @@
                 printCharge += getMockupPrintFee('back');
             }
             const shirtCharge = mockupColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const laborCharge = designCount * LABOR_COST_PER_SHIRT;
+            const laborCharge = designCount > 0 ? LABOR_COST_PER_SHIRT : 0;
             const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
             el.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(document.getElementById('mockup-breakdown-note'), shirtCharge, printCharge, laborCharge);
