@@ -3322,6 +3322,23 @@
             font-weight: 900;
             letter-spacing: 0.5px;
         }
+        .phone-rotate-notice {
+            display: none;
+            margin: 12px 0 16px;
+            padding: 12px 14px;
+            border: 1px solid rgba(255, 224, 138, 0.42);
+            border-radius: 14px;
+            background: linear-gradient(135deg, rgba(72, 44, 8, 0.92), rgba(120, 64, 16, 0.9));
+            color: #fff2c2;
+            text-align: center;
+            font-size: 0.92rem;
+            font-weight: 800;
+            line-height: 1.45;
+            box-shadow: 0 10px 24px rgba(0,0,0,0.2);
+        }
+        .phone-rotate-notice strong {
+            color: #ffffff;
+        }
 
         @media (max-width: 760px) {
             #custom-live-total,
@@ -3512,15 +3529,29 @@
             }
             .mockup-cards-row {
                 gap: 12px;
+                grid-template-columns: 1fr !important;
             }
             .mockup-cards-row .mockup-card {
                 min-width: 0;
                 width: 100%;
+                overflow: hidden;
             }
             .mockup-shirt {
-                width: min(100%, 360px);
+                width: min(100%, 300px);
                 height: auto;
                 aspect-ratio: 1 / 1;
+            }
+            .front-back-mockup .mockup-size-readout {
+                font-size: 0.8rem;
+            }
+            .front-back-mockup .mockup-zone::after {
+                display: none;
+            }
+            .front-back-mockup .mockup-print,
+            .front-back-mockup .mockup-resize-handle,
+            .design-overlay,
+            #design-overlay-back {
+                touch-action: auto;
             }
 
             #front-upload-wrap button,
@@ -3538,6 +3569,51 @@
             }
             .cart-item button {
                 width: 100%;
+            }
+        }
+
+        @media (max-width: 760px) and (orientation: portrait) {
+            .phone-rotate-notice {
+                display: none !important;
+            }
+
+            #builder-body .preview {
+                display: flex !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+            }
+
+            #builder-body .shirt-preview-slot {
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+            }
+
+            #mockup-cards-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+                width: 100% !important;
+            }
+
+            #mockup-cards-row .mockup-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            #mockup-cards-row .mockup-shirt {
+                width: min(100%, 260px) !important;
+                max-width: min(100%, 260px) !important;
+                margin-inline: auto !important;
+            }
+
+            #mockup-cards-row .mockup-print {
+                box-sizing: border-box;
+                max-width: 100%;
             }
         }
 
@@ -4611,6 +4687,7 @@
             </div>
             <p id="size-prompt" style="color:#ffe066;font-weight:700;font-size:1.05rem;margin:16px 0 0;">?? Pick a size above to start building your shirt!</p>
             <div id="builder-body" style="display:none;">
+            <div class="phone-rotate-notice">Portrait mode works, but turning your phone sideways gives you a larger T-shirt preview if you want a closer look.</div>
             <div>
                 <label>Pick T-Shirt Color:</label>
                 <div class="color-picker-row" id="color-swatches">
@@ -4932,6 +5009,7 @@
             </div>
 
             <p id="mockup-size-gate-note" style="color:#ffe08a; margin:0 0 16px; font-weight:700;">Choose a T-shirt size first to show the mockup preview.</p>
+            <div class="phone-rotate-notice">Portrait mode works here too, but turning your phone sideways gives you a larger company mockup preview.</div>
 
             <div class="mockup-controls">
                 <div class="mockup-control">
@@ -8058,7 +8136,10 @@
                 window.location.hash = nextPage;
                 return;
             }
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            window.scrollTo({
+                top: 0,
+                behavior: window.matchMedia('(pointer: coarse)').matches ? 'auto' : 'smooth'
+            });
         }
 
         function navigateToPage(page) {
@@ -11766,22 +11847,29 @@
 
         function scaleMockupCanvasesForSize() {
             const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
-            const visualScale = getNormalizedVisualScale(selectedSize);
-            const visualSize = Math.round(700 * visualScale);
-            const previewBases = document.querySelectorAll('.custom-design .tshirt-base');
             const previewWraps = document.querySelectorAll('.custom-design .shirt-scale-wrap');
-
-            previewBases.forEach(base => {
-                base.style.width = '700px';
-                base.style.height = '700px';
-                base.style.transformOrigin = 'top left';
-                base.style.transform = `scale(${visualScale})`;
-            });
-
             previewWraps.forEach(wrap => {
-                wrap.style.setProperty('--shirt-visual-size', visualSize + 'px');
-                wrap.style.width = visualSize + 'px';
-                wrap.style.height = visualSize + 'px';
+                const naturalScale = getNormalizedVisualScale(selectedSize);
+                const naturalSize = Math.round(700 * naturalScale);
+                const parentWidth = wrap.parentElement?.clientWidth || naturalSize;
+                const viewportWidth = window.innerWidth || document.documentElement.clientWidth || naturalSize;
+                const portraitPhoneCap = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches
+                    ? Math.max(220, viewportWidth - 72)
+                    : naturalSize;
+                const fittedSize = Math.max(220, Math.min(naturalSize, parentWidth, portraitPhoneCap));
+                const appliedScale = fittedSize / 700;
+                const base = wrap.querySelector('.tshirt-base');
+
+                wrap.style.setProperty('--shirt-visual-size', fittedSize + 'px');
+                wrap.style.width = fittedSize + 'px';
+                wrap.style.height = fittedSize + 'px';
+
+                if (base) {
+                    base.style.width = '700px';
+                    base.style.height = '700px';
+                    base.style.transformOrigin = 'top left';
+                    base.style.transform = `scale(${appliedScale})`;
+                }
             });
         }
 
@@ -12027,6 +12115,13 @@
             let drag = null;
             const CENTER_SNAP_PX = 18;
 
+            function isTouchScrollPriorityEvent(event) {
+                return window.matchMedia('(pointer: coarse)').matches
+                    && event
+                    && typeof event.pointerType === 'string'
+                    && event.pointerType !== 'mouse';
+            }
+
             function getPreviewScale() {
                 const logicalW = shirtBase.offsetWidth || 700;
                 const visualW = shirtBase.getBoundingClientRect().width || logicalW;
@@ -12035,6 +12130,7 @@
 
             overlay.addEventListener('pointerdown', function(e) {
                 if (overlay.style.display === 'none') return;
+                if (isTouchScrollPriorityEvent(e)) return;
                 clampMainDesignPosition();
                 drag = {
                     pointerId: e.pointerId,
@@ -12098,6 +12194,7 @@
             if (backOverlayEl) {
                 let backTapStart = null;
                 backOverlayEl.addEventListener('pointerdown', function(e) {
+                    if (isTouchScrollPriorityEvent(e)) return;
                     backTapStart = { x: e.clientX, y: e.clientY };
                     e.preventDefault();
                 });
@@ -12114,7 +12211,7 @@
         })();
 
         function syncMockupShirtColor(color) {
-            if (color) activeShirtColor = color;
+            if (color) activeMockupColor = color;
             renderFrontBackMockups();
             updateMockupVisuals();
         }
@@ -12493,6 +12590,7 @@
 
             function startDrag(e, el, mode) {
                 if (el.dataset.hasImage !== '1') return;
+                if (window.matchMedia('(pointer: coarse)').matches && e && e.pointerType !== 'mouse') return;
                 activate(el);
 
                 const wrap = getWrap(el);
@@ -12560,7 +12658,7 @@
             }
 
             [front, back].forEach(el => {
-                el.addEventListener('mousedown', e => {
+                el.addEventListener('pointerdown', e => {
                     if (e.target && e.target.classList.contains('mockup-resize-handle')) return;
                     startDrag(e, el, 'move');
                 });
@@ -12570,15 +12668,16 @@
                     if (LOCK_PRINT_SIZE_TO_PROFILE) {
                         handle.style.display = 'none';
                     } else {
-                        handle.addEventListener('mousedown', e => {
+                        handle.addEventListener('pointerdown', e => {
                             startDrag(e, el, 'resize');
                         });
                     }
                 }
             });
 
-            document.addEventListener('mousemove', onPointerMove);
-            document.addEventListener('mouseup', endPointer);
+            document.addEventListener('pointermove', onPointerMove);
+            document.addEventListener('pointerup', endPointer);
+            document.addEventListener('pointercancel', endPointer);
             window.addEventListener('resize', () => {
                 if (typeof updateMockupZonesForSize === 'function') {
                     updateMockupZonesForSize();
