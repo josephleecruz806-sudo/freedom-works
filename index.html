@@ -422,11 +422,24 @@
             width: auto;
             height: 100%;
             max-width: 98vw;
-            display: block;
+            display: none;
             position: relative;
             z-index: 2;
             filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.88)) drop-shadow(0 0 42px rgba(255, 255, 255, 0.62));
             animation: logoGlowPulse 1.35s ease-in-out infinite alternate;
+        }
+        .dove-logo.is-ready {
+            display: block;
+        }
+        .dove-logo-fallback {
+            width: auto;
+            height: 100%;
+            max-width: 98vw;
+            display: block;
+            position: relative;
+            z-index: 1;
+            object-fit: contain;
+            filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
         }
         @keyframes logoGlowPulse {
             0% {
@@ -4163,6 +4176,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -13462,6 +13476,7 @@
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
+                var fallbackImg = document.getElementById('dove-logo-fallback');
                 img.crossOrigin = 'anonymous';
                 img.onload = function() {
                     var IW = img.naturalWidth;
@@ -13509,7 +13524,17 @@
                         ctx = canvas.getContext('2d');
                         ctx.putImageData(trimmed, 0, 0);
                     }
+                    canvas.classList.add('is-ready');
+                    if (fallbackImg) fallbackImg.style.display = 'none';
                 };
+                img.onerror = function() {
+                    canvas.classList.remove('is-ready');
+                    if (fallbackImg) fallbackImg.style.display = 'block';
+                };
+                if (fallbackImg) {
+                    fallbackImg.src = logoSrc;
+                    fallbackImg.style.display = 'block';
+                }
                 img.src = logoSrc;
             }
 
