@@ -4439,6 +4439,302 @@
             }
         }
 
+        /* Authoritative phone layout pass: this block wins over earlier mobile rules. */
+        @media (max-width: 760px) {
+            :root {
+                --fw-phone-gutter: 10px;
+            }
+
+            html,
+            body {
+                overflow-x: hidden !important;
+            }
+
+            body {
+                min-width: 0;
+            }
+
+            header {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 10px !important;
+                padding: 14px var(--fw-phone-gutter) 12px !important;
+            }
+
+            .logo-wrap {
+                height: 46px !important;
+                min-height: 46px !important;
+                max-width: 180px !important;
+                margin: 0 auto !important;
+            }
+
+            .dove-logo,
+            .dove-logo-fallback {
+                width: min(180px, 74vw) !important;
+                max-width: min(180px, 74vw) !important;
+                height: auto !important;
+            }
+
+            #site-logo-tagline {
+                width: min(300px, 92vw) !important;
+                max-width: min(300px, 92vw) !important;
+                margin: 0 auto !important;
+                font-size: 0.82rem !important;
+                line-height: 1.45 !important;
+                text-align: center !important;
+            }
+
+            .header-cart-display,
+            #header-cart-chip {
+                position: static !important;
+                top: auto !important;
+                right: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 10px !important;
+                border-radius: 16px !important;
+            }
+
+            .header-account-display,
+            .header-cart-summary,
+            .header-cart-actions,
+            .header-cart-action-group {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .header-account-display {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                gap: 8px;
+            }
+
+            .header-cart-actions {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+
+            .side-quick-menu {
+                position: static !important;
+                top: auto !important;
+                left: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 12px 0 0 !important;
+                padding: 10px !important;
+                border-radius: 16px !important;
+            }
+
+            .side-menu-links {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px !important;
+            }
+
+            .side-menu-links a,
+            .side-menu-links button {
+                width: 100% !important;
+                min-width: 0;
+                text-align: center !important;
+            }
+
+            .container {
+                width: calc(100vw - 16px) !important;
+                max-width: calc(100vw - 16px) !important;
+                padding: 8px !important;
+                margin: 0 auto !important;
+            }
+
+            .home-landing,
+            .quick-pick-colors,
+            .custom-design,
+            .front-back-mockup,
+            .cart,
+            .product,
+            .mockup-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 14px 0 !important;
+                padding: 14px !important;
+                box-sizing: border-box !important;
+            }
+
+            .home-landing-top,
+            .home-login-actions,
+            .products,
+            .mockup-controls,
+            .cart-action-row,
+            .checkout-nav-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 10px !important;
+            }
+
+            .print-location-options,
+            .size-controls,
+            .adjust-side-options {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+
+            #front-upload-wrap,
+            #back-upload-wrap,
+            #adjust-side-wrap,
+            #size-controls-wrap,
+            .print-location-wrap {
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+
+            #front-upload-wrap,
+            #back-upload-wrap {
+                display: grid !important;
+                gap: 8px !important;
+            }
+
+            #front-upload-wrap button,
+            #back-upload-wrap button,
+            #front-pocket-upload + button,
+            #back-design-upload + button,
+            .cart-item button,
+            .cart-nav-btn,
+            .cart-checkout-btn,
+            .checkout-back-btn,
+            .header-checkout-btn {
+                width: 100% !important;
+                margin: 0 !important;
+            }
+
+            #builder-body .preview {
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                gap: 12px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                overflow: hidden !important;
+                margin: 10px auto 0 !important;
+            }
+
+            #builder-body .shirt-preview-slot {
+                width: 100% !important;
+                max-width: 100% !important;
+                display: flex !important;
+                flex-direction: column !important;
+                align-items: center !important;
+                justify-content: center !important;
+                overflow: hidden !important;
+            }
+
+            .shirt-scale-wrap,
+            .shirt-scale-wrap.single,
+            .shirt-scale-wrap.both {
+                width: min(100%, 300px) !important;
+                max-width: min(100%, 300px) !important;
+                margin-inline: auto !important;
+                overflow: hidden !important;
+            }
+
+            .shirt-scale-wrap.both {
+                zoom: 1 !important;
+            }
+
+            .tshirt-base,
+            .tshirt-img,
+            .design-overlay,
+            #design-overlay-back {
+                max-width: none !important;
+                box-sizing: border-box !important;
+            }
+
+            #mockup-cards-row,
+            .mockup-cards-row {
+                display: grid !important;
+                grid-template-columns: 1fr !important;
+                gap: 12px !important;
+                width: 100% !important;
+            }
+
+            #mockup-cards-row .mockup-card,
+            .mockup-cards-row .mockup-card {
+                width: 100% !important;
+                max-width: 100% !important;
+                min-width: 0 !important;
+                overflow: hidden !important;
+            }
+
+            .mockup-shirt {
+                width: min(100%, 280px) !important;
+                max-width: min(100%, 280px) !important;
+                margin-inline: auto !important;
+                overflow: hidden !important;
+                aspect-ratio: 1 / 1 !important;
+            }
+
+            .mockup-base-canvas {
+                width: 100% !important;
+                height: 100% !important;
+                display: block !important;
+            }
+
+            #stripe-modal-overlay,
+            #auth-modal-overlay,
+            #account-modal-overlay,
+            #admin-modal-overlay {
+                align-items: flex-start !important;
+                padding: 6px !important;
+            }
+
+            #stripe-modal,
+            #auth-modal,
+            #account-modal,
+            #admin-modal {
+                width: calc(100vw - 12px) !important;
+                max-width: calc(100vw - 12px) !important;
+                max-height: calc(100dvh - 12px) !important;
+                margin: 0 auto !important;
+            }
+
+            #qp-cat-filters {
+                justify-content: flex-start !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
+                overflow-y: hidden !important;
+            }
+
+            .qp-all-grid {
+                grid-template-columns: 1fr !important;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .side-menu-links {
+                grid-template-columns: 1fr !important;
+            }
+
+            .shirt-scale-wrap,
+            .shirt-scale-wrap.single,
+            .shirt-scale-wrap.both {
+                width: min(100%, 260px) !important;
+                max-width: min(100%, 260px) !important;
+            }
+
+            .mockup-shirt {
+                width: min(100%, 246px) !important;
+                max-width: min(100%, 246px) !important;
+            }
+
+            .color-swatch {
+                width: 46px !important;
+                height: 46px !important;
+            }
+        }
+
         #shirt-runner,
         #shirt-runner2,
         #mascot-bubble,
@@ -7606,15 +7902,24 @@
             const mobileAnchor = document.getElementById('builder-preview-mobile-anchor');
             const sizeControls = document.getElementById('size-controls-wrap');
             if (!builderBody || !preview || !mobileAnchor || !sizeControls) return;
+
+            const rerenderPreviewScale = () => {
+                if (!document.getElementById('shirt-size')?.value) return;
+                if (typeof scaleMockupCanvasesForSize === 'function') scaleMockupCanvasesForSize();
+                if (typeof updatePrintLocationPreview === 'function') updatePrintLocationPreview();
+            };
+
             if (window.matchMedia('(max-width: 760px)').matches) {
                 if (mobileAnchor.nextElementSibling !== preview) {
                     mobileAnchor.insertAdjacentElement('afterend', preview);
                 }
+                rerenderPreviewScale();
                 return;
             }
             if (sizeControls.nextElementSibling !== preview) {
                 sizeControls.insertAdjacentElement('afterend', preview);
             }
+            rerenderPreviewScale();
         }
 
         let customerGuidePositionFrame = 0;
@@ -11871,9 +12176,18 @@
                 const naturalScale = getNormalizedVisualScale(selectedSize);
                 const naturalSize = Math.round(700 * naturalScale);
                 const parentWidth = wrap.parentElement?.clientWidth || naturalSize;
-                const viewportWidth = window.innerWidth || document.documentElement.clientWidth || naturalSize;
+                const previewWidth = wrap.closest('.preview')?.clientWidth || parentWidth;
+                const visualViewportWidth = window.visualViewport?.width || 0;
+                const viewportWidth = Math.max(
+                    0,
+                    Math.min(
+                        visualViewportWidth || Infinity,
+                        window.innerWidth || Infinity,
+                        document.documentElement.clientWidth || Infinity
+                    )
+                ) || naturalSize;
                 const compactViewportCap = window.matchMedia('(max-width: 760px)').matches
-                    ? Math.max(220, viewportWidth - 48)
+                    ? Math.max(220, Math.min(viewportWidth, previewWidth, parentWidth) - 24)
                     : naturalSize;
                 const fittedSize = Math.max(220, Math.min(naturalSize, parentWidth, compactViewportCap));
                 const appliedScale = fittedSize / 700;
@@ -13900,17 +14214,31 @@
         (function() {
             var logoSrc = resolveAssetUrl('Freedom Works logo (15 x 15 in).jpg');
             var logoTransparentSrc = resolveAssetUrl('Freedom Works logo transparent.png');
+            var verifiedTransparentLogoSrc = '';
+
+            function showFallbackImage(imgEl, src) {
+                if (!imgEl) return;
+                imgEl.onerror = function() {
+                    if (src !== logoSrc && logoSrc) {
+                        showFallbackImage(imgEl, logoSrc);
+                        return;
+                    }
+                    imgEl.removeAttribute('src');
+                };
+                imgEl.src = src || '';
+                imgEl.decoding = 'async';
+                imgEl.loading = 'eager';
+                imgEl.style.display = src ? 'block' : 'none';
+            }
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
                 var fallbackImg = document.getElementById('dove-logo-fallback');
                 var prefersFallback = window.matchMedia('(max-width: 760px)').matches;
                 if (fallbackImg) {
-                    fallbackImg.src = logoTransparentSrc || logoSrc;
-                    fallbackImg.decoding = 'async';
-                    fallbackImg.loading = 'eager';
+                    showFallbackImage(fallbackImg, verifiedTransparentLogoSrc || logoTransparentSrc || logoSrc);
                 }
-                if (logoTransparentSrc) {
+                if (verifiedTransparentLogoSrc) {
                     canvas.classList.remove('is-ready');
                     if (fallbackImg) fallbackImg.style.display = 'block';
                     return;
@@ -13982,7 +14310,22 @@
 
             // Full logo (header)
             var doveCanvas = document.getElementById('dove-canvas');
-            if (doveCanvas) removeBg(doveCanvas, 0, 0, 1, 1);
+            if (doveCanvas) {
+                if (logoTransparentSrc) {
+                    var transparentProbe = new Image();
+                    transparentProbe.onload = function() {
+                        verifiedTransparentLogoSrc = logoTransparentSrc;
+                        removeBg(doveCanvas, 0, 0, 1, 1);
+                    };
+                    transparentProbe.onerror = function() {
+                        verifiedTransparentLogoSrc = '';
+                        removeBg(doveCanvas, 0, 0, 1, 1);
+                    };
+                    transparentProbe.src = logoTransparentSrc;
+                } else {
+                    removeBg(doveCanvas, 0, 0, 1, 1);
+                }
+            }
 
             // -- (bird animation removed) --
             function _unused() {
