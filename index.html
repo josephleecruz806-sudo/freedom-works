@@ -432,12 +432,14 @@
             display: block;
         }
         .dove-logo-fallback {
-            width: auto;
-            height: 100%;
+            width: min(98vw, 720px);
+            height: auto;
             max-width: 98vw;
+            max-height: 100%;
             display: block;
             position: relative;
             z-index: 1;
+            flex: 0 1 auto;
             object-fit: contain;
             filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
         }
@@ -707,8 +709,8 @@
             }
             .dove-logo,
             .dove-logo-fallback {
-                width: auto;
-                height: 100%;
+                width: min(140px, 80vw) !important;
+                height: auto !important;
                 max-width: min(140px, 80vw) !important;
                 max-height: 100%;
             }
@@ -1820,7 +1822,7 @@
         .shirt-scale-wrap.single {
             width: min(var(--shirt-visual-size, 700px), 100%);
             height: auto;
-            overflow: visible;
+            overflow: hidden;
         }
         .shirt-scale-wrap.single .tshirt-base {
             transform: scale(1);
@@ -3425,6 +3427,8 @@
             .preview {
                 width: 100%;
                 max-width: 100%;
+                flex-direction: column;
+                align-items: center;
                 gap: 14px;
                 margin: 18px auto 0;
             }
@@ -3518,7 +3522,7 @@
 
             .shirt-scale-wrap,
             .shirt-scale-wrap.single {
-                width: min(100%, 420px);
+                width: min(100%, 340px);
             }
             .shirt-scale-wrap.both {
                 zoom: 0.36;
@@ -7654,6 +7658,36 @@
             }
         ];
 
+        function readStoredCustomerSession() {
+            try {
+                const sessionRaw = sessionStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
+                if (sessionRaw) return JSON.parse(sessionRaw);
+            } catch (_) {}
+            try {
+                const legacyRaw = localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
+                return legacyRaw ? JSON.parse(legacyRaw) : null;
+            } catch (_) {
+                return null;
+            }
+        }
+
+        function writeStoredCustomerSession(session) {
+            try {
+                if (session) {
+                    sessionStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
+                    localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                } else {
+                    sessionStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                    localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                }
+            } catch (_) {
+                try {
+                    if (session) localStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
+                    else localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                } catch (__ ) {}
+            }
+        }
+
         function customerHasStoreAccess() {
             return !!customerSession?.customer || guestStoreAccess;
         }
@@ -7778,13 +7812,7 @@
 
         function persistCustomerSession(session) {
             customerSession = session;
-            try {
-                if (session) {
-                    localStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
-                } else {
-                    localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
-                }
-            } catch (_) {}
+            writeStoredCustomerSession(session);
             updateCustomerAccountUi();
         }
 
@@ -7814,12 +7842,8 @@
 
         function getPersistedCustomerSession() {
             if (customerSession?.customer) return customerSession;
-            try {
-                const stored = JSON.parse(localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY) || 'null');
-                return stored?.customer ? stored : null;
-            } catch (_) {
-                return null;
-            }
+            const stored = readStoredCustomerSession();
+            return stored?.customer ? stored : null;
         }
 
         function buildLocalCustomerSession(customer) {
@@ -7979,7 +8003,7 @@
             if (nameEl) nameEl.textContent = ownerName;
             if (actionBtn) {
                 actionBtn.textContent = adminSession ? 'Dashboard' : 'Owner Login';
-                actionBtn.onclick = function() { openOwnerPortal(); };
+                actionBtn.onclick = function() { adminSession ? openOwnerPortal() : openAuthModal('login'); };
             }
             if (logoutBtn) logoutBtn.style.display = adminSession ? '' : 'none';
             if (modalName) modalName.textContent = adminSession?.admin?.name || 'Owner';
@@ -8483,12 +8507,7 @@
 
         async function restoreCustomerSession() {
             guestStoreAccess = false;
-            let stored = null;
-            try {
-                stored = JSON.parse(localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY) || 'null');
-            } catch (_) {
-                stored = null;
-            }
+            let stored = readStoredCustomerSession();
             if (!stored?.token) {
                 persistCustomerSession(null);
                 return;
@@ -11853,10 +11872,10 @@
                 const naturalSize = Math.round(700 * naturalScale);
                 const parentWidth = wrap.parentElement?.clientWidth || naturalSize;
                 const viewportWidth = window.innerWidth || document.documentElement.clientWidth || naturalSize;
-                const portraitPhoneCap = window.matchMedia('(max-width: 760px) and (orientation: portrait)').matches
-                    ? Math.max(220, viewportWidth - 72)
+                const compactViewportCap = window.matchMedia('(max-width: 760px)').matches
+                    ? Math.max(220, viewportWidth - 48)
                     : naturalSize;
-                const fittedSize = Math.max(220, Math.min(naturalSize, parentWidth, portraitPhoneCap));
+                const fittedSize = Math.max(220, Math.min(naturalSize, parentWidth, compactViewportCap));
                 const appliedScale = fittedSize / 700;
                 const base = wrap.querySelector('.tshirt-base');
 
