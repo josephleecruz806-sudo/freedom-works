@@ -53,17 +53,50 @@
         [hidden] {
             display: none !important;
         }
+        :root {
+            --theme-glow-1: rgba(110,198,255,0.18);
+            --theme-glow-2: rgba(255,110,199,0.16);
+            --theme-glow-3: rgba(110,255,232,0.10);
+            --theme-bg-start: #151526;
+            --theme-bg-mid: #16213e;
+            --theme-bg-end: #0b2f52;
+            --theme-text: #e0e0e0;
+            --theme-surface-a: rgba(13,24,58,0.9);
+            --theme-surface-b: rgba(22,40,86,0.84);
+            --theme-surface-shadow: rgba(110,198,255,0.12);
+            --theme-chip-bg: rgba(255,255,255,0.07);
+            --theme-chip-bg-hover: rgba(255,255,255,0.12);
+            --theme-chip-text: #e8f1ff;
+            --theme-chip-hover-border: rgba(110,198,255,0.3);
+            --theme-menu-active-a: rgba(74,144,226,0.55);
+            --theme-menu-active-b: rgba(162,89,255,0.45);
+            --theme-sale-a: rgba(255,210,74,0.95);
+            --theme-sale-b: rgba(255,171,39,0.92);
+            --theme-sale-text: #3e2400;
+            --theme-sale-hover-a: rgba(255,224,112,0.98);
+            --theme-sale-hover-b: rgba(255,192,68,0.95);
+            --theme-sale-active-a: rgba(255,235,141,1);
+            --theme-sale-active-b: rgba(255,186,56,0.98);
+            --theme-guide-btn-a: rgba(236,244,255,0.96);
+            --theme-guide-btn-b: rgba(179,211,255,0.96);
+            --theme-guide-btn-text: #16325c;
+            --theme-back-btn-a: rgba(255,241,195,0.97);
+            --theme-back-btn-b: rgba(255,210,112,0.96);
+            --theme-back-btn-text: #342100;
+            --theme-home-border: #355892;
+            --theme-home-surface: #12274d;
+        }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             margin: 0;
             padding: 0;
             background:
-                radial-gradient(circle at 18% 16%, rgba(110,198,255,0.18) 0%, transparent 26%),
-                radial-gradient(circle at 82% 22%, rgba(255,110,199,0.16) 0%, transparent 24%),
-                radial-gradient(circle at 50% 100%, rgba(110,255,232,0.10) 0%, transparent 30%),
-                linear-gradient(135deg, #151526 0%, #16213e 44%, #0b2f52 100%);
+                radial-gradient(circle at 18% 16%, var(--theme-glow-1) 0%, transparent 26%),
+                radial-gradient(circle at 82% 22%, var(--theme-glow-2) 0%, transparent 24%),
+                radial-gradient(circle at 50% 100%, var(--theme-glow-3) 0%, transparent 30%),
+                linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-mid) 44%, var(--theme-bg-end) 100%);
             min-height: 100vh;
-            color: #e0e0e0;
+            color: var(--theme-text);
             overflow-x: hidden;
             position: relative;
         }
@@ -75,8 +108,8 @@
             padding: 14px 12px;
             border: 1px solid rgba(255,255,255,0.14);
             border-radius: 20px;
-            background: linear-gradient(180deg, rgba(13,24,58,0.9), rgba(22,40,86,0.84));
-            box-shadow: 0 18px 36px rgba(0,0,0,0.28), 0 0 24px rgba(110,198,255,0.12);
+            background: linear-gradient(180deg, var(--theme-surface-a), var(--theme-surface-b));
+            box-shadow: 0 18px 36px rgba(0,0,0,0.28), 0 0 24px var(--theme-surface-shadow);
             backdrop-filter: blur(10px);
         }
         .side-menu-title {
@@ -97,8 +130,8 @@
             width: 100%;
             border: 1px solid rgba(255,255,255,0.1);
             border-radius: 999px;
-            background: rgba(255,255,255,0.07);
-            color: #e8f1ff;
+            background: var(--theme-chip-bg);
+            color: var(--theme-chip-text);
             padding: 9px 12px;
             font-size: 0.86rem;
             font-weight: 700;
@@ -110,25 +143,25 @@
         .side-menu-links a:hover,
         .side-menu-links button:hover {
             transform: translateX(3px);
-            background: rgba(255,255,255,0.12);
-            border-color: rgba(110,198,255,0.3);
+            background: var(--theme-chip-bg-hover);
+            border-color: var(--theme-chip-hover-border);
         }
         .side-menu-links a.active {
-            background: linear-gradient(45deg, rgba(74,144,226,0.55), rgba(162,89,255,0.45));
+            background: linear-gradient(45deg, var(--theme-menu-active-a), var(--theme-menu-active-b));
             border-color: rgba(255,255,255,0.18);
         }
         .side-menu-links .sale-menu-link {
-            background: linear-gradient(135deg, rgba(255,210,74,0.95), rgba(255,171,39,0.92));
-            color: #3e2400;
+            background: linear-gradient(135deg, var(--theme-sale-a), var(--theme-sale-b));
+            color: var(--theme-sale-text);
             border-color: rgba(255,245,178,0.62);
             box-shadow: 0 10px 22px rgba(255,193,7,0.2);
         }
         .side-menu-links .sale-menu-link:hover {
-            background: linear-gradient(135deg, rgba(255,224,112,0.98), rgba(255,192,68,0.95));
+            background: linear-gradient(135deg, var(--theme-sale-hover-a), var(--theme-sale-hover-b));
             border-color: rgba(255,248,204,0.76);
         }
         .side-menu-links .sale-menu-link.active {
-            background: linear-gradient(135deg, rgba(255,235,141,1), rgba(255,186,56,0.98));
+            background: linear-gradient(135deg, var(--theme-sale-active-a), var(--theme-sale-active-b));
             border-color: rgba(255,250,214,0.92);
             color: #2d1700;
         }
@@ -149,13 +182,34 @@
             gap: 8px;
             border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.18);
-            background: linear-gradient(135deg, rgba(236,244,255,0.96), rgba(179,211,255,0.96));
-            color: #16325c;
+            background: linear-gradient(135deg, var(--theme-guide-btn-a), var(--theme-guide-btn-b));
+            color: var(--theme-guide-btn-text);
             padding: 12px 18px;
             font-size: 0.9rem;
             font-weight: 900;
             letter-spacing: 0.2px;
             box-shadow: 0 14px 28px rgba(0,0,0,0.22);
+        }
+        .customer-back-trigger {
+            position: fixed;
+            left: 18px;
+            bottom: 18px;
+            z-index: 160;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            border: 1px solid rgba(255,255,255,0.2);
+            background: linear-gradient(135deg, var(--theme-back-btn-a), var(--theme-back-btn-b));
+            color: var(--theme-back-btn-text);
+            padding: 12px 18px;
+            font-size: 0.9rem;
+            font-weight: 900;
+            letter-spacing: 0.2px;
+            box-shadow: 0 14px 28px rgba(0,0,0,0.22);
+        }
+        .customer-back-trigger:hover {
+            filter: brightness(1.03);
         }
         .site-guide-overlay {
             position: fixed;
@@ -220,8 +274,8 @@
             padding: 24px;
             min-height: 320px;
             border-radius: 26px;
-            border: 1px solid #355892;
-            background: #12274d;
+            border: 1px solid var(--theme-home-border);
+            background: var(--theme-home-surface);
             box-shadow: 0 26px 54px rgba(0,0,0,0.42);
             position: relative;
             z-index: 8;
@@ -582,7 +636,7 @@
         }
         .top-mini-nav {
             position: fixed;
-            top: 10px;
+            top: 58px;
             left: 50%;
             transform: translateX(-50%);
             z-index: 48;
@@ -659,6 +713,13 @@
             min-width: 0;
             width: 100%;
             text-align: left;
+        }
+        .header-account-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-width: 0;
+            width: 100%;
         }
         .header-owner-display {
             padding-bottom: 2px;
@@ -737,6 +798,21 @@
             cursor: pointer;
             white-space: nowrap;
         }
+        #header-account-inline-action {
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            border-radius: 999px;
+            padding: 6px 10px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            flex: 0 0 auto;
+        }
+        #header-account-inline-action:hover {
+            background: rgba(255,255,255,0.2);
+        }
         #header-account-action:hover,
         #header-account-logout:hover,
         .header-checkout-btn:hover {
@@ -788,9 +864,27 @@
         }
         #header-cart-total {
             color: #ffffff;
-            font-size: 1.14rem;
+            font-size: 1.58rem;
             font-weight: 900;
-            text-shadow: 0 0 6px rgba(255,255,255,0.95), 0 0 14px rgba(255,255,255,0.7);
+            line-height: 1;
+            text-shadow: 0 0 10px rgba(54,255,120,0.78), 0 0 22px rgba(54,255,120,0.5);
+        }
+        .cart-total-flash-green {
+            animation: cartTotalFlashGreen 0.85s ease-in-out infinite;
+        }
+        @keyframes cartTotalFlashGreen {
+            0% {
+                color: #4dff86;
+                text-shadow: 0 0 12px rgba(54,255,120,0.95), 0 0 24px rgba(54,255,120,0.65);
+            }
+            50% {
+                color: #adffca;
+                text-shadow: 0 0 4px rgba(54,255,120,0.35), 0 0 10px rgba(54,255,120,0.2);
+            }
+            100% {
+                color: #4dff86;
+                text-shadow: 0 0 12px rgba(54,255,120,0.95), 0 0 24px rgba(54,255,120,0.65);
+            }
         }
         .header-cart-action-group .header-checkout-btn {
             width: 100%;
@@ -911,7 +1005,7 @@
             }
             .top-mini-nav {
                 width: min(430px, calc(100vw - 20px));
-                top: 8px;
+                top: 56px;
             }
             #header-cart-total {
                 font-size: 1rem;
@@ -963,7 +1057,8 @@
             }
             #stripe-modal {
                 margin: 0 auto;
-                padding-top: 44px;
+                padding: 44px 14px 16px;
+                border-radius: 18px;
                 max-height: calc(100vh - 24px);
             }
             #stripe-modal-close {
@@ -1447,6 +1542,42 @@
             line-height: 1.45;
             text-align: right;
         }
+        .cart-savings-summary {
+            width: 100%;
+            max-width: 420px;
+            padding: 12px 14px;
+            border-radius: 14px;
+            border: 1px solid rgba(110,255,232,0.24);
+            background: linear-gradient(135deg, rgba(18,72,68,0.46), rgba(14,41,78,0.42));
+            box-shadow: 0 10px 24px rgba(0,0,0,0.16);
+        }
+        .cart-savings-total {
+            margin: 0;
+            color: #b9ffe8;
+            font-size: 0.98rem;
+            font-weight: 900;
+            text-align: right;
+        }
+        .cart-savings-breakdown {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+            margin-top: 10px;
+        }
+        .cart-savings-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            color: #e8fff8;
+            font-size: 0.86rem;
+            line-height: 1.4;
+        }
+        .cart-savings-row span:last-child {
+            color: #86ffd5;
+            font-weight: 900;
+            white-space: nowrap;
+        }
         .cart-checkout-btn {
             min-width: 190px;
             background: linear-gradient(45deg, #00d64f, #32f08b);
@@ -1517,6 +1648,41 @@
             flex: 1;
             min-width: 0;
             word-break: break-word;
+        }
+        .cart-item-copy {
+            flex: 1;
+            min-width: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .cart-item-price {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+            min-width: 110px;
+        }
+        .cart-item-current-price {
+            color: #ffffff;
+            font-weight: 900;
+            white-space: nowrap;
+        }
+        .cart-item-sale-meta {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 2px;
+            font-size: 0.8rem;
+            line-height: 1.35;
+        }
+        .cart-item-original-price {
+            color: #aebddf;
+            text-decoration: line-through;
+        }
+        .cart-item-savings {
+            color: #7dffcb;
+            font-weight: 800;
         }
         .cart-item:hover {
             background: rgba(255, 255, 255, 0.1);
@@ -2343,6 +2509,23 @@
             height: 16px;
             cursor: pointer;
         }
+        .upload-guidance-text {
+            margin: 2px 0 0;
+            font-size: 0.82rem;
+            line-height: 1.35;
+            color: #9fc9ff;
+        }
+        .upload-quality-warning {
+            display: none;
+            margin: 4px 0 0;
+            font-size: 0.84rem;
+            line-height: 1.35;
+            font-weight: 700;
+            color: #ffd15c;
+        }
+        .upload-quality-warning.is-error {
+            color: #ff8e8e;
+        }
         .size-control {
             display: flex;
             flex-direction: column;
@@ -2658,6 +2841,43 @@
         #qp-all-gallery-wrap.visible {
             display: block;
         }
+        #trending-sales-gallery {
+            display: none;
+            gap: 18px;
+            max-width: 1100px;
+            margin: 16px auto 30px;
+            padding: 0 16px;
+        }
+        #trending-sales-gallery.visible {
+            display: flex;
+            flex-direction: column;
+        }
+        .trending-sales-meta {
+            display: inline-flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            margin-top: 4px;
+            font-size: 0.72rem;
+            color: #bfd0eb;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        .trending-sales-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            padding: 3px 8px;
+            border: 1px solid rgba(255,255,255,0.16);
+            background: rgba(255,255,255,0.08);
+            color: #eaf2ff;
+            font-size: 0.68rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
         .qp-all-section {
             display: flex;
             flex-direction: column;
@@ -2969,29 +3189,31 @@
             display: flex;
         }
         #stripe-modal {
-            background: linear-gradient(160deg, #12122a 0%, #1a1a3e 100%);
-            border: 1px solid rgba(255,255,255,0.12);
-            border-radius: 20px;
-            padding: 32px 28px 28px;
+            background: radial-gradient(circle at top right, rgba(74,144,226,0.2), transparent 48%), linear-gradient(160deg, #101528 0%, #161d38 55%, #1c2544 100%);
+            border: 1px solid rgba(173,205,255,0.28);
+            border-radius: 24px;
+            padding: 34px 28px 24px;
             width: 100%;
-            max-width: 440px;
+            max-width: 460px;
             max-height: calc(100vh - 24px);
             overflow-y: auto;
-            box-shadow: 0 24px 60px rgba(0,0,0,0.7);
+            box-shadow: 0 28px 70px rgba(2,8,22,0.72);
             color: #f0f0f0;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             position: relative;
         }
         #stripe-modal h2 {
             margin: 0 0 4px;
-            font-size: 1.4rem;
+            font-size: 1.45rem;
             font-weight: 800;
             letter-spacing: 0.5px;
+            line-height: 1.15;
         }
         #stripe-modal .stripe-subtitle {
-            color: #999;
-            font-size: 0.88rem;
-            margin: 0 0 22px;
+            color: #c2d5ff;
+            font-size: 0.9rem;
+            margin: 0 0 18px;
+            line-height: 1.5;
         }
         #stripe-modal-close {
             position: absolute;
@@ -3013,6 +3235,10 @@
             flex-direction: column;
             gap: 14px;
             margin-bottom: 18px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(181,208,255,0.16);
+            border-radius: 14px;
+            padding: 12px;
         }
         .stripe-field {
             display: flex;
@@ -3082,12 +3308,23 @@
             border-color: #e74c3c;
         }
         #stripe-order-summary {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px;
-            padding: 12px 14px;
+            background: linear-gradient(145deg, rgba(255,255,255,0.07), rgba(255,255,255,0.03));
+            border: 1px solid rgba(181,208,255,0.2);
+            border-radius: 14px;
+            padding: 13px 14px;
             margin-bottom: 18px;
             font-size: 0.9rem;
+        }
+        #stripe-payment-form {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+        }
+        #stripe-payment-form > label {
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(181,208,255,0.14);
+            border-radius: 12px;
+            padding: 10px 12px;
         }
         #stripe-order-summary .summary-row {
             display: flex;
@@ -3107,17 +3344,17 @@
         }
         #stripe-pay-btn {
             width: 100%;
-            background: linear-gradient(45deg, #4a90e2, #a259ff);
+            background: linear-gradient(45deg, #387bdb, #6a9bff);
             border: none;
             color: #fff;
-            padding: 14px;
+            padding: 13px 14px;
             border-radius: 12px;
             font-size: 1rem;
             font-weight: 800;
             cursor: pointer;
             letter-spacing: 0.5px;
             transition: opacity 0.2s, transform 0.2s;
-            box-shadow: 0 6px 20px rgba(74,144,226,0.4);
+            box-shadow: 0 8px 22px rgba(56,123,219,0.35);
         }
         #stripe-pay-btn:hover:not(:disabled) {
             opacity: 0.9;
@@ -3131,9 +3368,9 @@
         #cashapp-pay-btn {
             width: 100%;
             margin-top: 10px;
-            background: #00d64f;
+            background: linear-gradient(45deg, #18bf57, #35e37c);
             border: none;
-            color: #04140a;
+            color: #072312;
             padding: 12px;
             border-radius: 12px;
             font-size: 0.95rem;
@@ -3146,6 +3383,17 @@
         #cashapp-pay-btn:hover {
             opacity: 0.92;
             transform: translateY(-1px);
+        }
+        #checkout-back-btn {
+            width: 100%;
+            margin-top: 10px !important;
+            display: block;
+            border-radius: 12px;
+            border: 1px solid rgba(199,216,255,0.25);
+            background: rgba(255,255,255,0.07);
+            color: #edf4ff;
+            padding: 11px 12px;
+            font-weight: 800;
         }
         #cashapp-note {
             margin-top: 10px;
@@ -3191,6 +3439,313 @@
         }
         #auth-modal-overlay.open {
             display: flex;
+        }
+        #login-sale-popup-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 30950;
+            background: rgba(5, 5, 20, 0.78);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+        #login-sale-popup-overlay.open {
+            display: flex;
+        }
+        #rewards-popup-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 30940;
+            background: rgba(8, 10, 24, 0.78);
+            backdrop-filter: blur(6px);
+            align-items: center;
+            justify-content: center;
+            overflow-y: auto;
+            padding: 14px;
+            -webkit-overflow-scrolling: touch;
+        }
+        #rewards-popup-overlay.open {
+            display: flex;
+        }
+        .login-sale-popup {
+            width: min(960px, 100%);
+            display: grid;
+            grid-template-columns: minmax(240px, 360px) minmax(0, 1fr);
+            gap: 22px;
+            background: linear-gradient(150deg, rgba(11,24,54,0.98), rgba(22,39,86,0.98));
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 26px;
+            padding: 24px;
+            color: #eef4ff;
+            box-shadow: 0 24px 64px rgba(0,0,0,0.52);
+            position: relative;
+        }
+        .login-sale-popup-media {
+            position: relative;
+            border-radius: 22px;
+            overflow: hidden;
+            min-height: 300px;
+            background: radial-gradient(circle at top, rgba(110,198,255,0.18), transparent 55%), rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .login-sale-popup-media img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .login-sale-popup-copy {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+            min-width: 0;
+        }
+        .login-sale-popup-kicker {
+            display: inline-flex;
+            width: fit-content;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255, 204, 84, 0.16);
+            border: 1px solid rgba(255, 214, 120, 0.32);
+            color: #ffe59d;
+            font-size: 0.78rem;
+            font-weight: 900;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+        }
+        .login-sale-popup-copy h3 {
+            margin: 0;
+            font-size: clamp(1.6rem, 3vw, 2.45rem);
+            line-height: 1.05;
+            color: #ffffff;
+        }
+        .login-sale-popup-copy p {
+            margin: 0;
+            color: #d4e3ff;
+            line-height: 1.6;
+            font-size: 0.98rem;
+        }
+        .login-sale-popup-price {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            align-items: center;
+            min-width: 0;
+        }
+        .login-sale-popup-price .catalog-price-stack {
+            width: 100%;
+        }
+        .login-sale-popup-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .login-sale-popup-pill {
+            display: inline-flex;
+            align-items: center;
+            padding: 8px 12px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.08);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #cfe0ff;
+            font-size: 0.86rem;
+            font-weight: 700;
+        }
+        .login-sale-popup-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-top: 6px;
+        }
+        .login-sale-popup-actions button {
+            border: none;
+            border-radius: 999px;
+            padding: 12px 18px;
+            font-size: 0.95rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .login-sale-popup-primary {
+            background: linear-gradient(135deg, #ffd658, #ffab39);
+            color: #2b1800;
+            box-shadow: 0 14px 30px rgba(255, 191, 0, 0.22);
+        }
+        .login-sale-popup-secondary {
+            background: rgba(255,255,255,0.09);
+            color: #eef4ff;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .login-sale-popup-tertiary {
+            background: transparent;
+            color: #9fb9ea;
+            border: 1px solid rgba(159,185,234,0.22);
+        }
+        .login-sale-popup-close {
+            position: absolute;
+            top: 14px;
+            right: 16px;
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-size: 1.45rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .login-sale-popup-close:hover {
+            color: #fff;
+        }
+        .login-sale-popup-thumbs {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .login-sale-popup-thumb {
+            width: 58px;
+            height: 58px;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.06);
+        }
+        .login-sale-popup-thumb img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+        .rewards-popup {
+            width: min(620px, 100%);
+            background: linear-gradient(145deg, rgba(13, 36, 68, 0.98), rgba(22, 64, 96, 0.98));
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 24px;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+            color: #e9f3ff;
+            padding: 24px;
+            position: relative;
+        }
+        .rewards-popup-kicker {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 7px 12px;
+            border-radius: 999px;
+            background: rgba(137, 255, 198, 0.14);
+            border: 1px solid rgba(137, 255, 198, 0.3);
+            color: #b6ffd7;
+            font-size: 0.75rem;
+            font-weight: 900;
+            letter-spacing: 0.16em;
+            text-transform: uppercase;
+        }
+        .rewards-popup h3 {
+            margin: 14px 0 8px;
+            font-size: clamp(1.55rem, 3vw, 2.2rem);
+            line-height: 1.08;
+            color: #ffffff;
+        }
+        .rewards-popup p {
+            margin: 0;
+            color: #d4e6ff;
+            line-height: 1.6;
+        }
+        .rewards-popup-grid {
+            margin-top: 16px;
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .rewards-popup-card {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 16px;
+            padding: 12px 14px;
+        }
+        .rewards-popup-label {
+            display: block;
+            font-size: 0.75rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #b8cff5;
+            margin-bottom: 6px;
+        }
+        .rewards-popup-value {
+            display: block;
+            color: #ffffff;
+            font-size: 1rem;
+            font-weight: 800;
+        }
+        .rewards-popup-actions {
+            margin-top: 18px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        .rewards-popup-actions button {
+            border: none;
+            border-radius: 999px;
+            padding: 11px 16px;
+            font-size: 0.93rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .rewards-popup-primary {
+            background: linear-gradient(135deg, #8affc7, #51d8a8);
+            color: #093125;
+            box-shadow: 0 14px 28px rgba(81, 216, 168, 0.25);
+        }
+        .rewards-popup-secondary {
+            background: rgba(255, 255, 255, 0.12);
+            color: #ecf4ff;
+            border: 1px solid rgba(255, 255, 255, 0.16);
+        }
+        .rewards-popup-tertiary {
+            background: transparent;
+            color: #aac5e8;
+            border: 1px solid rgba(170, 197, 232, 0.25);
+        }
+        .rewards-popup-close {
+            position: absolute;
+            top: 12px;
+            right: 14px;
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.72);
+            font-size: 1.4rem;
+            cursor: pointer;
+            padding: 0;
+        }
+        .rewards-popup-close:hover {
+            color: #ffffff;
+        }
+        @media (max-width: 760px) {
+            .login-sale-popup {
+                grid-template-columns: 1fr;
+                padding: 18px;
+                gap: 16px;
+            }
+            .login-sale-popup-media {
+                min-height: 220px;
+            }
+            .login-sale-popup-actions button {
+                width: 100%;
+            }
+            .rewards-popup {
+                padding: 18px;
+            }
+            .rewards-popup-grid {
+                grid-template-columns: 1fr;
+            }
+            .rewards-popup-actions button {
+                width: 100%;
+            }
         }
         #auth-modal {
             background: linear-gradient(160deg, #12122a 0%, #1a1a3e 100%);
@@ -3344,6 +3899,35 @@
             display: block;
             font-size: 1rem;
             color: #fff;
+        }
+        .account-rewards-card {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 10px;
+            margin: 4px 0 12px;
+            padding: 12px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+        }
+        .account-rewards-cell {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            min-width: 0;
+        }
+        .account-rewards-label {
+            color: #9fb1d6;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            font-weight: 700;
+        }
+        .account-rewards-value {
+            color: #ffffff;
+            font-size: 1.02rem;
+            font-weight: 800;
+            line-height: 1.2;
         }
         #account-orders-status {
             min-height: 20px;
@@ -4955,50 +5539,134 @@
             }
 
             #site-logo-tagline {
-                width: min(420px, 98vw) !important;
-                max-width: min(420px, 98vw) !important;
+                width: min(420px, calc(100vw - 20px)) !important;
+                max-width: min(420px, calc(100vw - 20px)) !important;
                 margin: 10px auto 0 !important;
                 font-size: 1.16rem !important;
                 line-height: 1.6 !important;
                 font-weight: 700 !important;
                 text-align: center !important;
+                box-sizing: border-box !important;
+                overflow-wrap: anywhere !important;
             }
 
             .header-cart-display,
             #header-cart-chip {
-                position: static !important;
-                top: auto !important;
+                position: fixed !important;
+                left: 50% !important;
                 right: auto !important;
-                width: 100% !important;
-                max-width: 100% !important;
+                top: auto !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 8px) !important;
+                transform: translateX(-50%) !important;
+                width: min(360px, calc(100vw - 16px)) !important;
+                max-width: calc(100vw - 16px) !important;
                 margin: 0 !important;
-                padding: 10px !important;
-                border-radius: 16px !important;
+                padding: 6px !important;
+                border-radius: 12px !important;
+                z-index: 95 !important;
+                background: linear-gradient(145deg, rgba(22,45,95,0.95), rgba(14,31,74,0.96)) !important;
+                border: 1px solid rgba(139,189,255,0.5) !important;
+                box-shadow: 0 18px 36px rgba(2,8,22,0.5), 0 0 0 1px rgba(139,189,255,0.2) inset !important;
             }
 
-            body:not(.home-screen-active) #header-cart-chip {
-                margin-top: 8px !important;
+            body:not(.home-screen-active):not(.menu-screen-active) {
+                padding-bottom: calc(92px + env(safe-area-inset-bottom, 0px)) !important;
+            }
+
+            #header-cart-chip .header-pill-divider,
+            #header-cart-chip #header-cart-thumbs,
+            #header-cart-chip .header-cart-action-group:first-child {
+                display: none !important;
             }
 
             .header-account-display,
             .header-cart-summary,
             .header-cart-actions,
             .header-cart-action-group {
-                width: 100%;
+                width: auto;
                 min-width: 0;
             }
 
             .header-account-display {
-                display: flex;
+                display: none !important;
                 align-items: center;
                 justify-content: space-between;
                 gap: 8px;
             }
 
             .header-cart-actions {
-                display: grid !important;
-                grid-template-columns: 1fr !important;
-                gap: 8px !important;
+                display: flex !important;
+                gap: 0 !important;
+            }
+
+            #header-cart-chip .header-cart-action-group:last-child {
+                display: flex !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
+                gap: 6px !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+
+            #header-cart-chip .header-cart-action-group:last-child .header-cart-topline {
+                flex: 1 1 auto !important;
+                order: 2 !important;
+                justify-content: flex-end !important;
+                text-align: right !important;
+                font-size: 1.08rem !important;
+                padding-right: 2px !important;
+            }
+
+            #header-cart-chip #header-cart-total {
+                font-size: 22px !important;
+            }
+
+            #header-cart-chip .header-cart-action-group:last-child .header-checkout-btn {
+                flex: 0 0 auto !important;
+                order: 1 !important;
+                width: auto !important;
+                min-width: 116px !important;
+                min-height: 36px !important;
+                padding: 8px 12px !important;
+                margin: 0 !important;
+                border-radius: 11px !important;
+            }
+
+            .site-guide-trigger,
+            .customer-back-trigger {
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 84px) !important;
+                z-index: 110 !important;
+                min-height: 34px !important;
+                padding: 8px 12px !important;
+                border-radius: 12px !important;
+                font-size: 0.76rem !important;
+                font-weight: 800 !important;
+                letter-spacing: 0.12px !important;
+                box-shadow: 0 8px 18px rgba(0,0,0,0.2) !important;
+                opacity: 0.94;
+                white-space: nowrap;
+            }
+
+            .customer-back-trigger {
+                left: clamp(6px, calc(50% - 176px), 34px) !important;
+            }
+
+            .site-guide-trigger {
+                right: clamp(6px, calc(50% - 176px), 34px) !important;
+            }
+
+            .site-guide-trigger:hover,
+            .customer-back-trigger:hover {
+                opacity: 1;
+                transform: translateY(-1px);
+            }
+
+            body.home-screen-active .site-guide-trigger,
+            body.home-screen-active .customer-back-trigger,
+            body.menu-screen-active .site-guide-trigger,
+            body.menu-screen-active .customer-back-trigger {
+                display: none !important;
             }
 
             .side-quick-menu {
@@ -5346,9 +6014,6 @@
             }
 
             .side-quick-menu,
-            .header-cart-display,
-            .header-account-display,
-            #header-cart-chip,
             #header-account-chip {
                 display: none !important;
                 position: static !important;
@@ -5508,9 +6173,6 @@
             display: none !important;
         }
 
-        body.store-page-custom-builder .side-quick-menu,
-        body.store-page-custom-builder #header-cart-chip,
-        body.store-page-custom-builder #header-account-chip,
         body.store-page-quick-pick-builder .side-quick-menu,
         body.store-page-quick-pick-builder #header-cart-chip,
         body.store-page-quick-pick-builder #header-account-chip {
@@ -5564,7 +6226,10 @@
             <div class="header-account-display" id="header-account-chip">
                 <div class="header-account-copy">
                     <span class="header-account-label" id="header-account-label">Account</span>
-                    <span id="header-account-name">Guest</span>
+                    <div class="header-account-row">
+                        <span id="header-account-name">Guest</span>
+                        <button type="button" id="header-account-inline-action" onclick="openAuthModal('login')">Login</button>
+                    </div>
                 </div>
                                 <button type="button" id="header-account-logout" onclick="logoutCustomer()" style="display:none;">Logout</button>
             </div>
@@ -5597,6 +6262,7 @@
     <nav class="side-quick-menu" aria-label="Page menu">
         <p class="side-menu-title">Browse</p>
         <div class="side-menu-links">
+            <button type="button" id="side-menu-back-btn" onclick="goBackStorePage()" hidden>Go Back</button>
             <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
             <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
             <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
@@ -5608,6 +6274,7 @@
         <p class="side-menu-note">Each menu item opens its own page view.</p>
     </nav>
 
+    <button type="button" class="customer-back-trigger" id="customer-back-trigger" onclick="goBackStorePage()" hidden>Go Back</button>
     <button type="button" class="site-guide-trigger" id="site-guide-trigger" onclick="startCustomerGuide(true)" hidden>Show Guide</button>
 
     <div class="site-guide-overlay" id="site-guide-overlay" hidden>
@@ -5732,6 +6399,9 @@
         <div id="on-sale-gallery-wrap" data-store-page="on-sale" hidden>
             <div id="on-sale-gallery" class="visible"></div>
         </div>
+        <div id="trending-sales-wrap" data-store-page="on-sale" hidden>
+            <div id="trending-sales-gallery"></div>
+        </div>
 
         <section class="custom-design" id="builder-section" data-store-page="custom-builder" hidden>
             <h2>Design Your Own T-Shirt</h2>
@@ -5837,11 +6507,15 @@
             <div id="front-upload-wrap">
                 <label for="design-upload-front">Front Design Image:</label>
                 <input type="file" id="design-upload-front" accept="image/*" onchange="previewDesign('front')">
+                <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
+                <p id="design-upload-warning-front" class="upload-quality-warning" aria-live="polite"></p>
                 <button type="button" onclick="clearDesign('front')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
             </div>
             <div id="back-upload-wrap" style="display:none;">
                 <label for="design-upload-back">Back Design Image:</label>
                 <input type="file" id="design-upload-back" accept="image/*" onchange="previewDesign('back')">
+                <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
+                <p id="design-upload-warning-back" class="upload-quality-warning" aria-live="polite"></p>
                 <button type="button" onclick="clearDesign('back')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
             </div>
             <div id="adjust-side-wrap" class="adjust-side-wrap" style="display:none;">
@@ -5907,6 +6581,9 @@
                         const inputId = targetSide === 'back' ? 'design-upload-back' : 'design-upload-front';
                         const overlayId = targetSide === 'back' ? 'design-overlay-back' : 'design-overlay';
                         const boxId = targetSide === 'back' ? 'print-area-back' : 'print-area';
+                        if (typeof setUploadWarningMessage === 'function') {
+                            setUploadWarningMessage(targetSide, '', { context: 'design' });
+                        }
                         
                         const input = document.getElementById(inputId);
                         const overlay = document.getElementById(overlayId);
@@ -5923,6 +6600,7 @@
                         
                         if (targetSide === 'front') {
                             activeCatalogDesignMeta = null;
+                            applyCustomBuilderSaleSizeOptions(null);
                             frontDesignUploaded = false;
                             frontDesignWidth = 295;
                             frontDesignHeight = 336;
@@ -6036,6 +6714,25 @@
                     <option value="2X">2XL</option>
                     <option value="3X">3XL</option>
                 </select>
+            </div>
+
+            <div style="margin:0 0 16px;">
+                <label style="display:block;color:#dce9ff;font-weight:700;margin:0 0 10px;">T-Shirt Color:</label>
+                <div class="color-picker-row" id="qp-grid-color-swatches">
+                    <div class="color-swatch light-swatch active" style="background:#ffffff" data-color="#ffffff" onclick="setQuickPickGridColor('#ffffff', this)" title="White">White</div>
+                    <div class="color-swatch" style="background:#1a1a2e" data-color="#1a1a2e" onclick="setQuickPickGridColor('#1a1a2e', this)" title="Navy">Navy</div>
+                    <div class="color-swatch" style="background:#111111" data-color="#111111" onclick="setQuickPickGridColor('#111111', this)" title="Black">Black</div>
+                    <div class="color-swatch" style="background:#c0392b" data-color="#c0392b" onclick="setQuickPickGridColor('#c0392b', this)" title="Red">Red</div>
+                    <div class="color-swatch" style="background:#1a3fcc" data-color="#1a3fcc" onclick="setQuickPickGridColor('#1a3fcc', this)" title="Royal Blue">Royal<br>Blue</div>
+                    <div class="color-swatch" style="background:#7f8c8d" data-color="#7f8c8d" onclick="setQuickPickGridColor('#7f8c8d', this)" title="Grey">Grey</div>
+                    <div class="color-swatch light-swatch" style="background:#fff5d6" data-color="#fff5d6" onclick="setQuickPickGridColor('#fff5d6', this)" title="Cream">Cream</div>
+                    <div class="color-swatch light-swatch" style="background:#d9c3a5" data-color="#d9c3a5" onclick="setQuickPickGridColor('#d9c3a5', this)" title="Beige">Beige</div>
+                    <div class="color-swatch light-swatch" style="background:#f1c40f" data-color="#f1c40f" onclick="setQuickPickGridColor('#f1c40f', this)" title="Yellow">Yellow</div>
+                    <div class="color-swatch light-swatch" style="background:#87ceeb" data-color="#87ceeb" onclick="setQuickPickGridColor('#87ceeb', this)" title="Light Blue">Light<br>Blue</div>
+                    <div class="color-swatch" style="background:#27ae60" data-color="#27ae60" onclick="setQuickPickGridColor('#27ae60', this)" title="Green">Green</div>
+                    <div class="color-swatch" style="background:#1e5631" data-color="#1e5631" onclick="setQuickPickGridColor('#1e5631', this)" title="Forest Green">Forest<br>Green</div>
+                    <div class="color-swatch light-swatch" style="background:#ff6eb4" data-color="#ff6eb4" onclick="setQuickPickGridColor('#ff6eb4', this)" title="Safety Pink">Safety<br>Pink</div>
+                </div>
             </div>
 
             <p id="qp-grid-size-gate-note" style="color:#ffe08a; margin:0 0 16px; font-weight:700;">Choose a T-shirt size first to show the Quick Pick grid preview.</p>
@@ -6171,6 +6868,8 @@
                 <div class="mockup-control">
                     <label for="mockup-pocket-upload" style="margin-top:12px;">Upload Pocket Image</label>
                     <input type="file" id="mockup-pocket-upload" accept="image/*" onchange="previewMockupDesign('pocket')">
+                    <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
+                    <p id="mockup-upload-warning-pocket" class="upload-quality-warning" aria-live="polite"></p>
                     <button type="button" onclick="clearMockupDesign('pocket')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Pocket</button>
                     <div class="mockup-upload-preview" aria-live="polite">
                         <img id="mockup-pocket-upload-preview" alt="Pocket upload preview" hidden>
@@ -6252,6 +6951,8 @@
                 <div class="mockup-control" style="margin-bottom:14px;">
                     <label for="mockup-back-upload" style="margin-top:12px;">Upload Back Image</label>
                     <input type="file" id="mockup-back-upload" accept="image/*" onchange="previewMockupDesign('back')">
+                    <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
+                    <p id="mockup-upload-warning-back" class="upload-quality-warning" aria-live="polite"></p>
                     <button type="button" onclick="clearMockupDesign('back')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Back Image</button>
                     <div class="mockup-upload-preview" aria-live="polite">
                         <img id="mockup-back-upload-preview" alt="Back upload preview" hidden>
@@ -6302,8 +7003,13 @@
             <h2>Shopping Cart</h2>
             <div class="cart-summary">
                 <p class="cart-total-line">Total: $<span id="total">0.00</span></p>
+                <div id="cart-sale-savings" class="cart-savings-summary" hidden>
+                    <p class="cart-savings-total">Sale savings: $<span id="cart-savings-total">0.00</span></p>
+                    <div id="cart-savings-breakdown" class="cart-savings-breakdown"></div>
+                </div>
                 <p class="cart-note">Custom shirt totals include the shirt charge, print cost shown for your design, and labor charge.</p>
                 <div class="cart-action-row">
+                    <button class="cart-nav-btn" onclick="goBackStorePage()">Go Back</button>
                     <button class="cart-nav-btn" onclick="navigateToPage('quick-picks')">Continue Shopping</button>
                     <button class="cart-checkout-btn" onclick="checkout(event)">Checkout</button>
                 </div>
@@ -6372,26 +7078,26 @@
                             <label>Order Method</label>
                             <div class="stripe-choice-group">
                                 <label class="stripe-choice" for="fulfillment-delivery">
-                                    <input id="fulfillment-delivery" type="radio" name="checkout-fulfillment-method" value="delivery" checked onchange="toggleCheckoutFulfillmentFields()">
+                                    <input id="fulfillment-delivery" type="radio" name="checkout-fulfillment-method" value="delivery" required onchange="toggleCheckoutFulfillmentFields()">
                                     Delivery
                                 </label>
                                 <label class="stripe-choice" for="fulfillment-pickup">
-                                    <input id="fulfillment-pickup" type="radio" name="checkout-fulfillment-method" value="pickup" onchange="toggleCheckoutFulfillmentFields()">
+                                    <input id="fulfillment-pickup" type="radio" name="checkout-fulfillment-method" value="pickup" required onchange="toggleCheckoutFulfillmentFields()">
                                     Pickup (Free)
                                 </label>
                             </div>
                         </div>
                         <div class="stripe-field">
-                            <label for="shipping-full-name" id="checkout-contact-name-label">Contact Full Name</label>
-                            <input id="shipping-full-name" type="text" placeholder="Jane Smith" autocomplete="shipping name">
+                            <label for="shipping-full-name" id="checkout-contact-name-label">Contact Full Name *</label>
+                            <input id="shipping-full-name" type="text" placeholder="Jane Smith" autocomplete="shipping name" required>
                         </div>
                         <div class="stripe-field">
-                            <label for="shipping-email" id="checkout-contact-email-label">Contact Email</label>
-                            <input id="shipping-email" type="email" placeholder="jane@example.com" autocomplete="email">
+                            <label for="shipping-email" id="checkout-contact-email-label">Contact Email *</label>
+                            <input id="shipping-email" type="email" placeholder="jane@example.com" autocomplete="email" required>
                         </div>
                         <div id="checkout-address-fields" class="checkout-address-fields">
                             <div class="stripe-field">
-                                <label for="shipping-address-line1">Street Address</label>
+                                <label for="shipping-address-line1">Street Address *</label>
                                 <input id="shipping-address-line1" type="text" placeholder="123 Main St" autocomplete="shipping address-line1">
                             </div>
                             <div class="stripe-field">
@@ -6399,15 +7105,15 @@
                                 <input id="shipping-address-line2" type="text" placeholder="Apt 4B" autocomplete="shipping address-line2">
                             </div>
                             <div class="stripe-field">
-                                <label for="shipping-city">City</label>
+                                <label for="shipping-city">City *</label>
                                 <input id="shipping-city" type="text" placeholder="Chicago" autocomplete="shipping address-level2">
                             </div>
                             <div class="stripe-field">
-                                <label for="shipping-state">State</label>
+                                <label for="shipping-state">State *</label>
                                 <input id="shipping-state" type="text" placeholder="IL" autocomplete="shipping address-level1">
                             </div>
                             <div class="stripe-field">
-                                <label for="shipping-postal-code">ZIP Code</label>
+                                <label for="shipping-postal-code">ZIP Code *</label>
                                 <input id="shipping-postal-code" type="text" placeholder="60601" autocomplete="shipping postal-code">
                             </div>
                         </div>
@@ -6415,6 +7121,7 @@
 
                     <button id="stripe-pay-btn" type="submit">Pay <span id="stripe-pay-amount">$0.00</span></button>
                     <button id="cashapp-pay-btn" type="button" onclick="startCashAppCheckout()">Pay with Cash App</button>
+                    <button id="checkout-back-btn" class="checkout-back-btn" type="button" onclick="goToCartFromCheckout()">Back To Cart</button>
                     <div id="cashapp-note"></div>
                     <div id="stripe-error-msg" role="alert"></div>
                 </form>
@@ -6459,6 +7166,55 @@
         </div>
     </div>
 
+    <div id="login-sale-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="login-sale-popup-title" aria-describedby="login-sale-popup-text">
+        <div class="login-sale-popup">
+            <button type="button" class="login-sale-popup-close" aria-label="Close sale preview" onclick="closeLoginSalePopup()">&times;</button>
+            <div class="login-sale-popup-media">
+                <img id="login-sale-popup-image" alt="Sale design preview" loading="eager" decoding="async">
+            </div>
+            <div class="login-sale-popup-copy">
+                <span class="login-sale-popup-kicker">Save More Today</span>
+                <h3 id="login-sale-popup-title">Big savings just dropped</h3>
+                <p id="login-sale-popup-text">Shop today&apos;s featured deals and save more before they&apos;re gone.</p>
+                <div class="login-sale-popup-price" id="login-sale-popup-price"></div>
+                <div class="login-sale-popup-meta">
+                    <span class="login-sale-popup-pill" id="login-sale-popup-count"></span>
+                    <span class="login-sale-popup-pill" id="login-sale-popup-sizes"></span>
+                </div>
+                <div class="login-sale-popup-thumbs" id="login-sale-popup-thumbs"></div>
+                <div class="login-sale-popup-actions">
+                    <button type="button" class="login-sale-popup-primary" onclick="openLoginSalePage()">Shop The Sale</button>
+                    <button type="button" class="login-sale-popup-secondary" onclick="openAuthModal('login')">Login First</button>
+                    <button type="button" class="login-sale-popup-tertiary" onclick="closeLoginSalePopup()">Maybe Later</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="rewards-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="rewards-popup-title" aria-describedby="rewards-popup-text">
+        <div class="rewards-popup">
+            <button type="button" class="rewards-popup-close" aria-label="Close rewards details" onclick="closeRewardsInfoPopup()">&times;</button>
+            <span class="rewards-popup-kicker">Rewards Program</span>
+            <h3 id="rewards-popup-title">Earn points on every shirt purchase</h3>
+            <p id="rewards-popup-text">Create an account to track your points and unlock credit as you shop.</p>
+            <div class="rewards-popup-grid">
+                <div class="rewards-popup-card">
+                    <span class="rewards-popup-label">How Points Work</span>
+                    <strong class="rewards-popup-value" id="rewards-popup-rule-points">1 point per t-shirt</strong>
+                </div>
+                <div class="rewards-popup-card">
+                    <span class="rewards-popup-label">Reward Step</span>
+                    <strong class="rewards-popup-value" id="rewards-popup-rule-step">10 points = $5.00 credit</strong>
+                </div>
+            </div>
+            <div class="rewards-popup-actions">
+                <button type="button" class="rewards-popup-primary" onclick="openAuthModal('register')">Create Account</button>
+                <button type="button" class="rewards-popup-secondary" onclick="openAuthModal('login')">Log In</button>
+                <button type="button" class="rewards-popup-tertiary" onclick="closeRewardsInfoPopup()">Keep Browsing</button>
+            </div>
+        </div>
+    </div>
+
     <div id="account-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="account-modal-title">
         <div id="account-modal">
             <button id="account-modal-close" aria-label="Close account" onclick="closeAccountModal()">&times;</button>
@@ -6470,6 +7226,24 @@
                 <div class="account-meta">
                     <strong id="account-modal-name">Guest</strong>
                     <span id="account-modal-email"></span>
+                </div>
+            </div>
+            <div class="account-rewards-card" aria-live="polite">
+                <div class="account-rewards-cell">
+                    <span class="account-rewards-label">Points</span>
+                    <strong class="account-rewards-value" id="account-rewards-points">0</strong>
+                </div>
+                <div class="account-rewards-cell">
+                    <span class="account-rewards-label">Lifetime Points</span>
+                    <strong class="account-rewards-value" id="account-rewards-lifetime">0</strong>
+                </div>
+                <div class="account-rewards-cell">
+                    <span class="account-rewards-label">Available Credit</span>
+                    <strong class="account-rewards-value" id="account-rewards-credit">$0.00</strong>
+                </div>
+                <div class="account-rewards-cell">
+                    <span class="account-rewards-label">Next Reward</span>
+                    <strong class="account-rewards-value" id="account-rewards-next">10 pts to $5.00</strong>
                 </div>
             </div>
             <div id="account-orders-status"></div>
@@ -7575,6 +8349,7 @@
                         originalPrice: basePrice,
                         price: basePrice,
                         saleOfferType: '',
+                        saleOfferGroupId: '',
                         salePrice: null,
                         bundleQuantity: 0,
                         bundlePrice: null,
@@ -7591,12 +8366,16 @@
                 const saleSizes = Array.isArray(sale?.shirtSizes)
                     ? sale.shirtSizes.map(function(size) { return String(size || '').trim(); }).filter(Boolean)
                     : [];
+                const saleOfferGroupId = String(sale?.offerGroupId || '').trim() || (offerType === 'bundle'
+                    ? ['bundle', String(sale?.startsAt || ''), String(sale?.endsAt || ''), bundleQuantity, bundlePrice, saleSizes.join(',')].join('|')
+                    : '');
                 return {
                     ...item,
                     basePrice,
                     originalPrice: basePrice,
                     price: offerType === 'bundle' ? basePrice : salePrice,
                     saleOfferType: offerType,
+                    saleOfferGroupId,
                     salePrice: offerType === 'bundle' ? null : salePrice,
                     salePercent: offerType === 'percentage' ? salePercent : 0,
                     bundleQuantity: offerType === 'bundle' ? bundleQuantity : 0,
@@ -7697,6 +8476,182 @@
             catalogSaleCountdownTimer = window.setInterval(refreshCatalogSaleCountdowns, 1000);
         }
 
+        function getLoginSalePopupItems() {
+            return (Array.isArray(qpGallery) ? qpGallery : []).filter(function(item) {
+                return !!item?.onSale;
+            });
+        }
+
+        function getLoginSalePopupSignature(items) {
+            return (Array.isArray(items) ? items : []).map(function(item) {
+                return [item?.assetSrc || item?.src || '', item?.saleOfferType || '', item?.salePrice || 0, item?.salePercent || 0, item?.bundleQuantity || 0, item?.bundlePrice || 0, item?.saleEndsAt || ''].join('|');
+            }).join('::');
+        }
+
+        function hasSeenLoginSalePopup() {
+            return loginSalePopupShownThisLoad;
+        }
+
+        function markLoginSalePopupSeen() {
+            loginSalePopupShownThisLoad = true;
+        }
+
+        function getLoginSalePopupItemLabel(item) {
+            const explicitName = String(item?.name || '').trim();
+            if (explicitName) return explicitName;
+            const fallbackLabel = String(getCatalogDisplayLabel(item, 'home-title') || '').trim();
+            if (!fallbackLabel) return 'This design';
+            const normalizedFallback = fallbackLabel.toLowerCase();
+            if (normalizedFallback === 'print file' || normalizedFallback === 'print files') {
+                return 'This design';
+            }
+            return fallbackLabel;
+        }
+
+        function getLoginSalePopupHeadline(item, count) {
+            const totalCount = Math.max(1, Number(count || 0));
+            const label = getLoginSalePopupItemLabel(item);
+            if (totalCount > 1) {
+                if (String(item?.saleOfferType || '') === 'bundle') {
+                    return String(totalCount) + ' designs are part of this save-more bundle deal';
+                }
+                if (String(item?.saleOfferType || '') === 'percentage') {
+                    return String(totalCount) + ' designs just dropped so you can save more';
+                }
+                return String(totalCount) + ' designs are marked down so you can save more today';
+            }
+            if (String(item?.saleOfferType || '') === 'bundle') {
+                return label + ' is part of a save-more bundle deal';
+            }
+            if (String(item?.saleOfferType || '') === 'percentage') {
+                return label + ' just dropped so you can save more';
+            }
+            return label + ' is marked down so you can save more today';
+        }
+
+        function getLoginSalePopupBody(item, count) {
+            const totalCount = Math.max(1, Number(count || 0));
+            const offerType = String(item?.saleOfferType || 'single');
+            if (offerType === 'bundle') {
+                return 'Save more with this live bundle deal. Preview the featured design here, then step inside to shop every matching offer before the countdown hits zero.';
+            }
+            if (offerType === 'percentage') {
+                return 'There ' + (totalCount === 1 ? 'is 1 featured markdown' : ('are ' + totalCount + ' featured markdowns')) + ' live right now. Sign in or jump in as a guest to save more on the current price drops before they disappear.';
+            }
+            return 'A fresh limited-time deal is waiting for you. Preview the savings here, then enter the store to save more before the 24-hour window closes.';
+        }
+
+        function renderLoginSalePopup(item, items) {
+            const overlay = document.getElementById('login-sale-popup-overlay');
+            if (!overlay || !item) return;
+            const titleEl = document.getElementById('login-sale-popup-title');
+            const textEl = document.getElementById('login-sale-popup-text');
+            const priceEl = document.getElementById('login-sale-popup-price');
+            const countEl = document.getElementById('login-sale-popup-count');
+            const sizesEl = document.getElementById('login-sale-popup-sizes');
+            const imageEl = document.getElementById('login-sale-popup-image');
+            const thumbsEl = document.getElementById('login-sale-popup-thumbs');
+            const saleItems = Array.isArray(items) ? items : [];
+            const offerSizes = getCatalogOfferSizes(item).map(function(size) {
+                return size === '2X' ? '2XL' : (size === '3X' ? '3XL' : size);
+            });
+            if (titleEl) titleEl.textContent = getLoginSalePopupHeadline(item, saleItems.length);
+            if (textEl) textEl.textContent = getLoginSalePopupBody(item, saleItems.length);
+            if (priceEl) priceEl.innerHTML = getCatalogPriceMarkup(item);
+            if (countEl) countEl.textContent = saleItems.length > 1 ? (saleItems.length + ' sale designs live') : '1 sale design live';
+            if (sizesEl) sizesEl.textContent = offerSizes.length ? ('Sizes: ' + offerSizes.join(', ')) : 'Sizes vary by design';
+            if (thumbsEl) {
+                thumbsEl.innerHTML = saleItems.slice(0, 4).map(function(entry) {
+                    return '<span class="login-sale-popup-thumb"><img alt="Sale preview" src="' + escapeHtml(resolveAssetUrl(entry?.assetSrc || entry?.src || '')) + '"></span>';
+                }).join('');
+            }
+            if (imageEl) {
+                imageEl.removeAttribute('src');
+                loadImageWithFallback(imageEl, item.assetSrc || item.src || '');
+            }
+        }
+
+        function openLoginSalePopup() {
+            const overlay = document.getElementById('login-sale-popup-overlay');
+            if (!overlay) return;
+            overlay.classList.add('open');
+            loginSalePopupOpen = true;
+            updateModalBodyLock();
+        }
+
+        function hasSeenRewardsInfoPopup() {
+            return rewardsInfoPopupShownThisLoad;
+        }
+
+        function markRewardsInfoPopupSeen() {
+            rewardsInfoPopupShownThisLoad = true;
+        }
+
+        function renderRewardsInfoPopup() {
+            const pointsRuleEl = document.getElementById('rewards-popup-rule-points');
+            const stepRuleEl = document.getElementById('rewards-popup-rule-step');
+            const pointsPerShirt = Math.max(1, Math.floor(Number(LOCAL_REWARDS_POINTS_PER_SHIRT || 1)));
+            const pointsStep = Math.max(1, Math.floor(Number(LOCAL_REWARDS_POINTS_STEP || 10)));
+            const rewardStep = Math.max(0, Number(LOCAL_REWARDS_REWARD_STEP_DOLLARS || 5));
+            if (pointsRuleEl) {
+                pointsRuleEl.textContent = pointsPerShirt + ' point' + (pointsPerShirt === 1 ? '' : 's') + ' per t-shirt';
+            }
+            if (stepRuleEl) {
+                stepRuleEl.textContent = pointsStep + ' points = ' + formatPriceAmount(rewardStep) + ' credit';
+            }
+        }
+
+        function openRewardsInfoPopup() {
+            const overlay = document.getElementById('rewards-popup-overlay');
+            if (!overlay) return;
+            renderRewardsInfoPopup();
+            overlay.classList.add('open');
+            rewardsInfoPopupOpen = true;
+            updateModalBodyLock();
+        }
+
+        function closeRewardsInfoPopup() {
+            const overlay = document.getElementById('rewards-popup-overlay');
+            if (!overlay) return;
+            overlay.classList.remove('open');
+            rewardsInfoPopupOpen = false;
+            updateModalBodyLock();
+        }
+
+        function maybeShowRewardsInfoPopup() {
+            if (customerHasStoreAccess() || currentStorePage !== 'home') return;
+            if (hasSeenRewardsInfoPopup()) return;
+            markRewardsInfoPopupSeen();
+            openRewardsInfoPopup();
+        }
+
+        function closeLoginSalePopup(options) {
+            const settings = options || {};
+            const overlay = document.getElementById('login-sale-popup-overlay');
+            if (!overlay) return;
+            overlay.classList.remove('open');
+            loginSalePopupOpen = false;
+            updateModalBodyLock();
+            if (!settings.suppressRewards) {
+                maybeShowRewardsInfoPopup();
+            }
+        }
+
+        function maybeShowLoginSalePopup() {
+            if (customerHasStoreAccess() || currentStorePage !== 'home') return;
+            const items = getLoginSalePopupItems();
+            if (!items.length) return;
+            if (hasSeenLoginSalePopup()) return;
+            renderLoginSalePopup(items[0], items);
+            markLoginSalePopupSeen();
+            openLoginSalePopup();
+        }
+
+        function openLoginSalePage() {
+            closeLoginSalePopup({ suppressRewards: true });
+            enterStoreAsGuest('on-sale', { skipGuide: true });
+        }
+
         function getCatalogOfferSizeOptions() {
             return ['Newborn', '6M', '9M', '12M', '18M', '18-24M', '2T', '3T', '4T', '5T', 'Youth S', 'Youth M', 'Youth L', 'Youth XL', 'Adult S', 'Adult M', 'Adult L', 'Adult XL', '2X', '3X'];
         }
@@ -7712,7 +8667,7 @@
             const profile = getPrintProfileForSize(size);
             const shirtCharge = getShirtChargeForSize(size);
             const printCharge = Math.round(Number((profile?.widthIn || profile?.maxWIn || 0) * 0.75) * 100) / 100;
-            return Math.round((shirtCharge + printCharge + LABOR_COST_PER_SHIRT) * 100) / 100;
+            return Math.round((shirtCharge + printCharge) * 100) / 100;
         }
 
         function getCatalogOriginalPriceForSize(item, size) {
@@ -8376,27 +9331,89 @@
             });
         }
 
+        function getTrendingDesignDisplayName(entry) {
+            const explicit = String(entry?.name || '').trim();
+            if (explicit) return explicit;
+            const filename = String(entry?.src || '').split('/').pop() || '';
+            return formatAutoCatalogName(filename || 'Trending Design');
+        }
+
+        function renderTrendingSalesGallery(items) {
+            const gallery = document.getElementById('trending-sales-gallery');
+            if (!gallery) return;
+            const entries = Array.isArray(items) ? items : [];
+
+            if (!entries.length) {
+                gallery.classList.add('visible');
+                gallery.innerHTML = '<section class="qp-all-section"><h3 class="qp-all-section-title">Trending Sales</h3><div class="account-order-empty">Trending designs will appear after paid sales are recorded.</div></section>';
+                return;
+            }
+
+            gallery.classList.add('visible');
+            gallery.innerHTML = '<section class="qp-all-section"><h3 class="qp-all-section-title">Trending Sales</h3><div class="qp-all-grid"></div></section>';
+            const grid = gallery.querySelector('.qp-all-grid');
+            entries.forEach((entry, index) => {
+                const trendSrc = String(entry?.src || '').trim();
+                const catalogMatch = trendSrc ? findCatalogItemBySrc(trendSrc) : null;
+                const imageSrc = catalogMatch?.assetSrc || catalogMatch?.src || trendSrc;
+                const designLabel = catalogMatch
+                    ? getCatalogDisplayLabel(catalogMatch, 'gallery')
+                    : getTrendingDesignDisplayName(entry);
+                const unitsSold = Math.max(0, Math.round(Number(entry?.unitsSold || 0)) || 0);
+                const revenue = formatPriceAmount(Number(entry?.revenue || 0));
+
+                const card = document.createElement('div');
+                card.className = 'qp-all-item';
+                card.innerHTML = `
+                    <div class="qp-loading-shell" data-loading="true">
+                        <img alt="Trending design" loading="${index < 4 ? 'eager' : 'lazy'}" decoding="async" fetchpriority="${index < 2 ? 'high' : 'low'}">
+                        <span class="qp-loading-label">Loading design...</span>
+                        <span class="catalog-design-sale-flag gallery-flag"><span>#${index + 1} Trending</span></span>
+                    </div>
+                    <div class="qp-all-name">${escapeHtml(designLabel)}</div>
+                    <div class="trending-sales-meta">
+                        <span class="trending-sales-chip">${escapeHtml(String(unitsSold))} sold</span>
+                        <span class="trending-sales-chip">${escapeHtml(revenue)} revenue</span>
+                    </div>
+                    <button class="qp-all-use" ${catalogMatch ? '' : 'disabled'}>${catalogMatch ? '&#x1F455; Shop This Design' : 'Record Found'}</button>
+                `;
+
+                const actionBtn = card.querySelector('.qp-all-use');
+                if (actionBtn && catalogMatch) {
+                    actionBtn.addEventListener('click', function() {
+                        loadCatalogDesignIntoQuickPickGrid(catalogMatch.assetSrc || catalogMatch.src, { preserveEmptySize: true });
+                        scrollToPageSection('quick-pick-builder', '#quick-pick-grid-section');
+                    });
+                }
+
+                const image = card.querySelector('img');
+                if (imageSrc) {
+                    loadImageWithFallback(image, imageSrc);
+                } else if (image) {
+                    setImageLoadingState(image, false);
+                    setImageErrorState(image, true, 'Preview unavailable');
+                }
+                grid.appendChild(card);
+            });
+        }
+
+        async function loadTrendingSales() {
+            try {
+                const payload = await loadTrendingSalesPayload(8, 90);
+                trendingSalesItems = Array.isArray(payload?.items) ? payload.items : [];
+            } catch (_) {
+                trendingSalesItems = [];
+            }
+            renderTrendingSalesGallery(trendingSalesItems);
+        }
+
         function loadGalleryItem(galleryIdx) {
             const item = qpGallery[galleryIdx];
-            const qpSize = getSelectedQuickPickSize();
-            if (!qpSize) {
-                alert('Please choose a T-shirt size first.');
-                if (typeof window._mascotWarn === 'function') {
-                    window._mascotWarn('Pick a T-shirt size first, then choose your design.');
-                }
-                return;
-            }
-            if (!shirtColorPicked) {
-                alert('Please pick a T-shirt color before choosing this design.');
-                if (typeof window._mascotWarn === 'function') {
-                    window._mascotWarn('Pick a shirt color first, then use this design from Quick Picks.');
-                }
-                return;
-            }
-            loadCatalogDesignIntoQuickPickGrid(item.assetSrc || item.src);
+            quickPickGridSourcePage = 'on-sale';
+            loadCatalogDesignIntoQuickPickGrid(item.assetSrc || item.src, { preserveEmptySize: true });
             scrollToPageSection('quick-pick-builder', '#quick-pick-grid-section');
             if (typeof window._mascotWarn === 'function') {
-                window._mascotWarn(`"${item.name}" is loaded on its Quick Pick grid page. Adjust size, then add it to cart.`);
+                window._mascotWarn(`"${item.name}" is loaded on its Quick Pick grid page. Pick a size there, adjust the print, and then add it to cart.`);
             }
         }
 
@@ -8441,6 +9458,7 @@
                     uploadPreview.hidden = false;
                 }
 
+                applyRecommendedMockupPrintSizes(sizeSelect?.value || 'Adult M');
                 if (typeof updateMockupVisuals === 'function') updateMockupVisuals();
                 if (typeof updateMockupPriceDisplay === 'function') updateMockupPriceDisplay();
                 if (typeof showUploadNotice === 'function') showUploadNotice('Design loaded in the square mockup preview.');
@@ -8464,6 +9482,7 @@
             const overlay = document.getElementById('design-overlay');
             if (!overlay || !src) return;
             activeCatalogDesignMeta = findCatalogItemBySrc(src);
+            applyCustomBuilderSaleSizeOptions(activeCatalogDesignMeta);
             const candidates = getAssetUrlCandidates(src);
             let candidateIndex = 0;
 
@@ -8490,8 +9509,7 @@
             function applyPresetSizing() {
                 const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
                 applySizeDrivenPrintProfile(selectedSize, false);
-                setCustomPrintSize('width', 7.5, 'front');
-                setCustomPrintSize('height', 7.5, 'front');
+                applyRecommendedCustomPrintSize(selectedSize, 'front');
                 resetCustomBuilderOriginToZero();
                 if (typeof scaleMockupCanvasesForSize === 'function') scaleMockupCanvasesForSize();
                 if (typeof updatePrintLocationPreview === 'function') updatePrintLocationPreview();
@@ -8532,6 +9550,7 @@
         const QUICK_PICK_GRID_RULER_INCHES = 15;
         let quickPickGridColorPicked = false;
         let activeQuickPickGridColor = '#ffffff';
+        let quickPickGridSourcePage = 'quick-picks';
         let quickPickGridPrintWidthIn = 7.5;
         let quickPickGridPrintHeightIn = 7.5;
 
@@ -8564,9 +9583,69 @@
         }
 
         function handleQuickPickGridSizeChange() {
+            const selectedSize = document.getElementById('qp-grid-shirt-size')?.value || '';
+            if (selectedSize) {
+                resetQuickPickGridPrintSizeToDefault(selectedSize);
+            }
+            applyLiveInventoryToColorSwatches();
             updateQuickPickGridSizeGate();
             updateQuickPickGridVisuals();
             updateQuickPickGridPriceDisplay();
+        }
+
+        function normalizeAllowedSaleSizes(sizes) {
+            return Array.isArray(sizes)
+                ? sizes.map(function(size) { return String(size || '').trim(); }).filter(Boolean)
+                : [];
+        }
+
+        function setAllowedSizeOptions(selectEl, allowedSizes) {
+            if (!selectEl) return;
+            if (!selectEl.dataset.allOptionsHtml) {
+                selectEl.dataset.allOptionsHtml = selectEl.innerHTML;
+            }
+            const previousValue = String(selectEl.value || '').trim();
+            const allowedList = normalizeAllowedSaleSizes(allowedSizes);
+            const allowedSet = allowedList.length ? new Set(allowedList) : null;
+            const template = document.createElement('select');
+            template.innerHTML = selectEl.dataset.allOptionsHtml;
+            const options = Array.from(template.querySelectorAll('option')).filter(function(option) {
+                const optionValue = String(option.value || '').trim();
+                return !optionValue || !allowedSet || allowedSet.has(optionValue);
+            });
+            selectEl.innerHTML = options.map(function(option) {
+                return option.outerHTML;
+            }).join('');
+            const hasPreviousValue = Array.from(selectEl.options).some(function(option) {
+                return String(option.value || '').trim() === previousValue;
+            });
+            selectEl.value = hasPreviousValue ? previousValue : '';
+        }
+
+        function applyQuickPickSaleSizeOptions(catalogItem) {
+            const allowedSizes = catalogItem?.onSale ? normalizeAllowedSaleSizes(catalogItem?.saleSizes) : [];
+            const landingSizeEl = document.getElementById('quick-pick-shirt-size');
+            const gridSizeEl = document.getElementById('qp-grid-shirt-size');
+            setAllowedSizeOptions(landingSizeEl, allowedSizes);
+            setAllowedSizeOptions(gridSizeEl, allowedSizes);
+            const landingPlaceholder = landingSizeEl?.querySelector('option[value=""]');
+            if (landingPlaceholder && !landingPlaceholder.textContent.trim()) {
+                landingPlaceholder.textContent = '-- Pick a size --';
+            }
+            const gridPlaceholder = gridSizeEl?.querySelector('option[value=""]');
+            if (gridPlaceholder && !gridPlaceholder.textContent.trim()) {
+                gridPlaceholder.textContent = 'Choose a size';
+            }
+            if (landingSizeEl && String(landingSizeEl.value || '').trim() !== String(gridSizeEl?.value || '').trim()) {
+                landingSizeEl.value = String(gridSizeEl?.value || '').trim();
+            }
+            if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
+        }
+
+        function applyCustomBuilderSaleSizeOptions(catalogItem) {
+            const sizeEl = document.getElementById('shirt-size');
+            const allowedSizes = catalogItem?.onSale ? normalizeAllowedSaleSizes(catalogItem?.saleSizes) : [];
+            setAllowedSizeOptions(sizeEl, allowedSizes);
         }
 
         function syncQuickPickLandingSizeOptions() {
@@ -8574,7 +9653,13 @@
             const sourceSizeEl = document.getElementById('shirt-size');
             if (!quickPickSizeEl || !sourceSizeEl) return;
             const priorValue = (quickPickSizeEl.value || '').trim();
-            quickPickSizeEl.innerHTML = sourceSizeEl.innerHTML;
+            if (!quickPickSizeEl.dataset.allOptionsHtml) {
+                quickPickSizeEl.dataset.allOptionsHtml = sourceSizeEl.innerHTML;
+            }
+            if (!sourceSizeEl.dataset.allOptionsHtml) {
+                sourceSizeEl.dataset.allOptionsHtml = sourceSizeEl.innerHTML;
+            }
+            quickPickSizeEl.innerHTML = quickPickSizeEl.dataset.allOptionsHtml;
             const firstOption = quickPickSizeEl.querySelector('option[value=""]');
             if (firstOption) {
                 firstOption.disabled = false;
@@ -8589,6 +9674,7 @@
             const builderSizeEl = document.getElementById('qp-grid-shirt-size');
             if (!builderSizeEl) return;
             builderSizeEl.value = selectedSize;
+            applyLiveInventoryToColorSwatches();
             if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
         }
 
@@ -8665,9 +9751,11 @@
             updateQuickPickGridPriceDisplay();
         }
 
-        function resetQuickPickGridPrintSizeToDefault() {
-            quickPickGridPrintWidthIn = 7.5;
-            quickPickGridPrintHeightIn = 7.5;
+        function resetQuickPickGridPrintSizeToDefault(sizeOverride) {
+            const selectedSize = String(sizeOverride || document.getElementById('qp-grid-shirt-size')?.value || 'Adult M').trim() || 'Adult M';
+            const preset = getPresetPrintSizeInches(selectedSize);
+            quickPickGridPrintWidthIn = normalizeQuickPickGridInches(preset.width);
+            quickPickGridPrintHeightIn = normalizeQuickPickGridInches(preset.height);
             syncQuickPickGridSizeInputs();
             applyQuickPickGridPrintBox();
         }
@@ -8677,9 +9765,22 @@
             setQuickPickGridPrintSize(axis, current + (Number(delta) || 0));
         }
 
-        function setQuickPickGridColor(color) {
+        function setQuickPickGridColor(color, el) {
+            const selectedSize = (document.getElementById('qp-grid-shirt-size')?.value || '').trim();
+            const swatchColorName = String(el?.getAttribute?.('title') || document.querySelector('#qp-grid-color-swatches .color-swatch[data-color="' + color + '"]')?.getAttribute('title') || '').trim();
+            if (!ensureInventoryAvailableForSelection(selectedSize, swatchColorName)) {
+                return;
+            }
             activeQuickPickGridColor = color || '#ffffff';
             quickPickGridColorPicked = true;
+            document.querySelectorAll('#qp-grid-color-swatches .color-swatch').forEach(function(swatch) {
+                swatch.classList.remove('active');
+            });
+            if (el) {
+                el.classList.add('active');
+            } else {
+                document.querySelector('#qp-grid-color-swatches .color-swatch[data-color="' + activeQuickPickGridColor + '"]')?.classList.add('active');
+            }
             renderQuickPickGridCanvasWithColor(activeQuickPickGridColor);
             updateQuickPickGridPriceDisplay();
         }
@@ -8715,8 +9816,7 @@
             const hasPrint = printEl && printEl.dataset.hasImage === '1';
             const shirtCharge = quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0;
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
-            const laborCharge = hasPrint ? LABOR_COST_PER_SHIRT : 0;
-            return Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
+            return Math.max(0, Math.round((shirtCharge + printCharge) * 100) / 100);
         }
 
         function updateQuickPickGridPriceDisplay() {
@@ -8746,17 +9846,25 @@
             printEl.dataset.hasImage = '';
             printEl.dataset.uploadName = '';
             window._quickPickGridThumb = '';
+            applyQuickPickSaleSizeOptions(null);
             updateQuickPickGridPriceDisplay();
             updateQuickPickGridSizeReadout();
         }
 
-        function loadCatalogDesignIntoQuickPickGrid(src) {
+        function loadCatalogDesignIntoQuickPickGrid(src, options) {
             const printEl = document.getElementById('qp-grid-print');
             const sizeSelect = document.getElementById('qp-grid-shirt-size');
+            const preserveEmptySize = !!options?.preserveEmptySize;
             if (!printEl || !src) return;
+            const catalogItem = findCatalogItemBySrc(src);
 
-            if (sizeSelect && !String(sizeSelect.value || '').trim()) {
-                sizeSelect.value = 'Adult M';
+            applyQuickPickSaleSizeOptions(catalogItem);
+
+            if (!preserveEmptySize && sizeSelect && !String(sizeSelect.value || '').trim()) {
+                const preferredSize = Array.from(sizeSelect.options).some(function(option) {
+                    return String(option.value || '').trim() === 'Adult M';
+                }) ? 'Adult M' : String(sizeSelect.querySelector('option[value]:not([value=""])')?.value || '');
+                sizeSelect.value = preferredSize;
                 if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
             }
 
@@ -8779,7 +9887,7 @@
                 printEl.dataset.aspectRatio = String(resolvedWidth / Math.max(resolvedHeight, 1));
                 window._quickPickGridThumb = resolvedSrc;
 
-                resetQuickPickGridPrintSizeToDefault();
+                resetQuickPickGridPrintSizeToDefault(sizeSelect?.value || 'Adult M');
                 updateQuickPickGridVisuals();
                 updateQuickPickGridPriceDisplay();
                 showUploadNotice('Design loaded in the Quick Pick grid preview.');
@@ -8812,15 +9920,27 @@
                 return;
             }
 
-            const activeSwatch = document.querySelector('.color-picker-row:not(.mockup-color-picker) .color-swatch.active');
+            const activeSwatch = document.querySelector('#qp-grid-color-swatches .color-swatch.active');
             const colorName = activeSwatch?.title || 'Selected color';
+            if (!ensureInventoryAvailableForSelection(gridSize, colorName)) {
+                return;
+            }
             const price = getQuickPickGridPrice();
             const preview = window._quickPickGridThumb || '';
             const uploadName = printEl?.dataset?.uploadName || '';
+            const catalogItem = findCatalogItemBySrc(uploadName);
+            const catalogOriginalPrice = catalogItem ? getCatalogOriginalPriceForSize(catalogItem, gridSize) : price;
+            const catalogSalePrice = catalogItem ? getCatalogCartItemPrice(catalogItem, gridSize) : price;
+            const catalogIsOnSale = !!(catalogItem && catalogItem.onSale && String(catalogItem.saleOfferType || '').trim());
+            const linePrice = catalogItem
+                ? (catalogIsOnSale
+                    ? (String(catalogItem.saleOfferType || '') === 'bundle' ? catalogOriginalPrice : catalogSalePrice)
+                    : price)
+                : price;
 
             cart.push({
-                name: 'Quick Pick Grid T-Shirt (Size: ' + gridSize + ')',
-                price,
+                name: (catalogItem?.name || 'Quick Pick Grid T-Shirt') + ' (Size: ' + gridSize + ')',
+                price: linePrice,
                 type: 'quick-pick-grid',
                 shirtSize: gridSize,
                 printLocation: 'Front',
@@ -8829,15 +9949,29 @@
                 basePriceHidden: 0,
                 laborIncluded: true,
                 designType: 'catalog',
-                designName: 'Quick Pick loaded design',
+                designName: catalogItem?.name || 'Quick Pick loaded design',
                 designFrontFile: uploadName,
                 designBackFile: '',
                 designPreview: preview,
+                catalogDesignSrc: catalogItem?.src || uploadName,
+                saleOfferType: catalogIsOnSale ? (catalogItem?.saleOfferType || '') : '',
+                saleOfferGroupId: catalogIsOnSale ? (catalogItem?.saleOfferGroupId || '') : '',
+                salePrice: catalogIsOnSale
+                    ? (String(catalogItem?.saleOfferType || '') === 'bundle' ? 0 : Number(catalogSalePrice || 0))
+                    : 0,
+                salePercent: catalogIsOnSale ? Number(catalogItem?.salePercent || 0) : 0,
+                bundleQuantity: catalogIsOnSale ? Number(catalogItem?.bundleQuantity || 0) : 0,
+                bundlePrice: catalogIsOnSale ? Number(catalogItem?.bundlePrice || 0) : 0,
+                saleSizes: catalogIsOnSale && Array.isArray(catalogItem?.saleSizes) ? catalogItem.saleSizes.slice() : [],
+                originalPrice: Number((catalogIsOnSale ? catalogOriginalPrice : linePrice) || 0),
+                saleEndsAt: catalogIsOnSale ? (catalogItem?.saleEndsAt || '') : '',
             });
             cartThumbs.push(preview);
             try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
             updateCart();
             clearQuickPickGridDesign();
+            const nextPage = quickPickGridSourcePage === 'on-sale' ? 'on-sale' : 'quick-picks';
+            scrollToPageSection(nextPage, nextPage === 'on-sale' ? '#on-sale-gallery-wrap' : '#quick-pick-colors-section');
         }
 
         (function initQuickPickGrid() {
@@ -8961,6 +10095,7 @@
                 }
                 return;
             }
+            quickPickGridSourcePage = 'quick-picks';
             loadCatalogDesignIntoQuickPickGrid(item.assetSrc || item.src);
             scrollToPageSection('quick-pick-builder', '#quick-pick-grid-section');
 
@@ -9182,9 +10317,28 @@
             throw new Error('Design catalog request failed');
         }
 
+        async function loadTrendingSalesPayload(limit, days) {
+            await discoverWorkingApiBase();
+            const safeLimit = Math.min(24, Math.max(1, Math.round(Number(limit || 8)) || 8));
+            const safeDays = Math.min(365, Math.max(1, Math.round(Number(days || 90)) || 90));
+            const endpoint = '/api/trending-sales?limit=' + safeLimit + '&days=' + safeDays;
+            const candidates = getApiBaseCandidates(endpoint);
+            for (const candidate of candidates) {
+                try {
+                    const response = await fetch(candidate.url, { cache: 'no-store' });
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    rememberApiBase(candidate.base);
+                    return payload;
+                } catch (e) {}
+            }
+            throw new Error('Trending sales request failed');
+        }
+
         const CUSTOMER_AUTH_ENDPOINT = API_BASE + '/api/customers';
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
         const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
+        const INVENTORY_STATUS_ENDPOINT = API_BASE + '/api/inventory-status';
         const STORE_PAGES = ['home', 'menu', 'quick-picks', 'on-sale', 'custom-builder', 'quick-pick-builder', 'company-builder', 'cart'];
         const MENU_PAGE_TARGETS = {
             home: '#home-page',
@@ -9200,14 +10354,377 @@
         const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
         const ADMIN_INVENTORY_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/inventory';
         const CUSTOMER_GUIDE_STORAGE_KEY = 'fwCustomerGuideSeen';
+        const LOGIN_SALE_POPUP_STORAGE_KEY = 'fwLoginSalePopupSeen';
         let customerSession = null;
         let adminSession = null;
         let adminDashboardState = { inventory: [], inventorySummary: {}, sales: {} };
         let currentStorePage = 'home';
+        let storePageHistory = [];
+        let suppressStoreHistoryPush = false;
         let authMode = 'login';
         let guestStoreAccess = false;
         let customerGuideActive = false;
         let customerGuideStepIndex = 0;
+        let loginSalePopupOpen = false;
+        let loginSalePopupShownThisLoad = false;
+        let rewardsInfoPopupOpen = false;
+        let rewardsInfoPopupShownThisLoad = false;
+        let liveInventoryStatus = { updatedAt: '', colors: [] };
+        let liveInventoryPollTimer = null;
+        let autoThemeRefreshTimer = null;
+        let trendingSalesItems = [];
+
+        const AUTO_THEME_PROFILES = {
+            winter: {
+                glow1: 'rgba(164, 220, 255, 0.2)',
+                glow2: 'rgba(198, 180, 255, 0.16)',
+                glow3: 'rgba(200, 255, 248, 0.12)',
+                bgStart: '#10203c',
+                bgMid: '#1a2d52',
+                bgEnd: '#0e3b62',
+                surfaceA: 'rgba(14, 34, 70, 0.92)',
+                surfaceB: 'rgba(20, 52, 93, 0.86)',
+                activeA: 'rgba(96, 178, 255, 0.58)',
+                activeB: 'rgba(123, 115, 255, 0.5)',
+                saleA: 'rgba(173, 247, 255, 0.94)',
+                saleB: 'rgba(138, 221, 255, 0.9)',
+                saleText: '#06345d',
+                guideA: 'rgba(222, 245, 255, 0.96)',
+                guideB: 'rgba(183, 221, 255, 0.96)',
+                guideText: '#11395f',
+                backA: 'rgba(236, 250, 255, 0.98)',
+                backB: 'rgba(201, 234, 255, 0.96)',
+                backText: '#16385a',
+                homeBorder: '#4f86bd',
+                homeSurface: '#123861'
+            },
+            spring: {
+                glow1: 'rgba(143, 255, 189, 0.2)',
+                glow2: 'rgba(255, 157, 221, 0.16)',
+                glow3: 'rgba(192, 255, 219, 0.12)',
+                bgStart: '#16382d',
+                bgMid: '#204d42',
+                bgEnd: '#2b6d61',
+                surfaceA: 'rgba(20, 62, 50, 0.92)',
+                surfaceB: 'rgba(35, 90, 75, 0.86)',
+                activeA: 'rgba(119, 223, 163, 0.58)',
+                activeB: 'rgba(104, 183, 224, 0.48)',
+                saleA: 'rgba(251, 255, 174, 0.95)',
+                saleB: 'rgba(170, 243, 139, 0.9)',
+                saleText: '#244700',
+                guideA: 'rgba(232, 255, 245, 0.96)',
+                guideB: 'rgba(188, 247, 219, 0.95)',
+                guideText: '#0f4b35',
+                backA: 'rgba(247, 255, 219, 0.98)',
+                backB: 'rgba(212, 247, 161, 0.96)',
+                backText: '#365500',
+                homeBorder: '#5aa980',
+                homeSurface: '#1d4b3d'
+            },
+            summer: {
+                glow1: 'rgba(90, 221, 255, 0.22)',
+                glow2: 'rgba(255, 170, 120, 0.16)',
+                glow3: 'rgba(255, 238, 150, 0.12)',
+                bgStart: '#0f2d4a',
+                bgMid: '#11476a',
+                bgEnd: '#1a6996',
+                surfaceA: 'rgba(13, 47, 79, 0.92)',
+                surfaceB: 'rgba(22, 87, 130, 0.86)',
+                activeA: 'rgba(76, 191, 255, 0.58)',
+                activeB: 'rgba(255, 170, 78, 0.48)',
+                saleA: 'rgba(255, 235, 118, 0.95)',
+                saleB: 'rgba(255, 169, 87, 0.92)',
+                saleText: '#4a2a00',
+                guideA: 'rgba(232, 247, 255, 0.96)',
+                guideB: 'rgba(165, 226, 255, 0.96)',
+                guideText: '#0d4469',
+                backA: 'rgba(255, 242, 201, 0.98)',
+                backB: 'rgba(255, 205, 135, 0.95)',
+                backText: '#5a3500',
+                homeBorder: '#5ea4c9',
+                homeSurface: '#144a70'
+            },
+            fall: {
+                glow1: 'rgba(255, 170, 105, 0.21)',
+                glow2: 'rgba(255, 119, 125, 0.16)',
+                glow3: 'rgba(255, 211, 125, 0.11)',
+                bgStart: '#2a1c19',
+                bgMid: '#4a2b24',
+                bgEnd: '#6a3f2d',
+                surfaceA: 'rgba(68, 40, 30, 0.92)',
+                surfaceB: 'rgba(96, 57, 42, 0.86)',
+                activeA: 'rgba(255, 152, 81, 0.56)',
+                activeB: 'rgba(211, 102, 49, 0.5)',
+                saleA: 'rgba(255, 220, 131, 0.95)',
+                saleB: 'rgba(255, 153, 84, 0.92)',
+                saleText: '#5a2600',
+                guideA: 'rgba(255, 239, 216, 0.97)',
+                guideB: 'rgba(255, 196, 153, 0.95)',
+                guideText: '#64361b',
+                backA: 'rgba(255, 242, 200, 0.98)',
+                backB: 'rgba(255, 199, 133, 0.96)',
+                backText: '#613500',
+                homeBorder: '#b06a47',
+                homeSurface: '#4b2c24'
+            },
+            halloween: {
+                glow1: 'rgba(255, 143, 67, 0.25)',
+                glow2: 'rgba(162, 72, 255, 0.2)',
+                glow3: 'rgba(255, 201, 83, 0.12)',
+                bgStart: '#1c1024',
+                bgMid: '#2a1540',
+                bgEnd: '#3b1f5e',
+                surfaceA: 'rgba(45, 19, 62, 0.92)',
+                surfaceB: 'rgba(66, 24, 89, 0.86)',
+                activeA: 'rgba(255, 146, 64, 0.6)',
+                activeB: 'rgba(171, 92, 255, 0.52)',
+                saleA: 'rgba(255, 191, 90, 0.95)',
+                saleB: 'rgba(255, 120, 54, 0.92)',
+                saleText: '#562400',
+                guideA: 'rgba(255, 235, 208, 0.96)',
+                guideB: 'rgba(255, 180, 120, 0.94)',
+                guideText: '#5a2a00',
+                backA: 'rgba(241, 227, 255, 0.97)',
+                backB: 'rgba(203, 173, 255, 0.95)',
+                backText: '#3a2161',
+                homeBorder: '#9c67d3',
+                homeSurface: '#312046'
+            },
+            thanksgiving: {
+                glow1: 'rgba(255, 172, 119, 0.22)',
+                glow2: 'rgba(255, 210, 128, 0.15)',
+                glow3: 'rgba(203, 255, 174, 0.1)',
+                bgStart: '#2b2217',
+                bgMid: '#4b3823',
+                bgEnd: '#6b4e2f',
+                surfaceA: 'rgba(64, 45, 27, 0.92)',
+                surfaceB: 'rgba(98, 69, 39, 0.86)',
+                activeA: 'rgba(220, 151, 83, 0.56)',
+                activeB: 'rgba(177, 128, 53, 0.5)',
+                saleA: 'rgba(255, 220, 141, 0.95)',
+                saleB: 'rgba(222, 158, 94, 0.92)',
+                saleText: '#4f2d0f',
+                guideA: 'rgba(255, 241, 214, 0.97)',
+                guideB: 'rgba(238, 201, 142, 0.95)',
+                guideText: '#5a3a1a',
+                backA: 'rgba(255, 243, 196, 0.98)',
+                backB: 'rgba(238, 198, 125, 0.95)',
+                backText: '#5d3a11',
+                homeBorder: '#a97a49',
+                homeSurface: '#4c3825'
+            },
+            winterHolidays: {
+                glow1: 'rgba(114, 217, 255, 0.2)',
+                glow2: 'rgba(255, 104, 129, 0.18)',
+                glow3: 'rgba(140, 255, 196, 0.12)',
+                bgStart: '#102331',
+                bgMid: '#16344f',
+                bgEnd: '#1f5a63',
+                surfaceA: 'rgba(14, 46, 56, 0.92)',
+                surfaceB: 'rgba(26, 82, 90, 0.86)',
+                activeA: 'rgba(87, 200, 255, 0.58)',
+                activeB: 'rgba(255, 109, 130, 0.5)',
+                saleA: 'rgba(255, 216, 124, 0.96)',
+                saleB: 'rgba(255, 129, 99, 0.93)',
+                saleText: '#612300',
+                guideA: 'rgba(225, 253, 242, 0.97)',
+                guideB: 'rgba(184, 243, 219, 0.95)',
+                guideText: '#14523f',
+                backA: 'rgba(255, 240, 210, 0.98)',
+                backB: 'rgba(255, 195, 150, 0.95)',
+                backText: '#5b2c17',
+                homeBorder: '#4ca38f',
+                homeSurface: '#1d4d4a'
+            },
+            valentine: {
+                glow1: 'rgba(255, 136, 184, 0.22)',
+                glow2: 'rgba(255, 102, 136, 0.18)',
+                glow3: 'rgba(255, 214, 225, 0.12)',
+                bgStart: '#3a1a2c',
+                bgMid: '#5a2545',
+                bgEnd: '#783059',
+                surfaceA: 'rgba(86, 28, 64, 0.92)',
+                surfaceB: 'rgba(113, 41, 83, 0.86)',
+                activeA: 'rgba(255, 132, 172, 0.58)',
+                activeB: 'rgba(255, 184, 121, 0.46)',
+                saleA: 'rgba(255, 225, 145, 0.95)',
+                saleB: 'rgba(255, 145, 157, 0.91)',
+                saleText: '#63222b',
+                guideA: 'rgba(255, 238, 246, 0.97)',
+                guideB: 'rgba(255, 194, 221, 0.95)',
+                guideText: '#662249',
+                backA: 'rgba(255, 236, 214, 0.98)',
+                backB: 'rgba(255, 198, 186, 0.95)',
+                backText: '#5e2820',
+                homeBorder: '#b65c86',
+                homeSurface: '#5f2a48'
+            }
+        };
+
+        function getAutoThemeKey(dateObj) {
+            const now = dateObj instanceof Date ? dateObj : new Date();
+            const month = now.getMonth() + 1;
+            const day = now.getDate();
+
+            if ((month === 12 && day >= 1) || (month === 1 && day <= 6)) return 'winterHolidays';
+            if (month === 2 && day >= 10 && day <= 16) return 'valentine';
+            if (month === 10 && day >= 15) return 'halloween';
+            if (month === 11 && day >= 20) return 'thanksgiving';
+            if (month >= 3 && month <= 5) return 'spring';
+            if (month >= 6 && month <= 8) return 'summer';
+            if (month === 9 || (month === 10 && day < 15) || (month === 11 && day < 20)) return 'fall';
+            return 'winter';
+        }
+
+        function applyAutoTheme(themeKey) {
+            const profile = AUTO_THEME_PROFILES[themeKey] || AUTO_THEME_PROFILES.winter;
+            const rootStyle = document.documentElement.style;
+            rootStyle.setProperty('--theme-glow-1', profile.glow1);
+            rootStyle.setProperty('--theme-glow-2', profile.glow2);
+            rootStyle.setProperty('--theme-glow-3', profile.glow3);
+            rootStyle.setProperty('--theme-bg-start', profile.bgStart);
+            rootStyle.setProperty('--theme-bg-mid', profile.bgMid);
+            rootStyle.setProperty('--theme-bg-end', profile.bgEnd);
+            rootStyle.setProperty('--theme-surface-a', profile.surfaceA);
+            rootStyle.setProperty('--theme-surface-b', profile.surfaceB);
+            rootStyle.setProperty('--theme-menu-active-a', profile.activeA);
+            rootStyle.setProperty('--theme-menu-active-b', profile.activeB);
+            rootStyle.setProperty('--theme-sale-a', profile.saleA);
+            rootStyle.setProperty('--theme-sale-b', profile.saleB);
+            rootStyle.setProperty('--theme-sale-text', profile.saleText);
+            rootStyle.setProperty('--theme-sale-hover-a', profile.saleA);
+            rootStyle.setProperty('--theme-sale-hover-b', profile.saleB);
+            rootStyle.setProperty('--theme-sale-active-a', profile.saleA);
+            rootStyle.setProperty('--theme-sale-active-b', profile.saleB);
+            rootStyle.setProperty('--theme-guide-btn-a', profile.guideA);
+            rootStyle.setProperty('--theme-guide-btn-b', profile.guideB);
+            rootStyle.setProperty('--theme-guide-btn-text', profile.guideText);
+            rootStyle.setProperty('--theme-back-btn-a', profile.backA);
+            rootStyle.setProperty('--theme-back-btn-b', profile.backB);
+            rootStyle.setProperty('--theme-back-btn-text', profile.backText);
+            rootStyle.setProperty('--theme-home-border', profile.homeBorder);
+            rootStyle.setProperty('--theme-home-surface', profile.homeSurface);
+            document.body.setAttribute('data-auto-theme', themeKey);
+        }
+
+        function initAutoThemeSystem() {
+            const applyCurrentTheme = function() {
+                applyAutoTheme(getAutoThemeKey(new Date()));
+            };
+            applyCurrentTheme();
+            if (autoThemeRefreshTimer) {
+                clearInterval(autoThemeRefreshTimer);
+            }
+            autoThemeRefreshTimer = window.setInterval(applyCurrentTheme, 60 * 60 * 1000);
+        }
+
+        function normalizeInventorySizeValue(size) {
+            const normalized = String(size || '').trim();
+            if (!normalized) return '';
+            if (normalized.toUpperCase() === '2XL') return '2X';
+            if (normalized.toUpperCase() === '3XL') return '3X';
+            return normalized;
+        }
+
+        function normalizeInventoryColorValue(colorName) {
+            return String(colorName || '').trim().toLowerCase();
+        }
+
+        function getInventoryColorRule(colorName) {
+            const colorKey = normalizeInventoryColorValue(colorName);
+            if (!colorKey) return null;
+            const colors = Array.isArray(liveInventoryStatus?.colors) ? liveInventoryStatus.colors : [];
+            return colors.find(function(entry) {
+                return normalizeInventoryColorValue(entry?.color) === colorKey;
+            }) || null;
+        }
+
+        function isColorSizeOutOfStock(colorName, size) {
+            const normalizedSize = normalizeInventorySizeValue(size);
+            if (!colorName || !normalizedSize) return false;
+            const rule = getInventoryColorRule(colorName);
+            if (!rule) return false;
+            if (rule.outOfStock === true) return true;
+            const outSizes = Array.isArray(rule.outOfStockSizes)
+                ? rule.outOfStockSizes.map(normalizeInventorySizeValue)
+                : [];
+            return outSizes.includes(normalizedSize);
+        }
+
+        function getContextSizeForSwatch(swatch) {
+            if (!swatch) return '';
+            const inQuickPickGrid = !!swatch.closest('#quick-pick-grid-section');
+            if (inQuickPickGrid) return (document.getElementById('qp-grid-shirt-size')?.value || '').trim();
+            const inQuickPickLanding = !!swatch.closest('#quick-pick-colors-section');
+            if (inQuickPickLanding) return (document.getElementById('quick-pick-shirt-size')?.value || '').trim();
+            const inMockup = !!swatch.closest('#mockup-section');
+            if (inMockup) return (document.getElementById('mockup-shirt-size')?.value || '').trim();
+            return (document.getElementById('shirt-size')?.value || '').trim();
+        }
+
+        function applyLiveInventoryToColorSwatches() {
+            document.querySelectorAll('.color-swatch[data-color][title]').forEach(function(swatch) {
+                const titleText = String(swatch.getAttribute('title') || '').trim();
+                const size = getContextSizeForSwatch(swatch);
+                if (!swatch.dataset.baseTitle) {
+                    swatch.dataset.baseTitle = titleText.replace(/\s+\(Out of stock for selected size\)$/i, '').trim();
+                }
+                const colorName = String(swatch.dataset.baseTitle || titleText).trim();
+                const outOfStock = isColorSizeOutOfStock(colorName, size);
+                if (outOfStock) {
+                    swatch.style.opacity = '0.35';
+                    swatch.style.filter = 'grayscale(0.85)';
+                    swatch.style.pointerEvents = 'none';
+                    swatch.setAttribute('aria-disabled', 'true');
+                    swatch.title = swatch.dataset.baseTitle + ' (Out of stock for selected size)';
+                } else {
+                    swatch.style.opacity = '';
+                    swatch.style.filter = '';
+                    swatch.style.pointerEvents = '';
+                    swatch.removeAttribute('aria-disabled');
+                    swatch.title = swatch.dataset.baseTitle;
+                }
+            });
+        }
+
+        function ensureInventoryAvailableForSelection(size, colorName) {
+            if (!size || !colorName) return true;
+            if (!isColorSizeOutOfStock(colorName, size)) return true;
+            alert(colorName + ' is currently out of stock for ' + size + '. Please choose another color or size.');
+            return false;
+        }
+
+        async function loadInventoryStatusPayload() {
+            await discoverWorkingApiBase();
+            const candidates = getApiBaseCandidates('/api/inventory-status');
+            for (const candidate of candidates) {
+                try {
+                    const response = await fetch(candidate.url, { cache: 'no-store' });
+                    if (!response.ok) continue;
+                    const payload = await response.json();
+                    rememberApiBase(candidate.base);
+                    return payload;
+                } catch (e) {}
+            }
+            throw new Error('Inventory status request failed');
+        }
+
+        async function refreshLiveInventoryStatus() {
+            try {
+                const payload = await loadInventoryStatusPayload();
+                liveInventoryStatus = {
+                    updatedAt: String(payload?.updatedAt || ''),
+                    colors: Array.isArray(payload?.colors) ? payload.colors : [],
+                };
+                applyLiveInventoryToColorSwatches();
+            } catch (e) {}
+        }
+
+        function startLiveInventoryPolling() {
+            if (liveInventoryPollTimer) return;
+            refreshLiveInventoryStatus();
+            liveInventoryPollTimer = window.setInterval(refreshLiveInventoryStatus, 5000);
+        }
 
         function syncMobileBuilderPreviewLayout() {
             const builderBody = document.getElementById('builder-body');
@@ -9428,10 +10945,12 @@
 
         function updateModalBodyLock() {
             const stripeOpen = document.getElementById('stripe-modal-overlay')?.classList.contains('open');
+            const loginSaleOpen = document.getElementById('login-sale-popup-overlay')?.classList.contains('open');
+            const rewardsOpen = document.getElementById('rewards-popup-overlay')?.classList.contains('open');
             const authOpen = document.getElementById('auth-modal-overlay')?.classList.contains('open');
             const accountOpen = document.getElementById('account-modal-overlay')?.classList.contains('open');
             const adminOpen = document.getElementById('admin-modal-overlay')?.classList.contains('open');
-            document.body.style.overflow = (stripeOpen || authOpen || accountOpen || adminOpen) ? 'hidden' : '';
+            document.body.style.overflow = (stripeOpen || loginSaleOpen || rewardsOpen || authOpen || accountOpen || adminOpen) ? 'hidden' : '';
         }
 
         function persistCustomerSession(session) {
@@ -9447,6 +10966,9 @@
 
         const LOCAL_CUSTOMER_STORAGE_KEY = 'fwLocalCustomers';
         const LOCAL_CUSTOMER_ORDER_STORAGE_KEY = 'fwLocalCustomerOrders';
+        const LOCAL_REWARDS_POINTS_PER_SHIRT = 1;
+        const LOCAL_REWARDS_POINTS_STEP = 10;
+        const LOCAL_REWARDS_REWARD_STEP_DOLLARS = 5;
 
         function readLocalCustomers() {
             try {
@@ -9470,13 +10992,50 @@
             return stored?.customer ? stored : null;
         }
 
+        function normalizeCustomerRewards(rewards) {
+            const points = Math.max(0, Math.floor(Number(rewards?.points || 0)));
+            const lifetimePoints = Math.max(points, Math.floor(Number(rewards?.lifetimePoints || 0)));
+            const availableCredit = Math.max(0, Number(rewards?.availableCredit || 0));
+            const nextRewardCredit = Math.max(0, Number(rewards?.nextRewardCredit || 5));
+            const pointsToNextReward = Math.max(0, Math.floor(Number(rewards?.pointsToNextReward || 0)));
+            return {
+                points,
+                lifetimePoints,
+                availableCredit,
+                nextRewardCredit,
+                pointsToNextReward,
+            };
+        }
+
+        function formatRewardPoints(value) {
+            return String(Math.max(0, Math.floor(Number(value || 0))).toLocaleString());
+        }
+
+        function renderCustomerRewards(rewards) {
+            const normalized = normalizeCustomerRewards(rewards || {});
+            const pointsEl = document.getElementById('account-rewards-points');
+            const lifetimeEl = document.getElementById('account-rewards-lifetime');
+            const creditEl = document.getElementById('account-rewards-credit');
+            const nextEl = document.getElementById('account-rewards-next');
+            if (pointsEl) pointsEl.textContent = formatRewardPoints(normalized.points);
+            if (lifetimeEl) lifetimeEl.textContent = formatRewardPoints(normalized.lifetimePoints);
+            if (creditEl) creditEl.textContent = formatPriceAmount(normalized.availableCredit);
+            if (nextEl) {
+                nextEl.textContent = normalized.pointsToNextReward <= 0
+                    ? ('Reward ready: ' + formatPriceAmount(normalized.nextRewardCredit))
+                    : (formatRewardPoints(normalized.pointsToNextReward) + ' pts to ' + formatPriceAmount(normalized.nextRewardCredit));
+            }
+        }
+
         function buildLocalCustomerSession(customer) {
+            const rewards = normalizeCustomerRewards(customer?.rewards || {});
             return {
                 token: 'local_' + Date.now() + '_' + Math.random().toString(36).slice(2, 10),
                 customer: {
                     id: customer.id || ('local_' + Date.now()),
                     name: customer.name || '',
                     email: customer.email || '',
+                    rewards,
                 },
                 localOnly: true,
             };
@@ -9490,6 +11049,7 @@
                 name: String(record.name || '').trim(),
                 email,
                 password: String(record.password || ''),
+                rewards: normalizeCustomerRewards(record.rewards || {}),
                 createdAt: record.createdAt || new Date().toISOString(),
             };
             const index = customers.findIndex((item) => String(item.email || '').toLowerCase() === email);
@@ -9525,6 +11085,7 @@
                 const raw = localStorage.getItem(LOCAL_CUSTOMER_ORDER_STORAGE_KEY);
                 const parsed = raw ? JSON.parse(raw) : [];
                 const records = Array.isArray(parsed) ? parsed : [];
+                const pointsEarned = Math.max(0, Math.floor((Array.isArray(order?.items) ? order.items.length : 0) * LOCAL_REWARDS_POINTS_PER_SHIRT));
                 const nextOrder = {
                     id: order?.id || ('ord_' + Date.now()),
                     status: order?.status || 'paid',
@@ -9540,25 +11101,53 @@
                     shipping: order?.shipping || {},
                     items: Array.isArray(order?.items) ? order.items : [],
                     total: Number(order?.total || 0),
+                    rewardPointsEarned: Math.max(pointsEarned, Math.floor(Number(order?.rewardPointsEarned || 0))),
                     createdAt: order?.createdAt || new Date().toISOString(),
                     updatedAt: order?.updatedAt || new Date().toISOString(),
                 };
                 records.unshift(nextOrder);
                 localStorage.setItem(LOCAL_CUSTOMER_ORDER_STORAGE_KEY, JSON.stringify(records));
+
+                const localCustomers = readLocalCustomers();
+                const customerIndex = localCustomers.findIndex((entry) => String(entry?.email || '').trim().toLowerCase() === customerEmail);
+                if (customerIndex >= 0) {
+                    const existing = localCustomers[customerIndex] || {};
+                    const currentRewards = normalizeCustomerRewards(existing.rewards || {});
+                    const nextPoints = currentRewards.points + pointsEarned;
+                    const nextRewards = normalizeCustomerRewards({
+                        points: nextPoints,
+                        lifetimePoints: currentRewards.lifetimePoints + pointsEarned,
+                        availableCredit: Math.floor(nextPoints / LOCAL_REWARDS_POINTS_STEP) * LOCAL_REWARDS_REWARD_STEP_DOLLARS,
+                        pointsToNextReward: (LOCAL_REWARDS_POINTS_STEP - (nextPoints % LOCAL_REWARDS_POINTS_STEP)) % LOCAL_REWARDS_POINTS_STEP,
+                        nextRewardCredit: LOCAL_REWARDS_REWARD_STEP_DOLLARS,
+                    });
+                    localCustomers[customerIndex] = {
+                        ...existing,
+                        rewards: nextRewards,
+                    };
+                    writeLocalCustomers(localCustomers);
+                    if (customerSession?.localOnly && String(customerSession?.customer?.email || '').trim().toLowerCase() === customerEmail) {
+                        persistCustomerSession(buildLocalCustomerSession(localCustomers[customerIndex]));
+                    }
+                    nextOrder.rewardPointsEarned = pointsEarned;
+                }
+
                 return nextOrder.id;
             } catch (e) {
                 return '';
             }
         }
 
-        function enterStoreAsGuest() {
+        function enterStoreAsGuest(targetPageOverride, options) {
+            closeLoginSalePopup();
             persistGuestStoreAccess(true);
             closeAuthModal();
-            const targetPage = shouldUseMobileHomeLanding()
+            const requestedTarget = STORE_PAGES.includes(targetPageOverride) ? targetPageOverride : '';
+            const targetPage = requestedTarget || (shouldUseMobileHomeLanding()
                 ? 'menu'
-                : (getStorePageFromHash() === 'home' ? 'quick-picks' : getStorePageFromHash());
+                : (getStorePageFromHash() === 'home' ? 'quick-picks' : getStorePageFromHash()));
             navigateToPage(targetPage);
-            if (targetPage === 'quick-picks') {
+            if (targetPage === 'quick-picks' && !options?.skipGuide) {
                 maybeStartCustomerGuide();
             }
         }
@@ -9589,11 +11178,16 @@
             const labelEl = document.getElementById('header-account-label');
             const nameEl = document.getElementById('header-account-name');
             const actionBtn = document.getElementById('header-account-action');
+            const inlineActionBtn = document.getElementById('header-account-inline-action');
             const logoutBtn = document.getElementById('header-account-logout');
             const miniLoginBtn = document.getElementById('top-mini-login-btn');
             const customerName = customerSession?.customer?.name || '';
             if (labelEl) labelEl.textContent = 'Account';
             if (nameEl) nameEl.textContent = customerName || 'Guest';
+            if (inlineActionBtn) {
+                inlineActionBtn.textContent = customerSession ? 'My Account' : 'Login';
+                inlineActionBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
+            }
             if (actionBtn) {
                 actionBtn.textContent = customerSession ? 'My Account' : 'Login';
                 actionBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
@@ -9607,6 +11201,7 @@
             const accountEmail = document.getElementById('account-modal-email');
             if (accountName) accountName.textContent = customerName || 'Guest';
             if (accountEmail) accountEmail.textContent = customerSession?.customer?.email || '';
+            renderCustomerRewards(customerSession?.customer?.rewards || {});
             updateStoreAccessUi();
         }
 
@@ -9620,7 +11215,54 @@
                 }
                 link.style.display = hasAccess ? '' : 'none';
             });
+            if (!hasAccess) {
+                storePageHistory = [];
+            }
             updateCustomerGuideUi();
+            updateCustomerBackUi();
+        }
+
+        function updateCustomerBackUi() {
+            const backBtn = document.getElementById('customer-back-trigger');
+            const sideBackBtn = document.getElementById('side-menu-back-btn');
+            const hasAccess = customerHasStoreAccess();
+            const shouldShow = hasAccess && currentStorePage !== 'home';
+            const backLabel = currentStorePage === 'cart' ? 'Back To Shop' : 'Go Back';
+            if (backBtn) {
+                backBtn.hidden = !shouldShow;
+                backBtn.textContent = backLabel;
+            }
+            if (sideBackBtn) {
+                sideBackBtn.hidden = !shouldShow;
+                sideBackBtn.textContent = backLabel;
+            }
+        }
+
+        function goBackStorePage() {
+            if (!customerHasStoreAccess()) {
+                renderStorePage('home', true);
+                return;
+            }
+            if (currentStorePage === 'home') {
+                return;
+            }
+            let previousPage = '';
+            while (storePageHistory.length) {
+                const candidate = storePageHistory.pop();
+                if (candidate && candidate !== currentStorePage) {
+                    previousPage = candidate;
+                    break;
+                }
+            }
+            if (!previousPage) {
+                previousPage = shouldUseMobileHomeLanding() ? 'menu' : 'quick-picks';
+            }
+            suppressStoreHistoryPush = true;
+            try {
+                renderStorePage(previousPage, true);
+            } finally {
+                suppressStoreHistoryPush = false;
+            }
         }
 
         function updateAdminUi() {
@@ -9674,6 +11316,8 @@
         }
 
         function openAuthModal(mode) {
+            closeLoginSalePopup({ suppressRewards: true });
+            closeRewardsInfoPopup();
             if (mode) setAuthMode(mode);
             const overlay = document.getElementById('auth-modal-overlay');
             if (!overlay) return;
@@ -9763,27 +11407,32 @@
             const logoTagline = document.getElementById('site-logo-tagline');
             const headerCartChip = document.getElementById('header-cart-chip');
             const topMiniNav = document.getElementById('top-mini-nav');
+            const miniMenuBtn = document.getElementById('top-mini-menu-btn');
             const sideQuickMenu = document.querySelector('.side-quick-menu');
             const footerEl = document.querySelector('footer');
             const quickPicksLinks = document.querySelectorAll('[data-store-page-link="quick-picks"]');
             const useMobileHomeLanding = shouldUseMobileHomeLanding();
+            const hasCartItems = Array.isArray(cart) && cart.length > 0;
             if (logoWrap) logoWrap.hidden = !isHomePage;
             if (logoTagline) logoTagline.hidden = !isHomePage;
-            if (headerCartChip) headerCartChip.hidden = useMobileHomeLanding;
+            const hideHeaderCartChip = useMobileHomeLanding
+                ? ((isHomePage || page === 'menu') && !hasCartItems)
+                : false;
+            if (headerCartChip) headerCartChip.hidden = hideHeaderCartChip;
             quickPicksLinks.forEach((link) => {
                 link.hidden = isHomePage;
             });
             if (topMiniNav) {
-                const hideTopMiniNav = isHomePage || page === 'menu';
+                const hideTopMiniNav = true;
                 topMiniNav.hidden = hideTopMiniNav;
                 if (hideTopMiniNav) topMiniNav.classList.remove('is-scrolling');
                 if (hideTopMiniNav) {
                     document.body.classList.remove('top-mini-menu-open');
-                    const miniMenuBtn = document.getElementById('top-mini-menu-btn');
                     if (miniMenuBtn) miniMenuBtn.setAttribute('aria-expanded', 'false');
                 }
             }
-            if (sideQuickMenu) sideQuickMenu.hidden = isHomePage && useMobileHomeLanding;
+            if (miniMenuBtn) miniMenuBtn.hidden = false;
+            if (sideQuickMenu) sideQuickMenu.hidden = isHomePage;
             if (footerEl) footerEl.hidden = useMobileHomeLanding || isHomePage;
             if (hideHomeExtras) {
                 document.getElementById('voice-settings-panel')?.classList.remove('open');
@@ -9814,6 +11463,13 @@
         function renderStorePage(page, syncHash) {
             const requestedPage = STORE_PAGES.includes(page) ? page : 'home';
             const nextPage = customerHasStoreAccess() ? requestedPage : 'home';
+            const previousPage = currentStorePage;
+            if (!suppressStoreHistoryPush && previousPage && previousPage !== nextPage) {
+                if (storePageHistory[storePageHistory.length - 1] !== previousPage) {
+                    storePageHistory.push(previousPage);
+                    if (storePageHistory.length > 36) storePageHistory.shift();
+                }
+            }
             currentStorePage = nextPage;
             document.title = nextPage === 'quick-pick-builder' ? 'Quick Pick Builder' : 'Freedom Works';
             document.body.classList.remove(...STORE_PAGES.map((entry) => 'store-page-' + entry));
@@ -9823,6 +11479,7 @@
             });
             updateStorePageLinks(nextPage);
             refreshVisiblePageUi(nextPage);
+            updateCustomerBackUi();
             if (nextPage === 'quick-picks') {
                 requestAnimationFrame(() => setQpCat(qpActiveCat));
             } else if (nextPage === 'on-sale') {
@@ -9870,22 +11527,16 @@
 
         function handleTopMiniNavScrollActivity() {
             const topMiniNav = document.getElementById('top-mini-nav');
-            if (!topMiniNav || topMiniNav.hidden) return;
-            topMiniNav.classList.add('is-scrolling');
+            if (!topMiniNav) return;
+            topMiniNav.classList.remove('is-scrolling');
             if (topMiniNavScrollTimer) {
                 clearTimeout(topMiniNavScrollTimer);
+                topMiniNavScrollTimer = null;
             }
-            topMiniNavScrollTimer = setTimeout(() => {
-                const nav = document.getElementById('top-mini-nav');
-                if (!nav || nav.hidden) return;
-                nav.classList.remove('is-scrolling');
-            }, 180);
         }
 
         function initTopMiniNavAutoHide() {
-            window.addEventListener('scroll', handleTopMiniNavScrollActivity, { passive: true });
-            window.addEventListener('touchmove', handleTopMiniNavScrollActivity, { passive: true });
-            window.addEventListener('wheel', handleTopMiniNavScrollActivity, { passive: true });
+            handleTopMiniNavScrollActivity();
         }
 
         function initTopMiniMenuButton() {
@@ -9968,6 +11619,9 @@
                     + '<div class="account-order-badges">'
                     + '<span class="account-order-badge ' + statusClass + '">' + (order?.status || 'pending') + '</span>'
                     + '<span class="account-order-badge">' + sourceLabel + '</span>'
+                    + (Number(order?.rewardPointsEarned || 0) > 0
+                        ? ('<span class="account-order-badge paid">+' + Math.floor(Number(order.rewardPointsEarned || 0)) + ' pts</span>')
+                        : '')
                     + '<span class="account-order-total">$' + Number(order?.total || 0).toFixed(2) + '</span>'
                     + '</div>'
                     + '</div>'
@@ -10015,6 +11669,18 @@
                     statusEl.classList.remove('success');
                 }
             }
+        }
+
+        async function refreshCustomerProfile() {
+            if (!customerSession?.customer || customerSession?.localOnly || !customerSession?.token) return;
+            try {
+                const resp = await fetch(CUSTOMER_AUTH_ENDPOINT + '/me', {
+                    headers: getCustomerAuthHeaders(),
+                });
+                const data = await resp.json().catch(() => ({}));
+                if (!resp.ok || !data?.customer) return;
+                persistCustomerSession({ token: customerSession.token, customer: data.customer });
+            } catch (_) {}
         }
 
         function renderAdminStats(summary, sales) {
@@ -10194,6 +11860,7 @@
             document.getElementById('account-modal-overlay')?.classList.add('open');
             updateCustomerAccountUi();
             renderCustomerOrders([]);
+            refreshCustomerProfile();
             loadCustomerOrders();
             updateModalBodyLock();
         }
@@ -10305,11 +11972,15 @@
         }
 
         function getCheckoutFulfillmentMethod() {
-            return document.getElementById('fulfillment-pickup')?.checked ? 'pickup' : 'delivery';
+            if (document.getElementById('fulfillment-delivery')?.checked) return 'delivery';
+            if (document.getElementById('fulfillment-pickup')?.checked) return 'pickup';
+            return '';
         }
 
         function toggleCheckoutFulfillmentFields() {
-            const isPickup = getCheckoutFulfillmentMethod() === 'pickup';
+            const method = getCheckoutFulfillmentMethod();
+            const hasSelection = method === 'pickup' || method === 'delivery';
+            const isPickup = method === 'pickup';
             const addressWrap = document.getElementById('checkout-address-fields');
             const nameLabel = document.getElementById('checkout-contact-name-label');
             const emailLabel = document.getElementById('checkout-contact-email-label');
@@ -10320,14 +11991,15 @@
                 'shipping-state',
                 'shipping-postal-code'
             ];
-            if (addressWrap) addressWrap.style.display = isPickup ? 'none' : '';
-            if (nameLabel) nameLabel.textContent = isPickup ? 'Pickup Full Name' : 'Delivery Full Name';
-            if (emailLabel) emailLabel.textContent = isPickup ? 'Pickup Email' : 'Delivery Email';
+            if (addressWrap) addressWrap.style.display = (!hasSelection || isPickup) ? 'none' : '';
+            if (nameLabel) nameLabel.textContent = !hasSelection ? 'Contact Full Name *' : (isPickup ? 'Pickup Full Name *' : 'Delivery Full Name *');
+            if (emailLabel) emailLabel.textContent = !hasSelection ? 'Contact Email *' : (isPickup ? 'Pickup Email *' : 'Delivery Email *');
             addressIds.forEach((id) => {
                 const input = document.getElementById(id);
                 if (!input) return;
-                input.disabled = isPickup;
-                if (isPickup) input.value = '';
+                input.disabled = !hasSelection || isPickup;
+                input.required = hasSelection && !isPickup;
+                if (!hasSelection || isPickup) input.value = '';
             });
             refreshCheckoutSummary();
         }
@@ -10344,24 +12016,25 @@
                 const sizeLabel = itemSize && !/\bsize\s*:/i.test(String(item.name || ''))
                     ? ' (' + itemSize + ')'
                     : '';
+                const lineLabor = item?.laborIncluded ? LABOR_COST_PER_SHIRT : 0;
+                const lineTotal = Math.round((Number(pricingState.lineTotals[index] || 0) + lineLabor) * 100) / 100;
                 let imgHtml = '';
                 if (item.designFront) {
                     imgHtml = `<img src="${escapeHtml(resolveAssetUrl(item.designFront))}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
                 } else if (item.designBack) {
                     imgHtml = `<img src="${escapeHtml(resolveAssetUrl(item.designBack))}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
                 }
-                row.innerHTML = `${imgHtml}<span>${item.name || item.design || 'Custom Tee'}${sizeLabel}</span><span>$${Number(pricingState.lineTotals[index] || 0).toFixed(2)}</span>`;
+                row.innerHTML = `${imgHtml}<span>${item.name || item.design || 'Custom Tee'}${sizeLabel}</span><span>$${lineTotal.toFixed(2)}</span>`;
                 summaryEl.appendChild(row);
             });
-            const laborTotal = getCheckoutLaborTotal();
-            if (laborTotal > 0) {
-                const laborRow = document.createElement('div');
-                laborRow.className = 'summary-row';
-                laborRow.innerHTML = `<span>Labor</span><span>$${laborTotal.toFixed(2)}</span>`;
-                summaryEl.appendChild(laborRow);
-            }
+            const fulfillmentMethod = getCheckoutFulfillmentMethod();
             const shippingTotal = getCheckoutShippingTotal();
-            if (getCheckoutFulfillmentMethod() === 'pickup') {
+            if (!fulfillmentMethod) {
+                const methodRow = document.createElement('div');
+                methodRow.className = 'summary-row';
+                methodRow.innerHTML = '<span>Order Method</span><span>Select Pickup or Delivery</span>';
+                summaryEl.appendChild(methodRow);
+            } else if (fulfillmentMethod === 'pickup') {
                 const pickupRow = document.createElement('div');
                 pickupRow.className = 'summary-row';
                 pickupRow.innerHTML = '<span>Pickup</span><span>Free</span>';
@@ -10398,11 +12071,16 @@
 
         function validateCheckoutShipping(shipping, statusEl) {
             const details = shipping || getCheckoutShippingDetails();
-            const methodLabel = details.fulfillmentMethod === 'pickup' ? 'pickup' : 'delivery';
+            const method = String(details.fulfillmentMethod || '').toLowerCase();
+            if (method !== 'pickup' && method !== 'delivery') {
+                if (statusEl) statusEl.textContent = 'Please choose Pickup or Delivery before checkout.';
+                return false;
+            }
+            const methodLabel = method;
             const missing = [];
             if (!details.fullName) missing.push('full name');
             if (!details.email || !details.email.includes('@')) missing.push('email');
-            if (details.fulfillmentMethod !== 'pickup') {
+            if (method !== 'pickup') {
                 if (!details.addressLine1) missing.push('street address');
                 if (!details.city) missing.push('city');
                 if (!details.state) missing.push('state');
@@ -12815,6 +14493,7 @@
                 price,
                 type: 'standard',
                 shirtSize: selectedSize,
+                laborIncluded: true,
                 ...colorInfo,
                 designPreview: _thumb,
             });
@@ -12992,10 +14671,18 @@
         }
 
         function getPresetPrintSizePx(size) {
-            const bounds = getEffectivePrintBounds(getPrintProfileForSize(size));
+            const profile = getPrintProfileForSize(size);
             return {
-                width: bounds.recommendedW,
-                height: bounds.recommendedH,
+                width: Math.min(MAIN_PRINT_ZONE.width, gridInchesToPx(profile.widthIn || profile.maxWIn || 2)),
+                height: Math.min(MAIN_PRINT_ZONE.height, gridInchesToPx(profile.heightIn || profile.maxHIn || 2)),
+            };
+        }
+
+        function getPresetPrintSizeInches(size) {
+            const profile = getPrintProfileForSize(size);
+            return {
+                width: Number(profile.widthIn || profile.maxWIn || 2),
+                height: Number(profile.heightIn || profile.maxHIn || 2),
             };
         }
 
@@ -13283,6 +14970,12 @@
             enforceBothModeTopLeftAnchor();
         }
 
+        function applyRecommendedCustomPrintSize(size, sideOverride) {
+            const preset = getPresetPrintSizeInches(size);
+            setCustomPrintSize('width', preset.width, sideOverride);
+            setCustomPrintSize('height', preset.height, sideOverride);
+        }
+
         function adjustCustomPrintSize(axis, delta, sideOverride) {
             const current = getCustomPrintSizeInches(axis, sideOverride);
             setCustomPrintSize(axis, current + (Number(delta) || 0), sideOverride);
@@ -13488,6 +15181,7 @@
         function applySizeDrivenPrintProfile(size, resetToRecommended) {
             const profile = getPrintProfileForSize(size);
             const bounds = getEffectivePrintBounds(profile);
+            const preset = getPresetPrintSizePx(size);
             // Track real print inches separately ? used for labels and pricing.
             activeRealMaxWIn = profile.maxWIn || profile.widthIn;
             activeRealMaxHIn = profile.maxHIn || profile.heightIn;
@@ -13499,18 +15193,12 @@
             };
 
             if (LOCK_PRINT_SIZE_TO_PROFILE || resetToRecommended) {
-                // Start custom print controls at 7.5" x 7.5" (clamped per size profile bounds).
-                const defaultInches = 7.5;
-                const zone = getMainDesignZone();
-                const defaultW = Math.max(1, Math.min(zone.width, gridInchesToPx(defaultInches)));
-                const defaultH = Math.max(1, Math.min(zone.height, gridInchesToPx(defaultInches)));
-
-                designWidth = defaultW;
-                designHeight = defaultH;
-                frontDesignWidth = defaultW;
-                frontDesignHeight = defaultH;
-                backDesignWidth = defaultW;
-                backDesignHeight = defaultH;
+                designWidth = preset.width;
+                designHeight = preset.height;
+                frontDesignWidth = preset.width;
+                frontDesignHeight = preset.height;
+                backDesignWidth = preset.width;
+                backDesignHeight = preset.height;
             } else {
                 const zone = getMainDesignZone();
                 const minPx = Math.max(1, gridInchesToPx(0.1));
@@ -13613,13 +15301,8 @@
                 return shirtCharge;
             }
 
-            // New logic: price is sum of all print charges (front, back, pocket), no flat base price
-            let total = getSelectedCustomPrintCharge();
-            total += shirtCharge;
-            if (designCount > 0) {
-                total += designCount * LABOR_COST_PER_SHIRT;
-            }
-            // If you add pocket logic, add its print fee here as well
+            // Subtotal stays as shirt + print; labor is applied once per shirt at checkout.
+            const total = getSelectedCustomPrintCharge() + shirtCharge;
             return Math.max(0, Math.round(total * 100) / 100);
         }
 
@@ -13647,7 +15330,7 @@
             const designCount = getSelectedCustomDesignCount();
             const printCharge = getSelectedCustomPrintCharge();
             const shirtCharge = shirtColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const laborCharge = designCount * LABOR_COST_PER_SHIRT;
+            const laborCharge = designCount > 0 ? LABOR_COST_PER_SHIRT : 0;
             const fullPrice = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
             const displayText = `Total: $${fullPrice.toFixed(2)}`;
             const customTotal = document.getElementById('custom-live-total');
@@ -13666,8 +15349,7 @@
             const selectedSize = sizeSelect ? sizeSelect.value : 'Adult M';
             applySizeDrivenPrintProfile(selectedSize, !!resetPrintSize);
             if (resetPrintSize) {
-                setCustomPrintSize('width', 7.5);
-                setCustomPrintSize('height', 7.5);
+                applyRecommendedCustomPrintSize(selectedSize);
             }
             syncSizeControlsVisibility();
             // Re-fit image to zone if needed
@@ -13679,6 +15361,7 @@
             // Scale mockup canvases for selected size
             scaleMockupCanvasesForSize();
 
+            applyLiveInventoryToColorSwatches();
             updateCustomPriceDisplay();
         }
 
@@ -14033,6 +15716,10 @@
                 alert('Please choose a T-shirt size first.');
                 return;
             }
+            const swatchColorName = String(el?.getAttribute?.('title') || document.querySelector('.mockup-color-picker .color-swatch[data-color="' + color + '"]')?.getAttribute('title') || '').trim();
+            if (!ensureInventoryAvailableForSelection(selectedSize, swatchColorName)) {
+                return;
+            }
             activeMockupColor = color;
             mockupColorPicked = true;
             renderMockupCanvasWithColor(color);
@@ -14062,6 +15749,11 @@
         }
 
         function handleMockupSizeChange() {
+            const selectedSize = document.getElementById('mockup-shirt-size')?.value || '';
+            if (selectedSize) {
+                applyRecommendedMockupPrintSizes(selectedSize);
+            }
+            applyLiveInventoryToColorSwatches();
             updateMockupSizeGate();
             if (hasSelectedMockupSize() && typeof renderFrontBackMockups === 'function') {
                 renderFrontBackMockups();
@@ -14367,6 +16059,10 @@
                 alert('Please choose a T-shirt size first.');
                 return;
             }
+            const swatchColorName = String(el?.getAttribute?.('title') || document.querySelector('.color-picker-row:not(.mockup-color-picker) .color-swatch[data-color="' + color + '"]')?.getAttribute('title') || '').trim();
+            if (!ensureInventoryAvailableForSelection(selectedSize, swatchColorName)) {
+                return;
+            }
             activeShirtColor = color;
             shirtColorPicked = true;
             setQuickPickGridColor(color);
@@ -14405,11 +16101,56 @@
             };
         }
 
+        function isPngUploadFile(file) {
+            if (!file) return false;
+            const name = String(file.name || '').toLowerCase();
+            const mime = String(file.type || '').toLowerCase();
+            return mime === 'image/png' || /\.png$/i.test(name);
+        }
+
+        function getLowResolutionUploadWarning(width, height) {
+            const safeWidth = Number(width || 0);
+            const safeHeight = Number(height || 0);
+            if (!safeWidth || !safeHeight) return '';
+            const minSide = Math.min(safeWidth, safeHeight);
+            const pixelCount = safeWidth * safeHeight;
+            if (minSide < 1200 || pixelCount < 1800000) {
+                return 'Low-resolution warning: this image may print blurry. Use a higher-resolution PNG (recommended 1500x1500px or higher).';
+            }
+            return '';
+        }
+
+        function getPngRecommendationWarning(file) {
+            if (!file) return '';
+            return isPngUploadFile(file)
+                ? ''
+                : 'PNG is recommended for cleaner edges and better print quality. You can still continue with this image.';
+        }
+
+        function setUploadWarningMessage(targetSide, message, options) {
+            const side = String(targetSide || 'front').toLowerCase();
+            const context = options && options.context === 'mockup' ? 'mockup' : 'design';
+            let warningId = '';
+            if (context === 'design') {
+                warningId = side === 'back' ? 'design-upload-warning-back' : 'design-upload-warning-front';
+            } else {
+                warningId = side === 'back' ? 'mockup-upload-warning-back' : 'mockup-upload-warning-pocket';
+            }
+            const warningEl = document.getElementById(warningId);
+            if (!warningEl) return;
+            const text = String(message || '').trim();
+            warningEl.textContent = text;
+            warningEl.style.display = text ? 'block' : 'none';
+            if (options && options.isError) warningEl.classList.add('is-error');
+            else warningEl.classList.remove('is-error');
+        }
+
         function previewDesign(side) {
             const targetSide = side === 'back' ? 'back' : 'front';
             const inputId = targetSide === 'back' ? 'design-upload-back' : 'design-upload-front';
             const overlayId = targetSide === 'back' ? 'design-overlay-back' : 'design-overlay';
             const input = document.getElementById(inputId);
+            setUploadWarningMessage(targetSide, '', { context: 'design' });
             const selectedSize = document.getElementById('shirt-size')?.value || '';
             if (!selectedSize) {
                 alert('Please choose a T-shirt size first.');
@@ -14423,6 +16164,11 @@
             }
             const file = input?.files?.[0];
             if (file) {
+                const pngRecommendation = getPngRecommendationWarning(file);
+                if (pngRecommendation) {
+                    setUploadWarningMessage(targetSide, pngRecommendation, { context: 'design', isError: false });
+                    showUploadNotice(pngRecommendation);
+                }
                 const reader = new FileReader();
                 reader.onload = function(e) {
                     const targetOverlay = document.getElementById(overlayId);
@@ -14439,11 +16185,13 @@
                         targetOverlay.dataset.aspectRatio = String(aspectRatio);
                         targetOverlay.dataset.hasImage = '1';
                         targetOverlay.src = resolvedSrc;
+                        const resolutionWarning = getLowResolutionUploadWarning(resolvedWidth, resolvedHeight);
+                        const combinedWarning = [pngRecommendation, resolutionWarning].filter(Boolean).join(' ');
+                        setUploadWarningMessage(targetSide, combinedWarning, { context: 'design', isError: false });
 
                         const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
                         applySizeDrivenPrintProfile(selectedSize, false);
-                        setCustomPrintSize('width', 7.5, targetSide);
-                        setCustomPrintSize('height', 7.5, targetSide);
+                        applyRecommendedCustomPrintSize(selectedSize, targetSide);
 
                         if (targetSide === 'front') {
                             activeCatalogDesignMeta = null;
@@ -14460,18 +16208,19 @@
                         scaleMockupCanvasesForSize();
                         updatePrintLocationPreview();
                         updateCustomPriceDisplay();
-                        showUploadNotice(targetSide === 'front'
+                        const baseMessage = targetSide === 'front'
                             ? 'Front design uploaded to the shirt.'
-                            : 'Back design uploaded to the shirt.');
+                            : 'Back design uploaded to the shirt.';
+                        showUploadNotice(combinedWarning ? (baseMessage + ' ' + combinedWarning) : baseMessage);
                     };
                     imageProbe.onerror = function() {
                         targetOverlay.dataset.aspectRatio = '1';
                         targetOverlay.dataset.hasImage = '1';
                         targetOverlay.src = e.target.result;
+                        setUploadWarningMessage(targetSide, '', { context: 'design', isError: false });
                         const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
                         applySizeDrivenPrintProfile(selectedSize, false);
-                        setCustomPrintSize('width', 7.5, targetSide);
-                        setCustomPrintSize('height', 7.5, targetSide);
+                        applyRecommendedCustomPrintSize(selectedSize, targetSide);
                         if (targetSide === 'front') {
                             activeCatalogDesignMeta = null;
                             frontDesignUploaded = true;
@@ -14701,11 +16450,51 @@
         const MOCKUP_PX_PER_INCH_DESKTOP = 24;
         const MOCKUP_PX_PER_INCH_MOBILE = 20;
         const MOCKUP_POCKET_PRINT_INCHES = 2.5;
+        const MOCKUP_BACK_PRINT_PROFILE = {
+            'Newborn': { widthIn: 4.5, heightIn: 5.0 },
+            '6M': { widthIn: 4.5, heightIn: 5.5 },
+            '9M': { widthIn: 4.75, heightIn: 5.75 },
+            '12M': { widthIn: 5.0, heightIn: 6.0 },
+            '18M': { widthIn: 5.25, heightIn: 6.25 },
+            '18-24M': { widthIn: 5.5, heightIn: 6.75 },
+            '2T': { widthIn: 6.0, heightIn: 8.0 },
+            '3T': { widthIn: 6.5, heightIn: 9.0 },
+            '4T': { widthIn: 7.0, heightIn: 9.5 },
+            '5T': { widthIn: 7.5, heightIn: 9.75 },
+            'Youth XS': { widthIn: 8.0, heightIn: 9.5 },
+            'Youth S': { widthIn: 8.5, heightIn: 10.0 },
+            'Youth M': { widthIn: 9.0, heightIn: 10.5 },
+            'Youth L': { widthIn: 9.5, heightIn: 10.75 },
+            'Youth XL': { widthIn: 9.75, heightIn: 11.0 },
+            'Adult S': { widthIn: 10.5, heightIn: 12.5 },
+            'Adult M': { widthIn: 11.5, heightIn: 13.25 },
+            'Adult L': { widthIn: 12.0, heightIn: 13.5 },
+            'Adult XL': { widthIn: 12.5, heightIn: 13.75 },
+            '2X': { widthIn: 13.0, heightIn: 14.5 },
+            '3X': { widthIn: 13.5, heightIn: 15.0 },
+        };
         let mockupFrontPrintWidthIn = 7.5;
         let mockupFrontPrintHeightIn = 7.5;
         let mockupBackPrintWidthIn = 7.5;
         let mockupBackPrintHeightIn = 7.5;
         let mockupActivePrintSide = 'front';
+
+        function getMockupBackPrintSizeInches(size) {
+            const profile = MOCKUP_BACK_PRINT_PROFILE[size] || MOCKUP_BACK_PRINT_PROFILE['Adult M'];
+            return {
+                width: Number(profile.widthIn || 2),
+                height: Number(profile.heightIn || 2),
+            };
+        }
+
+        function applyRecommendedMockupPrintSizes(size) {
+            const frontPreset = getPresetPrintSizeInches(size);
+            const backPreset = getMockupBackPrintSizeInches(size);
+            mockupFrontPrintWidthIn = normalizeMockupInches(frontPreset.width);
+            mockupFrontPrintHeightIn = normalizeMockupInches(frontPreset.height);
+            mockupBackPrintWidthIn = normalizeMockupInches(backPreset.width);
+            mockupBackPrintHeightIn = normalizeMockupInches(backPreset.height);
+        }
 
         function getMockupPxPerInch() {
             return window.matchMedia('(max-width: 760px)').matches
@@ -14851,8 +16640,14 @@
                 input.value = '';
                 return;
             }
+            setUploadWarningMessage(targetSide, '', { context: 'mockup' });
             const file = input.files && input.files[0] ? input.files[0] : null;
             if (!file) return;
+            const pngRecommendation = getPngRecommendationWarning(file);
+            if (pngRecommendation) {
+                setUploadWarningMessage(targetSide, pngRecommendation, { context: 'mockup', isError: false });
+                showUploadNotice(pngRecommendation);
+            }
             const reader = new FileReader();
             reader.onload = function(e) {
                 const src = e.target && e.target.result ? e.target.result : '';
@@ -14868,6 +16663,9 @@
                     frontPrint.dataset.hasImage = '1';
                     frontPrint.dataset.uploadName = file.name || '';
                     frontPrint.dataset.aspectRatio = String(resolvedWidth / Math.max(resolvedHeight, 1));
+                    const resolutionWarning = getLowResolutionUploadWarning(resolvedWidth, resolvedHeight);
+                    const combinedWarning = [pngRecommendation, resolutionWarning].filter(Boolean).join(' ');
+                    setUploadWarningMessage(targetSide, combinedWarning, { context: 'mockup', isError: false });
                     if (targetSide === 'front') {
                         window._mockupThumbFront = resolvedSrc;
                     } else if (targetSide === 'back') {
@@ -14880,15 +16678,17 @@
                         uploadPreview.hidden = false;
                     }
                     applyMockupPrintBox(targetSide);
-                    showUploadNotice(targetSide === 'pocket'
+                    const mockupBaseMessage = targetSide === 'pocket'
                         ? 'Pocket image uploaded.'
-                        : 'Design uploaded to the preview square.');
+                        : 'Design uploaded to the preview square.';
+                    showUploadNotice(combinedWarning ? (mockupBaseMessage + ' ' + combinedWarning) : mockupBaseMessage);
                     updateMockupPriceDisplay();
                 };
                 probe.onerror = function() {
                     frontPrint.style.backgroundImage = `url("${src}")`;
                     frontPrint.dataset.hasImage = '1';
                     frontPrint.dataset.uploadName = file.name || '';
+                    setUploadWarningMessage(targetSide, '', { context: 'mockup', isError: false });
                     if (targetSide === 'front') {
                         window._mockupThumbFront = src;
                     } else if (targetSide === 'back') {
@@ -14913,6 +16713,7 @@
 
         function clearMockupDesign(side) {
             const targetSide = side === 'pocket' ? 'pocket' : (side === 'back' ? 'back' : 'front');
+            setUploadWarningMessage(targetSide, '', { context: 'mockup' });
             const input = document.getElementById(
                 targetSide === 'pocket' ? 'mockup-pocket-upload' : (targetSide === 'back' ? 'mockup-back-upload' : 'front-pocket-upload')
             );
@@ -15031,6 +16832,10 @@
             const frontUploadName = frontOverlay?.dataset?.uploadName || '';
             const backUploadName = backOverlay?.dataset?.uploadName || '';
             const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
+            const colorInfo = getCurrentShirtColorDetails(false);
+            if (!ensureInventoryAvailableForSelection(selectedSize, colorInfo.shirtColorName || '')) {
+                return;
+            }
             const printLocation = document.querySelector('input[name="print-location"]:checked')?.value || 'Front';
             const hasFront = !!frontDesignImg && frontDesignImg !== window.location.href;
             const hasBack = !!backDesignImg && backDesignImg !== window.location.href;
@@ -15046,7 +16851,6 @@
             const _frontEl = frontOverlay;
             const _backEl = backOverlay;
             const _thumb = hasFront ? captureThumb(_frontEl) : (hasBack ? captureThumb(_backEl) : '');
-            const colorInfo = getCurrentShirtColorDetails(false);
             const catalogItem = frontCatalogSrc && !hasBack && printLocation === 'Front'
                 ? (activeCatalogDesignMeta && getCatalogAssetKey(activeCatalogDesignMeta.src || '') === getCatalogAssetKey(frontCatalogSrc)
                     ? activeCatalogDesignMeta
@@ -15055,10 +16859,9 @@
 
             if (catalogItem) {
                 const catalogOriginalPrice = getCatalogOriginalPriceForSize(catalogItem, selectedSize);
-                const catalogSalePrice = getCatalogCartItemPrice(catalogItem, selectedSize);
                 cart.push({
                     name: catalogItem.name || 'Catalog Design',
-                    price: catalogSalePrice,
+                    price: customPrice,
                     type: 'catalog',
                     designFront: hasFront ? frontDesignImg : '',
                     designBack: '',
@@ -15073,14 +16876,15 @@
                     designBackFile: '',
                     designPreview: _thumb,
                     catalogDesignSrc: catalogItem.src,
-                    saleOfferType: catalogItem.saleOfferType || '',
-                    salePrice: String(catalogItem.saleOfferType || '') === 'bundle' ? 0 : Number(catalogSalePrice || 0),
-                    salePercent: Number(catalogItem.salePercent || 0),
-                    bundleQuantity: Number(catalogItem.bundleQuantity || 0),
-                    bundlePrice: Number(catalogItem.bundlePrice || 0),
-                    saleSizes: Array.isArray(catalogItem.saleSizes) ? catalogItem.saleSizes.slice() : [],
-                    originalPrice: Number(catalogOriginalPrice || 0),
-                    saleEndsAt: catalogItem.saleEndsAt || ''
+                    saleOfferType: '',
+                    saleOfferGroupId: '',
+                    salePrice: 0,
+                    salePercent: 0,
+                    bundleQuantity: 0,
+                    bundlePrice: 0,
+                    saleSizes: [],
+                    originalPrice: Number(customPrice || catalogOriginalPrice || 0),
+                    saleEndsAt: ''
                 });
             } else {
                 cart.push({
@@ -15118,11 +16922,12 @@
         const ORDER_API_ENDPOINT = API_BASE + '/api/orders';
         const CASH_APP_CASHTAG = '$freedomworksstore';
         const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
-        const STRIPE_FALLBACK_PUBLISHABLE_KEY = 'pk_live_51TMhARJzsHZWlogYk3lZ6rjvGa7uBvpZEdc62gakBUG3o2rH1z5WzQW2V3VTWcUWNj7e2h0LFSAu0nYVKb53TlF100qnm45FMf';
         let STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
             ? window.STRIPE_PUBLISHABLE_KEY.trim()
-            : STRIPE_FALLBACK_PUBLISHABLE_KEY;
-        let STRIPE_TEMP_DOWN = !STRIPE_PUBLISHABLE_KEY;
+            : '';
+        let STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
+            ? window.STRIPE_TEMP_DOWN
+            : !STRIPE_PUBLISHABLE_KEY;
         let stripeConfigPromise = null;
 
         let stripeInstance = null;
@@ -15132,8 +16937,10 @@
 
         function applyStripeConfigFromWindow() {
             const publishableKey = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' ? window.STRIPE_PUBLISHABLE_KEY.trim() : '';
-            STRIPE_PUBLISHABLE_KEY = publishableKey || STRIPE_FALLBACK_PUBLISHABLE_KEY;
-            STRIPE_TEMP_DOWN = !STRIPE_PUBLISHABLE_KEY;
+            STRIPE_PUBLISHABLE_KEY = publishableKey;
+            STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
+                ? window.STRIPE_TEMP_DOWN
+                : !STRIPE_PUBLISHABLE_KEY;
         }
 
         function parseStripeConfigScriptText(scriptText) {
@@ -15172,26 +16979,32 @@
         async function loadStripeConfig() {
             applyStripeConfigFromWindow();
             if (STRIPE_PUBLISHABLE_KEY) return;
-            if (!stripeConfigPromise) {
-                stripeConfigPromise = (async function() {
-                    const candidateUrls = getStripeConfigCandidateUrls();
-                    for (const configUrl of candidateUrls) {
-                        try {
-                            const resp = await fetch(configUrl, { cache: 'no-store' });
-                            if (!resp.ok) continue;
-                            const scriptText = await resp.text();
-                            const parsed = parseStripeConfigScriptText(scriptText);
-                            if (!parsed.publishableKey) continue;
-                            window.STRIPE_PUBLISHABLE_KEY = parsed.publishableKey;
-                            window.STRIPE_TEMP_DOWN = parsed.tempDown;
-                            applyStripeConfigFromWindow();
-                            return;
-                        } catch (e) {}
-                    }
-                    applyStripeConfigFromWindow();
-                });
+            if (stripeConfigPromise) {
+                await stripeConfigPromise;
+                applyStripeConfigFromWindow();
+                if (STRIPE_PUBLISHABLE_KEY) return;
             }
+            stripeConfigPromise = (async function() {
+                const candidateUrls = getStripeConfigCandidateUrls();
+                for (const configUrl of candidateUrls) {
+                    try {
+                        const resp = await fetch(configUrl, { cache: 'no-store' });
+                        if (!resp.ok) continue;
+                        const scriptText = await resp.text();
+                        const parsed = parseStripeConfigScriptText(scriptText);
+                        if (!parsed.publishableKey) continue;
+                        window.STRIPE_PUBLISHABLE_KEY = parsed.publishableKey;
+                        window.STRIPE_TEMP_DOWN = parsed.tempDown;
+                        applyStripeConfigFromWindow();
+                        return;
+                    } catch (e) {}
+                }
+                applyStripeConfigFromWindow();
+            })();
             await stripeConfigPromise;
+            if (!STRIPE_PUBLISHABLE_KEY) {
+                stripeConfigPromise = null;
+            }
         }
 
         function isLikelyMobileDevice() {
@@ -15256,7 +17069,9 @@
             }
             document.getElementById('stripe-payment-form').reset();
             const deliveryRadio = document.getElementById('fulfillment-delivery');
-            if (deliveryRadio) deliveryRadio.checked = true;
+            const pickupRadio = document.getElementById('fulfillment-pickup');
+            if (deliveryRadio) deliveryRadio.checked = false;
+            if (pickupRadio) pickupRadio.checked = false;
             const addInfoCheckbox = document.getElementById('add-checkout-info');
             if (addInfoCheckbox) addInfoCheckbox.checked = false;
             toggleCheckoutInfoFields();
@@ -15285,6 +17100,10 @@
             }
             if (!Array.isArray(cart) || cart.length === 0) {
                 alert('Your cart is empty. Add at least one item before checkout.');
+                return;
+            }
+            if (currentStorePage !== 'cart') {
+                navigateToPage('cart');
                 return;
             }
             void openStripeModal();
@@ -15394,8 +17213,8 @@
         function normalizeOrderPreviewValue(value) {
             const raw = String(value || '');
             if (!raw) return '';
-            // Keep order payload light for mobile browsers.
-            if (raw.length > 180000) return '';
+            // Keep order payload reasonably sized without dropping normal design previews.
+            if (raw.length > 2000000) return '';
             return raw;
         }
 
@@ -15435,6 +17254,8 @@
                     designName: item.designName || '',
                     designFrontFile: item.designFrontFile || '',
                     designBackFile: item.designBackFile || '',
+                    designFrontPreview: normalizeOrderPreviewValue(item.designFront || ''),
+                    designBackPreview: normalizeOrderPreviewValue(item.designBack || ''),
                     catalogDesignSrc: item.catalogDesignSrc || '',
                     designPreview: normalizeOrderPreviewValue(item.designPreview || cartThumbs[index] || ''),
                     price: Number(pricingState.lineTotals[index] || 0)
@@ -15462,7 +17283,10 @@
             try {
                 const resp = await fetch(ORDER_API_ENDPOINT, {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: {
+                        'Content-Type': 'application/json',
+                        ...getCustomerAuthHeaders(),
+                    },
                     body: JSON.stringify(payload)
                 });
 
@@ -15488,6 +17312,9 @@
                 }
 
                 const data = await resp.json();
+                if (customerSession?.customer && !customerSession?.localOnly) {
+                    refreshCustomerProfile();
+                }
                 return data.orderId || '';
             } catch (err) {
                 if (err && err.name === 'TypeError') {
@@ -15524,18 +17351,27 @@
 
         function getCartPricingState(items) {
             const records = Array.isArray(items) ? items : cart;
-            const lineTotals = records.map(function(item) {
+            const rawLineTotals = records.map(function(item) {
                 return Math.round((((parseFloat(item?.price) || 0) + (parseFloat(item?.basePriceHidden) || 0)) * 100)) / 100;
             });
+            const originalLineTotals = records.map(function(item, index) {
+                const fallback = Number(rawLineTotals[index] || 0);
+                const originalPrice = Math.round(Number(item?.originalPrice || 0) * 100) / 100;
+                return originalPrice > 0 ? originalPrice : fallback;
+            });
+            const lineTotals = rawLineTotals.slice();
             const groups = new Map();
 
             records.forEach(function(item, index) {
-                const key = getCatalogAssetKey(item?.catalogDesignSrc || '');
+                const offerType = String(item?.saleOfferType || '');
+                const key = offerType === 'bundle'
+                    ? (String(item?.saleOfferGroupId || '').trim() || getCatalogAssetKey(item?.catalogDesignSrc || ''))
+                    : getCatalogAssetKey(item?.catalogDesignSrc || '');
                 const saleSizes = Array.isArray(item?.saleSizes)
                     ? item.saleSizes.map(function(size) { return String(size || '').trim(); }).filter(Boolean)
                     : [];
                 const itemSize = String(item?.shirtSize || '').trim();
-                if (!key || !item?.saleOfferType) return;
+                if (!key || !offerType) return;
                 if (saleSizes.length && (!itemSize || !saleSizes.includes(itemSize))) return;
                 if (!groups.has(key)) groups.set(key, []);
                 groups.get(key).push(index);
@@ -15576,7 +17412,20 @@
             const total = Math.round(lineTotals.reduce(function(sum, value) {
                 return sum + Number(value || 0);
             }, 0) * 100) / 100;
-            return { lineTotals, total };
+            const lineSavings = lineTotals.map(function(value, index) {
+                const savings = Math.round((Number(originalLineTotals[index] || 0) - Number(value || 0)) * 100) / 100;
+                return savings > 0 ? savings : 0;
+            });
+            const totalSavings = Math.round(lineSavings.reduce(function(sum, value) {
+                return sum + Number(value || 0);
+            }, 0) * 100) / 100;
+            return {
+                lineTotals,
+                originalLineTotals,
+                lineSavings,
+                total,
+                totalSavings,
+            };
         }
 
         function getCartBaseTotal() {
@@ -15584,12 +17433,7 @@
         }
 
         function getCheckoutLaborTotal() {
-            const laborTotal = cart.reduce((sum, item) => {
-                if (item && item.laborIncluded) {
-                    return sum;
-                }
-                return sum + LABOR_COST_PER_SHIRT;
-            }, 0);
+            const laborTotal = Array.isArray(cart) ? cart.length * LABOR_COST_PER_SHIRT : 0;
             return Math.round(laborTotal * 100) / 100;
         }
 
@@ -15598,7 +17442,8 @@
         }
 
         function getCheckoutShippingTotal() {
-            if (getCheckoutFulfillmentMethod() === 'pickup') return 0;
+            const method = getCheckoutFulfillmentMethod();
+            if (method !== 'delivery') return 0;
             const shirtCount = getCheckoutShirtCount();
             if (shirtCount <= 0) return 0;
             const tier = SHIPPING_RATE_TIERS.find((entry) => shirtCount <= entry.maxItems) || SHIPPING_RATE_TIERS[SHIPPING_RATE_TIERS.length - 1];
@@ -15620,9 +17465,7 @@
             const hasPocket = pocketPrint && pocketPrint.dataset.hasImage === '1';
             const hasBack = backPrint && backPrint.dataset.hasImage === '1';
             const printCharge = (hasFront ? getMockupPrintFee('front') : 0) + (hasPocket ? getMockupPrintFee('pocket') : 0) + (hasBack ? getMockupPrintFee('back') : 0);
-            const laborUnits = (hasFront ? 1 : 0) + (hasPocket ? 1 : 0) + (hasBack ? 1 : 0);
-            const laborCharge = laborUnits * LABOR_COST_PER_SHIRT;
-            const price = shirtCharge + printCharge + laborCharge;
+            const price = shirtCharge + printCharge;
             return Math.max(0, Math.round(price * 100) / 100);
         }
 
@@ -15657,8 +17500,8 @@
             const hasBack = backPrint && backPrint.dataset.hasImage === '1';
             const printCharge = (hasFront ? getMockupPrintFee('front') : 0) + (hasPocket ? getMockupPrintFee('pocket') : 0) + (hasBack ? getMockupPrintFee('back') : 0);
             const shirtCharge = mockupColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const laborUnits = (hasFront ? 1 : 0) + (hasPocket ? 1 : 0) + (hasBack ? 1 : 0);
-            const laborCharge = laborUnits * LABOR_COST_PER_SHIRT;
+            const hasAnyDesign = !!(hasFront || hasPocket || hasBack);
+            const laborCharge = hasAnyDesign ? LABOR_COST_PER_SHIRT : 0;
             const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
             el.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(document.getElementById('mockup-breakdown-note'), shirtCharge, printCharge, laborCharge);
@@ -15688,6 +17531,9 @@
             const price = getMockupPrice();
             const _mockupThumb = window._mockupThumbFront || window._mockupThumbBack || window._mockupThumbPocket || '';
             const colorInfo = getCurrentShirtColorDetails(true);
+            if (!ensureInventoryAvailableForSelection(mockupSize, colorInfo.shirtColorName || '')) {
+                return;
+            }
             cart.push({
                 name: 'Mockup T-Shirt (Square Preview, Size: ' + mockupSize + ')',
                 price: price,
@@ -15725,7 +17571,11 @@
         function updateCart() {
             const cartItems = document.getElementById('cart-items');
             const total = document.getElementById('total');
+            const savingsWrap = document.getElementById('cart-sale-savings');
+            const savingsTotal = document.getElementById('cart-savings-total');
+            const savingsBreakdown = document.getElementById('cart-savings-breakdown');
             const pricingState = getCartPricingState();
+            const checkoutTotal = getCheckoutTotal();
             cartItems.innerHTML = '';
             cart.forEach((item, index) => {
                 const div = document.createElement('div');
@@ -15733,19 +17583,50 @@
                 let label = item.name || 'Item';
                 if (item.shirtSize) label += ' (Size: ' + item.shirtSize + ')';
                 const thumbSrc = resolveAssetUrl(cartThumbs[index] || '');
+                const lineLabor = item?.laborIncluded ? LABOR_COST_PER_SHIRT : 0;
+                const lineTotal = (Number(pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
+                const originalLineTotal = (Number(pricingState.originalLineTotals[index] || pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
+                const lineSavings = Number(pricingState.lineSavings[index] || 0);
                 const thumbHtml = thumbSrc
                     ? `<img class="cart-item-thumb" src="${thumbSrc}" alt="${label}">`
                     : `<div class="cart-item-thumb" style="display:flex;align-items:center;justify-content:center;font-size:1.4rem;">&#x1F455;</div>`;
-                div.innerHTML = `${thumbHtml}<span class="cart-item-label">${label}</span><span style="white-space:nowrap;">$${Number(pricingState.lineTotals[index] || 0).toFixed(2)} <button onclick="removeFromCart(${index})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:0.85rem;margin-left:8px;font-weight:700;" title="Remove">&times;</button></span>`;
+                const saleMeta = lineSavings > 0
+                    ? `<span class="cart-item-sale-meta"><span class="cart-item-original-price">Was $${originalLineTotal}</span><span class="cart-item-savings">You save $${lineSavings.toFixed(2)}</span></span>`
+                    : '';
+                div.innerHTML = `${thumbHtml}<span class="cart-item-copy"><span class="cart-item-label">${label}</span>${saleMeta}</span><span class="cart-item-price"><span class="cart-item-current-price">$${lineTotal}</span><button onclick="removeFromCart(${index})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:0.85rem;font-weight:700;" title="Remove">&times;</button></span>`;
                 cartItems.appendChild(div);
             });
-            total.textContent = pricingState.total.toFixed(2);
+            total.textContent = getCheckoutTotal().toFixed(2);
+            if (savingsWrap && savingsTotal && savingsBreakdown) {
+                savingsBreakdown.innerHTML = '';
+                if (pricingState.totalSavings > 0) {
+                    savingsWrap.hidden = false;
+                    savingsTotal.textContent = pricingState.totalSavings.toFixed(2);
+                    cart.forEach((item, index) => {
+                        const saved = Number(pricingState.lineSavings[index] || 0);
+                        if (saved <= 0) return;
+                        const row = document.createElement('div');
+                        row.className = 'cart-savings-row';
+                        let itemLabel = item.name || 'Item';
+                        if (item.shirtSize) itemLabel += ' (Size: ' + item.shirtSize + ')';
+                        row.innerHTML = `<span>${escapeHtml(itemLabel)}</span><span>-$${saved.toFixed(2)}</span>`;
+                        savingsBreakdown.appendChild(row);
+                    });
+                } else {
+                    savingsWrap.hidden = true;
+                    savingsTotal.textContent = '0.00';
+                }
+            }
             const headerCartCount = document.getElementById('header-cart-count');
             const headerCartTotal = document.getElementById('header-cart-total');
             const headerCartThumbs = document.getElementById('header-cart-thumbs');
             const miniCartCount = document.getElementById('top-mini-cart-count');
             if (headerCartCount) headerCartCount.textContent = String(cart.length);
-            if (headerCartTotal) headerCartTotal.textContent = `$${pricingState.total.toFixed(2)}`;
+            if (headerCartTotal) {
+                const nextTotalText = `$${getCheckoutTotal().toFixed(2)}`;
+                headerCartTotal.textContent = nextTotalText;
+                headerCartTotal.classList.add('cart-total-flash-green');
+            }
             if (miniCartCount) miniCartCount.textContent = String(cart.length);
             if (headerCartThumbs) {
                 headerCartThumbs.innerHTML = '';
@@ -15776,6 +17657,14 @@
 
         document.getElementById('auth-modal-overlay').addEventListener('click', function(e) {
             if (e.target === this) closeAuthModal();
+        });
+
+        document.getElementById('login-sale-popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeLoginSalePopup();
+        });
+
+        document.getElementById('rewards-popup-overlay').addEventListener('click', function(e) {
+            if (e.target === this) closeRewardsInfoPopup();
         });
 
         document.getElementById('account-modal-overlay').addEventListener('click', function(e) {
@@ -16096,21 +17985,34 @@
         
         // Ensure shirt mockup renders on page load
         window.addEventListener('DOMContentLoaded', async () => {
+            initAutoThemeSystem();
             await initializeQuickPickCatalog();
             syncQuickPickLandingSizeOptions();
             renderOnSaleGallery();
+            await loadTrendingSales();
             renderStorePage(getStartupStorePage(), false);
             initCatalogImageZoom();
             initQuickPicks();
             initCatalogSaleCountdowns();
             initTopMiniMenuButton();
             initTopMiniNavAutoHide();
-            restoreCustomerSession();
+            startLiveInventoryPolling();
+            await restoreCustomerSession();
             restoreAdminSession();
+            maybeShowLoginSalePopup();
+            refreshLiveInventoryStatus();
             window.addEventListener('resize', updateHomeViewportLayout);
             window.addEventListener('resize', syncMobileBuilderPreviewLayout);
             window.addEventListener('resize', positionCustomerGuideForStep);
             window.addEventListener('scroll', positionCustomerGuideForStep, { passive: true });
+            document.addEventListener('visibilitychange', function() {
+                if (document.visibilityState === 'visible') {
+                    refreshLiveInventoryStatus();
+                }
+            });
+            window.addEventListener('focus', function() {
+                refreshLiveInventoryStatus();
+            });
             document.addEventListener('keydown', handleHiddenOwnerShortcut);
             syncMobileBuilderPreviewLayout();
             window.addEventListener('hashchange', () => {
