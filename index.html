@@ -1029,12 +1029,6 @@
                 max-width: min(140px, 80vw) !important;
                 max-height: 100%;
             }
-            .dove-logo {
-                display: none !important;
-            }
-            .dove-logo-fallback {
-                display: block !important;
-            }
             .side-quick-menu {
                 position: static;
                 left: auto;
@@ -12437,7 +12431,7 @@
                 const sizeLabel = itemSize && !/\bsize\s*:/i.test(String(item.name || ''))
                     ? ' (' + itemSize + ')'
                     : '';
-                const lineLabor = item?.laborIncluded ? LABOR_COST_PER_SHIRT : 0;
+                const lineLabor = getLaborCostForCartItem(item);
                 const lineTotal = Math.round((Number(pricingState.lineTotals[index] || 0) + lineLabor) * 100) / 100;
                 let imgHtml = '';
                 if (item.designFront) {
@@ -15059,6 +15053,7 @@
         let activeMockupColor = '#ffffff';
         let mockupColorPicked = false;
         const LABOR_COST_PER_SHIRT = 5;
+        const POCKET_LABOR_COST = 1.75;
         const SHIPPING_RATE_TIERS = [
             { maxItems: 2, amount: 5.99 },
             { maxItems: 5, amount: 8.99 },
@@ -15731,15 +15726,31 @@
             return '$' + (Math.round((amount || 0) * 100) / 100).toFixed(2);
         }
 
+        function getMockupLaborCharge(hasFront, hasPocket, hasBack) {
+            const hasAnyDesign = !!(hasFront || hasPocket || hasBack);
+            if (!hasAnyDesign) return 0;
+            if (hasPocket && !hasFront && !hasBack) return POCKET_LABOR_COST;
+            return LABOR_COST_PER_SHIRT;
+        }
+
+        function getLaborCostForCartItem(item) {
+            if (!item?.laborIncluded) return 0;
+            const explicitLabor = Number(item?.laborCost);
+            if (Number.isFinite(explicitLabor) && explicitLabor >= 0) {
+                return Math.round(explicitLabor * 100) / 100;
+            }
+            return LABOR_COST_PER_SHIRT;
+        }
+
         function setBreakdownText(element, shirtCharge, printCharge, laborCharge) {
             if (!element) return;
             const parts = [];
             const safeShirt = Math.round((shirtCharge || 0) * 100) / 100;
             const safePrint = Math.round((printCharge || 0) * 100) / 100;
             const safeLabor = Math.round((laborCharge || 0) * 100) / 100;
-            if (safeShirt > 0) parts.push('Shirt ' + formatPriceAmount(safeShirt));
-            if (safePrint > 0) parts.push('Print ' + formatPriceAmount(safePrint));
-            if (safeLabor > 0) parts.push('Labor ' + formatPriceAmount(safeLabor));
+            if (safeShirt > 0) parts.push('Shirt');
+            if (safePrint > 0) parts.push('Print');
+            if (safeLabor > 0) parts.push('Labor');
             const total = safeShirt + safePrint + safeLabor;
             element.textContent = parts.length
                 ? 'Breakdown: ' + parts.join(' + ') + ' = ' + formatPriceAmount(total)
@@ -16870,7 +16881,29 @@
         const MOCKUP_RULER_INCHES = 15;
         const MOCKUP_PX_PER_INCH_DESKTOP = 24;
         const MOCKUP_PX_PER_INCH_MOBILE = 20;
-        const MOCKUP_POCKET_PRINT_INCHES = 2.5;
+        const MOCKUP_POCKET_PRINT_PROFILE = {
+            'Newborn': { widthIn: 1.5, heightIn: 1.5 },
+            '6M': { widthIn: 1.6, heightIn: 1.6 },
+            '9M': { widthIn: 1.7, heightIn: 1.7 },
+            '12M': { widthIn: 1.8, heightIn: 1.8 },
+            '18M': { widthIn: 1.9, heightIn: 1.9 },
+            '18-24M': { widthIn: 2.0, heightIn: 2.0 },
+            '2T': { widthIn: 2.1, heightIn: 2.1 },
+            '3T': { widthIn: 2.2, heightIn: 2.2 },
+            '4T': { widthIn: 2.3, heightIn: 2.3 },
+            '5T': { widthIn: 2.4, heightIn: 2.4 },
+            'Youth XS': { widthIn: 2.5, heightIn: 2.5 },
+            'Youth S': { widthIn: 2.6, heightIn: 2.6 },
+            'Youth M': { widthIn: 2.8, heightIn: 2.8 },
+            'Youth L': { widthIn: 3.0, heightIn: 3.0 },
+            'Youth XL': { widthIn: 3.2, heightIn: 3.2 },
+            'Adult S': { widthIn: 3.4, heightIn: 3.4 },
+            'Adult M': { widthIn: 3.6, heightIn: 3.6 },
+            'Adult L': { widthIn: 3.8, heightIn: 3.8 },
+            'Adult XL': { widthIn: 4.0, heightIn: 4.0 },
+            '2X': { widthIn: 4.2, heightIn: 4.2 },
+            '3X': { widthIn: 4.5, heightIn: 4.5 },
+        };
         const MOCKUP_BACK_PRINT_PROFILE = {
             'Newborn': { widthIn: 4.5, heightIn: 5.0 },
             '6M': { widthIn: 4.5, heightIn: 5.5 },
@@ -16898,6 +16931,8 @@
         let mockupFrontPrintHeightIn = 7.5;
         let mockupBackPrintWidthIn = 7.5;
         let mockupBackPrintHeightIn = 7.5;
+        let mockupPocketPrintWidthIn = 3.6;
+        let mockupPocketPrintHeightIn = 3.6;
         let mockupActivePrintSide = 'front';
 
         function getMockupBackPrintSizeInches(size) {
@@ -16908,13 +16943,24 @@
             };
         }
 
+        function getMockupPocketPrintSizeInches(size) {
+            const profile = MOCKUP_POCKET_PRINT_PROFILE[size] || MOCKUP_POCKET_PRINT_PROFILE['Adult M'];
+            return {
+                width: Number(profile.widthIn || 2),
+                height: Number(profile.heightIn || 2),
+            };
+        }
+
         function applyRecommendedMockupPrintSizes(size) {
             const frontPreset = getPresetPrintSizeInches(size);
             const backPreset = getMockupBackPrintSizeInches(size);
+            const pocketPreset = getMockupPocketPrintSizeInches(size);
             mockupFrontPrintWidthIn = normalizeMockupInches(frontPreset.width);
             mockupFrontPrintHeightIn = normalizeMockupInches(frontPreset.height);
             mockupBackPrintWidthIn = normalizeMockupInches(backPreset.width);
             mockupBackPrintHeightIn = normalizeMockupInches(backPreset.height);
+            mockupPocketPrintWidthIn = normalizeMockupInches(pocketPreset.width);
+            mockupPocketPrintHeightIn = normalizeMockupInches(pocketPreset.height);
         }
 
         function getMockupPxPerInch() {
@@ -16952,20 +16998,24 @@
 
         function getMockupPrintDimensions(side) {
             const isBack = side === 'back';
+            const isPocket = side === 'pocket';
             return {
-                widthIn: isBack ? mockupBackPrintWidthIn : mockupFrontPrintWidthIn,
-                heightIn: isBack ? mockupBackPrintHeightIn : mockupFrontPrintHeightIn,
+                widthIn: isPocket ? mockupPocketPrintWidthIn : (isBack ? mockupBackPrintWidthIn : mockupFrontPrintWidthIn),
+                heightIn: isPocket ? mockupPocketPrintHeightIn : (isBack ? mockupBackPrintHeightIn : mockupFrontPrintHeightIn),
             };
         }
 
         function setMockupPrintDimensions(side, axis, value) {
             const nextValue = normalizeMockupInches(value);
             const isBack = side === 'back';
+            const isPocket = side === 'pocket';
             if (axis === 'height') {
-                if (isBack) mockupBackPrintHeightIn = Math.round(nextValue * 10) / 10;
+                if (isPocket) mockupPocketPrintHeightIn = Math.round(nextValue * 10) / 10;
+                else if (isBack) mockupBackPrintHeightIn = Math.round(nextValue * 10) / 10;
                 else mockupFrontPrintHeightIn = Math.round(nextValue * 10) / 10;
             } else {
-                if (isBack) mockupBackPrintWidthIn = Math.round(nextValue * 10) / 10;
+                if (isPocket) mockupPocketPrintWidthIn = Math.round(nextValue * 10) / 10;
+                else if (isBack) mockupBackPrintWidthIn = Math.round(nextValue * 10) / 10;
                 else mockupFrontPrintWidthIn = Math.round(nextValue * 10) / 10;
             }
         }
@@ -16978,7 +17028,7 @@
                     : (side === 'back' ? 'mockup-back-print' : 'mockup-front-print')
             );
             if (!activePrint) return;
-            const dims = getMockupPrintDimensions(side === 'back' ? 'back' : 'front');
+            const dims = getMockupPrintDimensions(side === 'pocket' ? 'pocket' : (side === 'back' ? 'back' : 'front'));
             const pxPerInch = getMockupPxPerInch();
             const widthPx = Math.round(dims.widthIn * pxPerInch);
             const heightPx = Math.round(dims.heightIn * pxPerInch);
@@ -17205,7 +17255,7 @@
         }
 
         function getMockupZoneFit(side, imageW, imageH) {
-            const dims = getMockupPrintDimensions(side === 'back' ? 'back' : 'front');
+            const dims = getMockupPrintDimensions(side === 'pocket' ? 'pocket' : (side === 'back' ? 'back' : 'front'));
             const pxPerInch = getMockupPxPerInch();
             const width = Math.round(dims.widthIn * pxPerInch);
             const height = Math.round(dims.heightIn * pxPerInch);
@@ -17905,7 +17955,11 @@
         }
 
         function getCheckoutLaborTotal() {
-            const laborTotal = Array.isArray(cart) ? cart.length * LABOR_COST_PER_SHIRT : 0;
+            const laborTotal = Array.isArray(cart)
+                ? cart.reduce(function(sum, item) {
+                    return sum + getLaborCostForCartItem(item);
+                }, 0)
+                : 0;
             return Math.round(laborTotal * 100) / 100;
         }
 
@@ -17945,7 +17999,10 @@
             if (side === 'pocket') {
                 const pocketEl = document.getElementById('mockup-pocket-print');
                 if (!pocketEl || pocketEl.dataset.hasImage !== '1') return 0;
-                return Math.round(MOCKUP_POCKET_PRINT_INCHES * PRINT_PRICE_PER_INCH * 100) / 100;
+                const dims = getMockupPrintDimensions('pocket');
+                const widthInches = normalizeMockupInches(dims.widthIn);
+                const heightInches = normalizeMockupInches(dims.heightIn);
+                return Math.round((widthInches + heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
             }
             const printEl = document.getElementById(side === 'back' ? 'mockup-back-print' : 'mockup-front-print');
             if (!printEl || printEl.dataset.hasImage !== '1') return 0;
@@ -17972,8 +18029,7 @@
             const hasBack = backPrint && backPrint.dataset.hasImage === '1';
             const printCharge = (hasFront ? getMockupPrintFee('front') : 0) + (hasPocket ? getMockupPrintFee('pocket') : 0) + (hasBack ? getMockupPrintFee('back') : 0);
             const shirtCharge = mockupColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const hasAnyDesign = !!(hasFront || hasPocket || hasBack);
-            const laborCharge = hasAnyDesign ? LABOR_COST_PER_SHIRT : 0;
+            const laborCharge = getMockupLaborCharge(hasFront, hasPocket, hasBack);
             const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
             el.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(document.getElementById('mockup-breakdown-note'), shirtCharge, printCharge, laborCharge);
@@ -18001,6 +18057,7 @@
             }
 
             const price = getMockupPrice();
+            const laborCost = getMockupLaborCharge(hasFront, hasPocket, hasBack);
             const _mockupThumb = window._mockupThumbFront || window._mockupThumbBack || window._mockupThumbPocket || '';
             const colorInfo = getCurrentShirtColorDetails(true);
             if (!ensureInventoryAvailableForSelection(mockupSize, colorInfo.shirtColorName || '')) {
@@ -18015,6 +18072,7 @@
                 ...colorInfo,
                 basePriceHidden: 0,
                 laborIncluded: true,
+                laborCost,
                 designType: 'upload',
                 designName: 'Square preview uploaded design',
                 designFrontFile: hasFront ? frontUploadName : '',
@@ -18055,7 +18113,7 @@
                 let label = item.name || 'Item';
                 if (item.shirtSize) label += ' (Size: ' + item.shirtSize + ')';
                 const thumbSrc = resolveAssetUrl(cartThumbs[index] || '');
-                const lineLabor = item?.laborIncluded ? LABOR_COST_PER_SHIRT : 0;
+                const lineLabor = getLaborCostForCartItem(item);
                 const lineTotal = (Number(pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
                 const originalLineTotal = (Number(pricingState.originalLineTotals[index] || pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
                 const lineSavings = Number(pricingState.lineSavings[index] || 0);
@@ -18624,7 +18682,6 @@
             function removeBg(canvas, sx, sy, sw, sh) {
                 var img = new Image();
                 var fallbackImg = document.getElementById('dove-logo-fallback');
-                var prefersFallback = window.matchMedia('(max-width: 760px)').matches;
                 if (fallbackImg) {
                     showFallbackImage(fallbackImg, verifiedTransparentLogoSrc || logoTransparentSrc || logoSrc);
                 }
@@ -18679,11 +18736,6 @@
                         canvas.height = trimH;
                         ctx = canvas.getContext('2d');
                         ctx.putImageData(trimmed, 0, 0);
-                    }
-                    if (prefersFallback) {
-                        canvas.classList.remove('is-ready');
-                        if (fallbackImg) fallbackImg.style.display = 'block';
-                        return;
                     }
                     canvas.style.width = '';
                     canvas.style.height = '';
