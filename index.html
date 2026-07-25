@@ -6313,7 +6313,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='./Freedom%20Works%20logo%20transparent.png';}else{this.onerror=null;this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='./Freedom%20Works%20logo%20transparent.png';}else{this.onerror=null;this.src='/assets/Freedom%20Works%20logo%20transparent.png?retry=1';}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -18628,25 +18628,21 @@
             function getLogoCandidates(fileName) {
                 var raw = String(fileName || '');
                 var encoded = encodeURIComponent(raw).replace(/%2F/g, '/');
+                var origin = window.location.origin || '';
                 var manual = [
+                    origin + '/assets/' + encoded,
+                    origin + '/' + encoded,
                     '/assets/' + encoded,
                     '/' + encoded,
                     './' + encoded,
-                    raw,
+                    origin + '/assets/' + raw,
+                    origin + '/' + raw,
                     '/assets/' + raw,
                     '/' + raw,
-                    './' + raw
+                    './' + raw,
+                    raw
                 ].filter(Boolean);
-                if (typeof getAssetUrlCandidates === 'function') {
-                    var list = getAssetUrlCandidates(fileName) || [];
-                    if (Array.isArray(list) && list.length) {
-                        return list.concat(manual).filter(function(url, index, arr) {
-                            return !!url && arr.indexOf(url) === index;
-                        });
-                    }
-                }
-                var fallback = resolveAssetUrl(fileName);
-                return (fallback ? [fallback] : []).concat(manual).filter(function(url, index, arr) {
+                return manual.filter(function(url, index, arr) {
                     return !!url && arr.indexOf(url) === index;
                 });
             }
@@ -18717,8 +18713,8 @@
                         if (fallbackImg) fallbackImg.style.display = 'none';
                     };
                     cleanLogo.onerror = function() {
-                        canvas.classList.remove('is-ready');
-                        if (fallbackImg) fallbackImg.style.display = 'block';
+                        verifiedTransparentLogoSrc = '';
+                        removeBg(canvas, sx, sy, sw, sh);
                     };
                     cleanLogo.src = verifiedTransparentLogoSrc;
                     return;
