@@ -6313,7 +6313,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='./freedom-works-logo-transparent.png';}else{this.onerror=null;this.src='/assets/freedom-works-logo-transparent.png?retry=1';}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/freedom-works-logo-transparent.png';}else{this.onerror=null;this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -18621,9 +18621,31 @@
     <script>
         /* Remove black background from Freedom Works logo */
         (function() {
-            var logoSrc = resolveAssetUrl('freedom-works-logo.jpg');
-            var logoTransparentSrc = resolveAssetUrl('freedom-works-logo-transparent.png');
+            var logoSrc = resolveAssetUrl('Freedom Works logo (15 x 15 in).jpg');
+            var logoTransparentSrc = resolveAssetUrl('Freedom Works logo transparent.png');
             var verifiedTransparentLogoSrc = '';
+
+            var LOGO_TRANSPARENT_FILES = [
+                'Freedom Works logo transparent.png',
+                'freedom-works-logo-transparent.png'
+            ];
+            var LOGO_JPG_FILES = [
+                'Freedom Works logo (15 x 15 in).jpg',
+                'freedom-works-logo.jpg'
+            ];
+
+            function collectLogoCandidates(fileNames) {
+                var list = Array.isArray(fileNames) ? fileNames : [fileNames];
+                var out = [];
+                list.forEach(function(name) {
+                    getLogoCandidates(name).forEach(function(url) {
+                        out.push(url);
+                    });
+                });
+                return out.filter(function(url, index, arr) {
+                    return !!url && arr.indexOf(url) === index;
+                });
+            }
 
             function getLogoCandidates(fileName) {
                 var raw = String(fileName || '');
@@ -18676,7 +18698,7 @@
                 if (!imgEl) return;
                 var candidates = [];
                 if (src) candidates.push(src);
-                getLogoCandidates('freedom-works-logo-transparent.png').forEach(function(url) { candidates.push(url); });
+                collectLogoCandidates(LOGO_TRANSPARENT_FILES).forEach(function(url) { candidates.push(url); });
                 candidates = candidates.filter(function(url, index, arr) {
                     return !!url && arr.indexOf(url) === index;
                 });
@@ -18776,7 +18798,7 @@
                     if (fallbackImg) fallbackImg.style.display = 'block';
                 };
                 if (fallbackImg) fallbackImg.style.display = 'block';
-                loadImageFromCandidates(img, getLogoCandidates('freedom-works-logo.jpg'), function(loadedSrc) {
+                loadImageFromCandidates(img, collectLogoCandidates(LOGO_JPG_FILES), function(loadedSrc) {
                     if (loadedSrc) {
                         logoSrc = loadedSrc;
                         return;
@@ -18800,7 +18822,7 @@
                         verifiedTransparentLogoSrc = '';
                         removeBg(doveCanvas, 0, 0, 1, 1);
                     };
-                    loadImageFromCandidates(transparentProbe, getLogoCandidates('freedom-works-logo-transparent.png'), function(loadedSrc) {
+                    loadImageFromCandidates(transparentProbe, collectLogoCandidates(LOGO_TRANSPARENT_FILES), function(loadedSrc) {
                         if (loadedSrc) {
                             logoTransparentSrc = loadedSrc;
                             return;
