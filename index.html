@@ -85,6 +85,10 @@
             --theme-back-btn-text: #342100;
             --theme-home-border: #355892;
             --theme-home-surface: #12274d;
+            --theme-graphic-a: rgba(110,198,255,0.2);
+            --theme-graphic-b: rgba(255,110,199,0.15);
+            --theme-graphic-c: rgba(110,255,232,0.12);
+            --theme-drift-speed: 34s;
         }
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -94,11 +98,104 @@
                 radial-gradient(circle at 18% 16%, var(--theme-glow-1) 0%, transparent 26%),
                 radial-gradient(circle at 82% 22%, var(--theme-glow-2) 0%, transparent 24%),
                 radial-gradient(circle at 50% 100%, var(--theme-glow-3) 0%, transparent 30%),
+                radial-gradient(circle at 22% 78%, var(--theme-graphic-a) 0%, transparent 38%),
+                radial-gradient(circle at 86% 78%, var(--theme-graphic-b) 0%, transparent 34%),
+                radial-gradient(circle at 52% 8%, var(--theme-graphic-c) 0%, transparent 30%),
                 linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-mid) 44%, var(--theme-bg-end) 100%);
+            background-size: auto, auto, auto, 160% 160%, 170% 170%, 150% 150%, auto;
+            background-position: 18% 16%, 82% 22%, 50% 100%, 12% 70%, 88% 80%, 50% 6%, center;
             min-height: 100vh;
             color: var(--theme-text);
             overflow-x: hidden;
             position: relative;
+            transition: background 900ms ease, color 500ms ease;
+            animation: themeBackgroundDrift var(--theme-drift-speed) linear infinite;
+        }
+        .side-quick-menu,
+        .home-landing,
+        .home-login-card,
+        .home-page-card,
+        .site-guide-trigger,
+        .customer-back-trigger,
+        .side-menu-links a,
+        .side-menu-links button {
+            transition: background 700ms ease, color 450ms ease, border-color 450ms ease, box-shadow 600ms ease;
+        }
+        body.theme-shift-anim {
+            animation: themeBackgroundDrift var(--theme-drift-speed) linear infinite, themeShiftReveal 700ms ease;
+        }
+        #theme-character-layer {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 7;
+            overflow: hidden;
+        }
+        .theme-character {
+            position: absolute;
+            top: 0;
+            left: 0;
+            transform: translate3d(0, 0, 0);
+            will-change: transform, opacity;
+            line-height: 1;
+            text-shadow: 0 0 6px rgba(255,255,255,0.24), 0 0 14px rgba(0,0,0,0.18);
+            animation-name: themeCharacterDrift, themeCharacterSway;
+            animation-timing-function: linear, ease-in-out;
+            animation-iteration-count: 1, infinite;
+            animation-fill-mode: forwards, both;
+        }
+        @keyframes themeCharacterDrift {
+            0% {
+                transform: translate3d(var(--theme-char-start-x, 0px), var(--theme-char-start-y, 0px), 0) rotate(0deg);
+                opacity: var(--theme-char-opacity, 0.82);
+            }
+            72% {
+                opacity: var(--theme-char-opacity, 0.64);
+            }
+            100% {
+                transform: translate3d(calc(var(--theme-char-start-x, 0px) + var(--theme-char-drift, 0px)), calc(var(--theme-char-start-y, 0px) + var(--theme-char-rise, 10vh)), 0) rotate(var(--theme-char-rot, 120deg));
+                opacity: 0;
+            }
+        }
+        @keyframes themeCharacterSway {
+            0%,
+            100% {
+                margin-left: -6px;
+            }
+            50% {
+                margin-left: 8px;
+            }
+        }
+        @keyframes themeBackgroundDrift {
+            0% {
+                background-position: 18% 16%, 82% 22%, 50% 100%, 12% 70%, 88% 80%, 50% 6%, center;
+            }
+            50% {
+                background-position: 24% 20%, 76% 28%, 46% 95%, 18% 66%, 82% 74%, 56% 12%, center;
+            }
+            100% {
+                background-position: 18% 16%, 82% 22%, 50% 100%, 12% 70%, 88% 80%, 50% 6%, center;
+            }
+        }
+        @keyframes themeShiftReveal {
+            0% {
+                filter: saturate(0.82) brightness(0.9);
+            }
+            55% {
+                filter: saturate(1.18) brightness(1.08);
+            }
+            100% {
+                filter: saturate(1) brightness(1);
+            }
+        }
+        @media (prefers-reduced-motion: reduce) {
+            body,
+            body.theme-shift-anim {
+                animation: none !important;
+            }
+            #theme-character-layer {
+                display: none !important;
+            }
         }
         .side-quick-menu {
             position: fixed;
@@ -514,11 +611,14 @@
         }
         header {
             --header-scale: 1.56;
-            background: linear-gradient(45deg, #87ceeb, #5db9e9);
+            background:
+                radial-gradient(circle at 20% 28%, color-mix(in srgb, var(--theme-glow-1) 68%, transparent) 0%, transparent 52%),
+                radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--theme-glow-2) 62%, transparent) 0%, transparent 48%),
+                linear-gradient(125deg, color-mix(in srgb, var(--theme-surface-a) 86%, black 14%) 0%, color-mix(in srgb, var(--theme-surface-b) 84%, black 16%) 58%, color-mix(in srgb, var(--theme-bg-end) 82%, black 18%) 100%);
             color: white;
             text-align: center;
             padding: calc(0.9rem * var(--header-scale)) 1rem calc(1.7rem * var(--header-scale));
-            box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.34), 0 0 28px var(--theme-surface-shadow);
             position: relative;
             overflow: hidden;
         }
@@ -621,7 +721,7 @@
             align-items: stretch;
             gap: 10px;
             border: 1px solid rgba(255,255,255,0.18);
-            background: linear-gradient(135deg, rgba(20,36,82,0.92), rgba(74,144,226,0.46));
+            background: linear-gradient(135deg, color-mix(in srgb, var(--theme-surface-a) 86%, black 14%), color-mix(in srgb, var(--theme-surface-b) 74%, transparent));
             color: #eef6ff;
             border-radius: 28px;
             padding: 12px 16px;
@@ -631,7 +731,7 @@
             font-weight: 700;
             letter-spacing: 0.35px;
             backdrop-filter: blur(8px);
-            box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 26px rgba(110,198,255,0.24);
+            box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 26px var(--theme-surface-shadow);
             white-space: nowrap;
         }
         .top-mini-nav {
@@ -648,7 +748,7 @@
             padding: 8px;
             border-radius: 999px;
             border: 1px solid rgba(255,255,255,0.18);
-            background: linear-gradient(135deg, rgba(11, 22, 56, 0.94), rgba(39, 73, 138, 0.82));
+            background: linear-gradient(135deg, color-mix(in srgb, var(--theme-surface-a) 90%, black 10%), color-mix(in srgb, var(--theme-surface-b) 84%, black 16%));
             box-shadow: 0 10px 24px rgba(0,0,0,0.28);
             backdrop-filter: blur(8px);
             transition: opacity 0.22s ease, transform 0.22s ease;
@@ -5525,16 +5625,16 @@
             }
 
             .logo-wrap {
-                height: 128px !important;
-                min-height: 128px !important;
-                max-width: 360px !important;
+                height: 156px !important;
+                min-height: 156px !important;
+                max-width: 420px !important;
                 margin: 0 auto !important;
             }
 
             .dove-logo,
             .dove-logo-fallback {
-                width: min(360px, 92vw) !important;
-                max-width: min(360px, 92vw) !important;
+                width: min(420px, 96vw) !important;
+                max-width: min(420px, 96vw) !important;
                 height: auto !important;
             }
 
@@ -5564,9 +5664,9 @@
                 padding: 6px !important;
                 border-radius: 12px !important;
                 z-index: 95 !important;
-                background: linear-gradient(145deg, rgba(22,45,95,0.95), rgba(14,31,74,0.96)) !important;
-                border: 1px solid rgba(139,189,255,0.5) !important;
-                box-shadow: 0 18px 36px rgba(2,8,22,0.5), 0 0 0 1px rgba(139,189,255,0.2) inset !important;
+                background: linear-gradient(145deg, color-mix(in srgb, var(--theme-surface-a) 92%, black 8%), color-mix(in srgb, var(--theme-surface-b) 90%, black 10%)) !important;
+                border: 1px solid color-mix(in srgb, var(--theme-chip-hover-border) 72%, rgba(255,255,255,0.18)) !important;
+                box-shadow: 0 18px 36px rgba(2,8,22,0.5), 0 0 0 1px color-mix(in srgb, var(--theme-chip-hover-border) 34%, transparent) inset !important;
             }
 
             body:not(.home-screen-active):not(.menu-screen-active) {
@@ -6219,7 +6319,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else{this.onerror=null;this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -10258,6 +10358,11 @@
             return normalizeApiBase(activeApiBase || API_BASE || '');
         }
 
+        function buildApiUrl(pathSuffix) {
+            const suffix = String(pathSuffix || '');
+            return getActiveApiBase() + suffix;
+        }
+
         function getApiBaseCandidates(pathSuffix) {
             const candidates = [];
             const seen = new Set();
@@ -10373,17 +10478,211 @@
         let liveInventoryPollTimer = null;
         let autoThemeRefreshTimer = null;
         let trendingSalesItems = [];
+        let themeCharacterSpawnTimer = null;
+        let themeCharacterStarterTimeouts = [];
+
+        const THEME_CHARACTER_PROFILES = {
+            winter: {
+                icons: ['❄', '☃'],
+                colors: ['#d9f0ff', '#bfe2ff', '#e7f7ff'],
+                spawnMs: 1800,
+                durationMinMs: 13000,
+                durationMaxMs: 19000,
+                sizeMin: 12,
+                sizeMax: 20,
+                maxCountDesktop: 9,
+                maxCountMobile: 5
+            },
+            spring: {
+                icons: ['🌸', '🌷'],
+                colors: ['#ffd5ea', '#d1ffd9', '#fff1a6'],
+                spawnMs: 1700,
+                durationMinMs: 13000,
+                durationMaxMs: 19000,
+                sizeMin: 13,
+                sizeMax: 22,
+                maxCountDesktop: 8,
+                maxCountMobile: 5
+            },
+            fourthOfJuly: {
+                icons: ['🎇', '🗽'],
+                colors: ['#d7e9ff', '#ffb3b3', '#ffffff'],
+                spawnMs: 1600,
+                durationMinMs: 11000,
+                durationMaxMs: 17000,
+                sizeMin: 13,
+                sizeMax: 23,
+                maxCountDesktop: 8,
+                maxCountMobile: 5
+            },
+            summer: {
+                icons: ['🌞', '🏄'],
+                colors: ['#ffe3a1', '#ffc978', '#8de7ff'],
+                spawnMs: 1900,
+                durationMinMs: 12000,
+                durationMaxMs: 18000,
+                sizeMin: 13,
+                sizeMax: 22,
+                maxCountDesktop: 7,
+                maxCountMobile: 4
+            },
+            fall: {
+                icons: ['🍁', '🍂'],
+                colors: ['#ffc27b', '#ff9862', '#ffe3a6'],
+                spawnMs: 1700,
+                durationMinMs: 12000,
+                durationMaxMs: 18000,
+                sizeMin: 14,
+                sizeMax: 23,
+                maxCountDesktop: 8,
+                maxCountMobile: 5
+            },
+            halloween: {
+                icons: ['🎃', '👻'],
+                colors: ['#ffb15c', '#d9c1ff', '#ffd27f'],
+                spawnMs: 1600,
+                durationMinMs: 11000,
+                durationMaxMs: 17000,
+                sizeMin: 15,
+                sizeMax: 24,
+                maxCountDesktop: 9,
+                maxCountMobile: 5
+            },
+            thanksgiving: {
+                icons: ['🦃', '🥧'],
+                colors: ['#f8d391', '#ffc08a', '#ffe3b0'],
+                spawnMs: 1750,
+                durationMinMs: 12000,
+                durationMaxMs: 18000,
+                sizeMin: 14,
+                sizeMax: 23,
+                maxCountDesktop: 7,
+                maxCountMobile: 4
+            },
+            winterHolidays: {
+                icons: ['🎄', '🎁'],
+                colors: ['#b8ffe1', '#d7f7ff', '#ffd3d3'],
+                spawnMs: 1650,
+                durationMinMs: 12000,
+                durationMaxMs: 18000,
+                sizeMin: 14,
+                sizeMax: 24,
+                maxCountDesktop: 9,
+                maxCountMobile: 5
+            },
+            valentine: {
+                icons: ['❤', '💘'],
+                colors: ['#ffb3cf', '#ffd1df', '#ffe2b4'],
+                spawnMs: 1700,
+                durationMinMs: 12000,
+                durationMaxMs: 18000,
+                sizeMin: 13,
+                sizeMax: 22,
+                maxCountDesktop: 8,
+                maxCountMobile: 5
+            }
+        };
+
+        function getThemeCharacterLayer() {
+            let layer = document.getElementById('theme-character-layer');
+            if (layer) return layer;
+            layer = document.createElement('div');
+            layer.id = 'theme-character-layer';
+            layer.setAttribute('aria-hidden', 'true');
+            document.body.appendChild(layer);
+            return layer;
+        }
+
+        function stopThemeCharacterAnimation() {
+            if (themeCharacterSpawnTimer) {
+                clearInterval(themeCharacterSpawnTimer);
+                themeCharacterSpawnTimer = null;
+            }
+            if (Array.isArray(themeCharacterStarterTimeouts) && themeCharacterStarterTimeouts.length) {
+                themeCharacterStarterTimeouts.forEach(function(timeoutId) {
+                    clearTimeout(timeoutId);
+                });
+                themeCharacterStarterTimeouts = [];
+            }
+            const layer = document.getElementById('theme-character-layer');
+            if (layer) layer.replaceChildren();
+        }
+
+        function spawnThemeCharacter(profile) {
+            if (!profile || !Array.isArray(profile.icons) || !profile.icons.length) return;
+            const layer = getThemeCharacterLayer();
+            if (!layer) return;
+
+            const isMobile = (window.innerWidth || 0) <= 760;
+            const maxCount = isMobile ? (profile.maxCountMobile || 12) : (profile.maxCountDesktop || 20);
+            if (layer.childElementCount >= maxCount) return;
+
+            const icon = profile.icons[Math.floor(Math.random() * profile.icons.length)] || '✦';
+            const colorPool = Array.isArray(profile.colors) && profile.colors.length ? profile.colors : ['#ffffff'];
+            const color = colorPool[Math.floor(Math.random() * colorPool.length)] || '#ffffff';
+            const sizeMin = Number(profile.sizeMin || 12);
+            const sizeMax = Number(profile.sizeMax || sizeMin + 12);
+            const durationMin = Number(profile.durationMinMs || 7000);
+            const durationMax = Number(profile.durationMaxMs || durationMin + 3000);
+
+            const char = document.createElement('span');
+            char.className = 'theme-character';
+            char.textContent = icon;
+            char.style.left = (Math.random() * 100).toFixed(2) + 'vw';
+            char.style.fontSize = (sizeMin + Math.random() * Math.max(1, sizeMax - sizeMin)).toFixed(1) + 'px';
+            char.style.color = color;
+            char.style.opacity = (0.72 + Math.random() * 0.24).toFixed(2);
+
+            const fallDuration = Math.round(durationMin + Math.random() * Math.max(250, durationMax - durationMin));
+            const swayDuration = Math.round(1800 + Math.random() * 2400);
+            const drift = (Math.random() * 42 - 21).toFixed(1) + 'px';
+            const rotate = (Math.random() * 120 - 60).toFixed(0) + 'deg';
+            const startY = (Math.random() * 78).toFixed(1) + 'vh';
+            const rise = (Math.random() * 24 - 12).toFixed(1) + 'vh';
+            const startX = (Math.random() * 8 - 4).toFixed(1) + 'px';
+            char.style.setProperty('--theme-char-opacity', char.style.opacity);
+            char.style.setProperty('--theme-char-drift', drift);
+            char.style.setProperty('--theme-char-rot', rotate);
+            char.style.setProperty('--theme-char-start-y', startY);
+            char.style.setProperty('--theme-char-rise', rise);
+            char.style.setProperty('--theme-char-start-x', startX);
+            char.style.animationDuration = fallDuration + 'ms, ' + swayDuration + 'ms';
+
+            char.addEventListener('animationend', function(evt) {
+                if (evt && evt.animationName === 'themeCharacterDrift') {
+                    char.remove();
+                }
+            });
+
+            layer.appendChild(char);
+        }
+
+        function startThemeCharacterAnimation(themeKey) {
+            // Emojis disabled by request: keep seasonal color themes only.
+            stopThemeCharacterAnimation();
+            return;
+        }
 
         const AUTO_THEME_PROFILES = {
             winter: {
                 glow1: 'rgba(164, 220, 255, 0.2)',
                 glow2: 'rgba(198, 180, 255, 0.16)',
                 glow3: 'rgba(200, 255, 248, 0.12)',
+                graphicA: 'rgba(119, 194, 255, 0.28)',
+                graphicB: 'rgba(178, 160, 255, 0.2)',
+                graphicC: 'rgba(180, 246, 255, 0.2)',
+                driftSpeed: '38s',
                 bgStart: '#10203c',
                 bgMid: '#1a2d52',
                 bgEnd: '#0e3b62',
+                text: '#e8f4ff',
                 surfaceA: 'rgba(14, 34, 70, 0.92)',
                 surfaceB: 'rgba(20, 52, 93, 0.86)',
+                surfaceShadow: 'rgba(146, 210, 255, 0.22)',
+                chipBg: 'rgba(223, 240, 255, 0.12)',
+                chipHoverBg: 'rgba(223, 240, 255, 0.22)',
+                chipText: '#ecf6ff',
+                chipHoverBorder: 'rgba(178, 224, 255, 0.54)',
                 activeA: 'rgba(96, 178, 255, 0.58)',
                 activeB: 'rgba(123, 115, 255, 0.5)',
                 saleA: 'rgba(173, 247, 255, 0.94)',
@@ -10402,16 +10701,26 @@
                 glow1: 'rgba(143, 255, 189, 0.2)',
                 glow2: 'rgba(255, 157, 221, 0.16)',
                 glow3: 'rgba(192, 255, 219, 0.12)',
-                bgStart: '#16382d',
-                bgMid: '#204d42',
-                bgEnd: '#2b6d61',
-                surfaceA: 'rgba(20, 62, 50, 0.92)',
-                surfaceB: 'rgba(35, 90, 75, 0.86)',
-                activeA: 'rgba(119, 223, 163, 0.58)',
-                activeB: 'rgba(104, 183, 224, 0.48)',
-                saleA: 'rgba(251, 255, 174, 0.95)',
-                saleB: 'rgba(170, 243, 139, 0.9)',
-                saleText: '#244700',
+                graphicA: 'rgba(134, 255, 176, 0.28)',
+                graphicB: 'rgba(255, 171, 217, 0.22)',
+                graphicC: 'rgba(199, 255, 170, 0.2)',
+                driftSpeed: '30s',
+                bgStart: '#163327',
+                bgMid: '#1f5a3f',
+                bgEnd: '#3f8a61',
+                text: '#ecfff2',
+                surfaceA: 'rgba(24, 79, 56, 0.92)',
+                surfaceB: 'rgba(49, 123, 84, 0.86)',
+                surfaceShadow: 'rgba(150, 255, 188, 0.22)',
+                chipBg: 'rgba(219, 255, 232, 0.13)',
+                chipHoverBg: 'rgba(219, 255, 232, 0.24)',
+                chipText: '#effff5',
+                chipHoverBorder: 'rgba(170, 255, 197, 0.56)',
+                activeA: 'rgba(118, 242, 170, 0.62)',
+                activeB: 'rgba(122, 216, 255, 0.52)',
+                saleA: 'rgba(255, 247, 160, 0.96)',
+                saleB: 'rgba(146, 241, 124, 0.92)',
+                saleText: '#1f4d11',
                 guideA: 'rgba(232, 255, 245, 0.96)',
                 guideB: 'rgba(188, 247, 219, 0.95)',
                 guideText: '#0f4b35',
@@ -10421,43 +10730,96 @@
                 homeBorder: '#5aa980',
                 homeSurface: '#1d4b3d'
             },
+            fourthOfJuly: {
+                glow1: 'rgba(121, 176, 255, 0.24)',
+                glow2: 'rgba(255, 124, 124, 0.2)',
+                glow3: 'rgba(255, 255, 255, 0.18)',
+                graphicA: 'rgba(128, 191, 255, 0.34)',
+                graphicB: 'rgba(255, 129, 129, 0.28)',
+                graphicC: 'rgba(255, 255, 255, 0.24)',
+                driftSpeed: '22s',
+                bgStart: '#0e2a63',
+                bgMid: '#1a4fa3',
+                bgEnd: '#c4374b',
+                text: '#f5f9ff',
+                surfaceA: 'rgba(15, 46, 107, 0.92)',
+                surfaceB: 'rgba(37, 85, 168, 0.86)',
+                surfaceShadow: 'rgba(154, 201, 255, 0.28)',
+                chipBg: 'rgba(225, 237, 255, 0.17)',
+                chipHoverBg: 'rgba(225, 237, 255, 0.29)',
+                chipText: '#f4f9ff',
+                chipHoverBorder: 'rgba(182, 215, 255, 0.62)',
+                activeA: 'rgba(120, 188, 255, 0.64)',
+                activeB: 'rgba(255, 129, 129, 0.58)',
+                saleA: 'rgba(255, 241, 194, 0.98)',
+                saleB: 'rgba(255, 173, 173, 0.95)',
+                saleText: '#5f1f26',
+                guideA: 'rgba(233, 244, 255, 0.97)',
+                guideB: 'rgba(186, 218, 255, 0.96)',
+                guideText: '#123b7a',
+                backA: 'rgba(255, 245, 221, 0.98)',
+                backB: 'rgba(255, 205, 176, 0.95)',
+                backText: '#663222',
+                homeBorder: '#7caeea',
+                homeSurface: '#1a4a8d'
+            },
             summer: {
-                glow1: 'rgba(90, 221, 255, 0.22)',
-                glow2: 'rgba(255, 170, 120, 0.16)',
-                glow3: 'rgba(255, 238, 150, 0.12)',
-                bgStart: '#0f2d4a',
-                bgMid: '#11476a',
-                bgEnd: '#1a6996',
-                surfaceA: 'rgba(13, 47, 79, 0.92)',
-                surfaceB: 'rgba(22, 87, 130, 0.86)',
-                activeA: 'rgba(76, 191, 255, 0.58)',
-                activeB: 'rgba(255, 170, 78, 0.48)',
-                saleA: 'rgba(255, 235, 118, 0.95)',
-                saleB: 'rgba(255, 169, 87, 0.92)',
-                saleText: '#4a2a00',
-                guideA: 'rgba(232, 247, 255, 0.96)',
-                guideB: 'rgba(165, 226, 255, 0.96)',
-                guideText: '#0d4469',
-                backA: 'rgba(255, 242, 201, 0.98)',
-                backB: 'rgba(255, 205, 135, 0.95)',
-                backText: '#5a3500',
-                homeBorder: '#5ea4c9',
-                homeSurface: '#144a70'
+                glow1: 'rgba(83, 224, 255, 0.26)',
+                glow2: 'rgba(255, 205, 127, 0.22)',
+                glow3: 'rgba(255, 166, 112, 0.14)',
+                graphicA: 'rgba(96, 236, 255, 0.34)',
+                graphicB: 'rgba(255, 214, 150, 0.28)',
+                graphicC: 'rgba(255, 182, 125, 0.24)',
+                driftSpeed: '24s',
+                bgStart: '#1b6a93',
+                bgMid: '#27a9cb',
+                bgEnd: '#f1c27a',
+                text: '#f3fbff',
+                surfaceA: 'rgba(18, 106, 143, 0.92)',
+                surfaceB: 'rgba(42, 153, 193, 0.86)',
+                surfaceShadow: 'rgba(133, 232, 255, 0.28)',
+                chipBg: 'rgba(231, 248, 255, 0.17)',
+                chipHoverBg: 'rgba(231, 248, 255, 0.3)',
+                chipText: '#f5fbff',
+                chipHoverBorder: 'rgba(193, 236, 255, 0.62)',
+                activeA: 'rgba(99, 220, 255, 0.64)',
+                activeB: 'rgba(255, 166, 110, 0.56)',
+                saleA: 'rgba(255, 232, 150, 0.98)',
+                saleB: 'rgba(255, 170, 110, 0.95)',
+                saleText: '#60310f',
+                guideA: 'rgba(233, 249, 255, 0.97)',
+                guideB: 'rgba(186, 236, 255, 0.96)',
+                guideText: '#11577d',
+                backA: 'rgba(255, 241, 205, 0.98)',
+                backB: 'rgba(255, 201, 141, 0.96)',
+                backText: '#684012',
+                homeBorder: '#7ac2da',
+                homeSurface: '#1f6f95'
             },
             fall: {
                 glow1: 'rgba(255, 170, 105, 0.21)',
                 glow2: 'rgba(255, 119, 125, 0.16)',
                 glow3: 'rgba(255, 211, 125, 0.11)',
-                bgStart: '#2a1c19',
-                bgMid: '#4a2b24',
-                bgEnd: '#6a3f2d',
-                surfaceA: 'rgba(68, 40, 30, 0.92)',
-                surfaceB: 'rgba(96, 57, 42, 0.86)',
-                activeA: 'rgba(255, 152, 81, 0.56)',
-                activeB: 'rgba(211, 102, 49, 0.5)',
-                saleA: 'rgba(255, 220, 131, 0.95)',
-                saleB: 'rgba(255, 153, 84, 0.92)',
-                saleText: '#5a2600',
+                graphicA: 'rgba(255, 166, 87, 0.3)',
+                graphicB: 'rgba(234, 103, 62, 0.24)',
+                graphicC: 'rgba(255, 209, 118, 0.2)',
+                driftSpeed: '32s',
+                bgStart: '#28120c',
+                bgMid: '#5a2a17',
+                bgEnd: '#8a4a20',
+                text: '#fff2de',
+                surfaceA: 'rgba(85, 42, 22, 0.92)',
+                surfaceB: 'rgba(131, 62, 30, 0.86)',
+                surfaceShadow: 'rgba(255, 173, 103, 0.24)',
+                chipBg: 'rgba(255, 226, 190, 0.14)',
+                chipHoverBg: 'rgba(255, 226, 190, 0.24)',
+                chipText: '#fff4e7',
+                chipHoverBorder: 'rgba(255, 196, 136, 0.56)',
+                activeA: 'rgba(255, 168, 92, 0.62)',
+                activeB: 'rgba(217, 88, 42, 0.55)',
+                saleA: 'rgba(255, 213, 120, 0.96)',
+                saleB: 'rgba(255, 138, 71, 0.94)',
+                saleText: '#672600',
                 guideA: 'rgba(255, 239, 216, 0.97)',
                 guideB: 'rgba(255, 196, 153, 0.95)',
                 guideText: '#64361b',
@@ -10471,16 +10833,26 @@
                 glow1: 'rgba(255, 143, 67, 0.25)',
                 glow2: 'rgba(162, 72, 255, 0.2)',
                 glow3: 'rgba(255, 201, 83, 0.12)',
-                bgStart: '#1c1024',
-                bgMid: '#2a1540',
-                bgEnd: '#3b1f5e',
-                surfaceA: 'rgba(45, 19, 62, 0.92)',
-                surfaceB: 'rgba(66, 24, 89, 0.86)',
-                activeA: 'rgba(255, 146, 64, 0.6)',
-                activeB: 'rgba(171, 92, 255, 0.52)',
-                saleA: 'rgba(255, 191, 90, 0.95)',
-                saleB: 'rgba(255, 120, 54, 0.92)',
-                saleText: '#562400',
+                graphicA: 'rgba(255, 141, 54, 0.32)',
+                graphicB: 'rgba(181, 96, 255, 0.26)',
+                graphicC: 'rgba(255, 220, 123, 0.22)',
+                driftSpeed: '20s',
+                bgStart: '#130b1f',
+                bgMid: '#2a1146',
+                bgEnd: '#4c1f73',
+                text: '#f8eeff',
+                surfaceA: 'rgba(49, 17, 71, 0.92)',
+                surfaceB: 'rgba(87, 28, 120, 0.86)',
+                surfaceShadow: 'rgba(200, 118, 255, 0.24)',
+                chipBg: 'rgba(246, 221, 255, 0.12)',
+                chipHoverBg: 'rgba(246, 221, 255, 0.22)',
+                chipText: '#fbf1ff',
+                chipHoverBorder: 'rgba(239, 156, 255, 0.56)',
+                activeA: 'rgba(255, 157, 66, 0.64)',
+                activeB: 'rgba(178, 94, 255, 0.58)',
+                saleA: 'rgba(255, 204, 98, 0.96)',
+                saleB: 'rgba(255, 113, 54, 0.94)',
+                saleText: '#5f2300',
                 guideA: 'rgba(255, 235, 208, 0.96)',
                 guideB: 'rgba(255, 180, 120, 0.94)',
                 guideText: '#5a2a00',
@@ -10494,16 +10866,26 @@
                 glow1: 'rgba(255, 172, 119, 0.22)',
                 glow2: 'rgba(255, 210, 128, 0.15)',
                 glow3: 'rgba(203, 255, 174, 0.1)',
-                bgStart: '#2b2217',
-                bgMid: '#4b3823',
-                bgEnd: '#6b4e2f',
-                surfaceA: 'rgba(64, 45, 27, 0.92)',
-                surfaceB: 'rgba(98, 69, 39, 0.86)',
-                activeA: 'rgba(220, 151, 83, 0.56)',
-                activeB: 'rgba(177, 128, 53, 0.5)',
-                saleA: 'rgba(255, 220, 141, 0.95)',
-                saleB: 'rgba(222, 158, 94, 0.92)',
-                saleText: '#4f2d0f',
+                graphicA: 'rgba(241, 167, 96, 0.28)',
+                graphicB: 'rgba(255, 211, 138, 0.2)',
+                graphicC: 'rgba(184, 226, 126, 0.18)',
+                driftSpeed: '33s',
+                bgStart: '#2c1e11',
+                bgMid: '#5c3b20',
+                bgEnd: '#86592f',
+                text: '#fff3df',
+                surfaceA: 'rgba(83, 51, 24, 0.92)',
+                surfaceB: 'rgba(123, 76, 33, 0.86)',
+                surfaceShadow: 'rgba(255, 180, 106, 0.22)',
+                chipBg: 'rgba(255, 230, 194, 0.13)',
+                chipHoverBg: 'rgba(255, 230, 194, 0.23)',
+                chipText: '#fff5e8',
+                chipHoverBorder: 'rgba(248, 199, 131, 0.56)',
+                activeA: 'rgba(229, 164, 88, 0.58)',
+                activeB: 'rgba(185, 128, 54, 0.52)',
+                saleA: 'rgba(255, 225, 148, 0.96)',
+                saleB: 'rgba(218, 145, 78, 0.93)',
+                saleText: '#522d0d',
                 guideA: 'rgba(255, 241, 214, 0.97)',
                 guideB: 'rgba(238, 201, 142, 0.95)',
                 guideText: '#5a3a1a',
@@ -10517,16 +10899,26 @@
                 glow1: 'rgba(114, 217, 255, 0.2)',
                 glow2: 'rgba(255, 104, 129, 0.18)',
                 glow3: 'rgba(140, 255, 196, 0.12)',
-                bgStart: '#102331',
-                bgMid: '#16344f',
-                bgEnd: '#1f5a63',
-                surfaceA: 'rgba(14, 46, 56, 0.92)',
-                surfaceB: 'rgba(26, 82, 90, 0.86)',
-                activeA: 'rgba(87, 200, 255, 0.58)',
-                activeB: 'rgba(255, 109, 130, 0.5)',
-                saleA: 'rgba(255, 216, 124, 0.96)',
-                saleB: 'rgba(255, 129, 99, 0.93)',
-                saleText: '#612300',
+                graphicA: 'rgba(108, 232, 188, 0.28)',
+                graphicB: 'rgba(255, 111, 123, 0.24)',
+                graphicC: 'rgba(151, 255, 208, 0.2)',
+                driftSpeed: '27s',
+                bgStart: '#0f2f2a',
+                bgMid: '#1d4f44',
+                bgEnd: '#2f7a62',
+                text: '#e9fff3',
+                surfaceA: 'rgba(16, 64, 53, 0.92)',
+                surfaceB: 'rgba(30, 98, 79, 0.86)',
+                surfaceShadow: 'rgba(132, 255, 199, 0.22)',
+                chipBg: 'rgba(213, 255, 232, 0.13)',
+                chipHoverBg: 'rgba(213, 255, 232, 0.24)',
+                chipText: '#effff7',
+                chipHoverBorder: 'rgba(159, 255, 208, 0.58)',
+                activeA: 'rgba(96, 224, 191, 0.6)',
+                activeB: 'rgba(255, 116, 132, 0.54)',
+                saleA: 'rgba(255, 227, 136, 0.97)',
+                saleB: 'rgba(255, 132, 114, 0.94)',
+                saleText: '#612800',
                 guideA: 'rgba(225, 253, 242, 0.97)',
                 guideB: 'rgba(184, 243, 219, 0.95)',
                 guideText: '#14523f',
@@ -10540,16 +10932,26 @@
                 glow1: 'rgba(255, 136, 184, 0.22)',
                 glow2: 'rgba(255, 102, 136, 0.18)',
                 glow3: 'rgba(255, 214, 225, 0.12)',
-                bgStart: '#3a1a2c',
-                bgMid: '#5a2545',
-                bgEnd: '#783059',
-                surfaceA: 'rgba(86, 28, 64, 0.92)',
-                surfaceB: 'rgba(113, 41, 83, 0.86)',
-                activeA: 'rgba(255, 132, 172, 0.58)',
-                activeB: 'rgba(255, 184, 121, 0.46)',
-                saleA: 'rgba(255, 225, 145, 0.95)',
-                saleB: 'rgba(255, 145, 157, 0.91)',
-                saleText: '#63222b',
+                graphicA: 'rgba(255, 140, 186, 0.3)',
+                graphicB: 'rgba(255, 116, 152, 0.24)',
+                graphicC: 'rgba(255, 220, 180, 0.2)',
+                driftSpeed: '26s',
+                bgStart: '#4a142c',
+                bgMid: '#7a2145',
+                bgEnd: '#b03663',
+                text: '#fff1f7',
+                surfaceA: 'rgba(120, 25, 66, 0.92)',
+                surfaceB: 'rgba(164, 42, 93, 0.86)',
+                surfaceShadow: 'rgba(255, 145, 188, 0.24)',
+                chipBg: 'rgba(255, 223, 237, 0.13)',
+                chipHoverBg: 'rgba(255, 223, 237, 0.24)',
+                chipText: '#fff3f9',
+                chipHoverBorder: 'rgba(255, 174, 205, 0.58)',
+                activeA: 'rgba(255, 138, 184, 0.62)',
+                activeB: 'rgba(255, 184, 121, 0.52)',
+                saleA: 'rgba(255, 228, 151, 0.96)',
+                saleB: 'rgba(255, 136, 156, 0.93)',
+                saleText: '#6a1f33',
                 guideA: 'rgba(255, 238, 246, 0.97)',
                 guideB: 'rgba(255, 194, 221, 0.95)',
                 guideText: '#662249',
@@ -10568,6 +10970,7 @@
 
             if ((month === 12 && day >= 1) || (month === 1 && day <= 6)) return 'winterHolidays';
             if (month === 2 && day >= 10 && day <= 16) return 'valentine';
+            if (month === 7 && day >= 1 && day <= 7) return 'fourthOfJuly';
             if (month === 10 && day >= 15) return 'halloween';
             if (month === 11 && day >= 20) return 'thanksgiving';
             if (month >= 3 && month <= 5) return 'spring';
@@ -10582,11 +10985,21 @@
             rootStyle.setProperty('--theme-glow-1', profile.glow1);
             rootStyle.setProperty('--theme-glow-2', profile.glow2);
             rootStyle.setProperty('--theme-glow-3', profile.glow3);
+            rootStyle.setProperty('--theme-graphic-a', profile.graphicA || profile.glow1 || 'rgba(110,198,255,0.2)');
+            rootStyle.setProperty('--theme-graphic-b', profile.graphicB || profile.glow2 || 'rgba(255,110,199,0.15)');
+            rootStyle.setProperty('--theme-graphic-c', profile.graphicC || profile.glow3 || 'rgba(110,255,232,0.12)');
+            rootStyle.setProperty('--theme-drift-speed', profile.driftSpeed || '34s');
             rootStyle.setProperty('--theme-bg-start', profile.bgStart);
             rootStyle.setProperty('--theme-bg-mid', profile.bgMid);
             rootStyle.setProperty('--theme-bg-end', profile.bgEnd);
+            rootStyle.setProperty('--theme-text', profile.text || '#e0e0e0');
             rootStyle.setProperty('--theme-surface-a', profile.surfaceA);
             rootStyle.setProperty('--theme-surface-b', profile.surfaceB);
+            rootStyle.setProperty('--theme-surface-shadow', profile.surfaceShadow || 'rgba(110,198,255,0.12)');
+            rootStyle.setProperty('--theme-chip-bg', profile.chipBg || 'rgba(255,255,255,0.07)');
+            rootStyle.setProperty('--theme-chip-bg-hover', profile.chipHoverBg || 'rgba(255,255,255,0.12)');
+            rootStyle.setProperty('--theme-chip-text', profile.chipText || '#e8f1ff');
+            rootStyle.setProperty('--theme-chip-hover-border', profile.chipHoverBorder || 'rgba(110,198,255,0.3)');
             rootStyle.setProperty('--theme-menu-active-a', profile.activeA);
             rootStyle.setProperty('--theme-menu-active-b', profile.activeB);
             rootStyle.setProperty('--theme-sale-a', profile.saleA);
@@ -10605,6 +11018,14 @@
             rootStyle.setProperty('--theme-home-border', profile.homeBorder);
             rootStyle.setProperty('--theme-home-surface', profile.homeSurface);
             document.body.setAttribute('data-auto-theme', themeKey);
+            startThemeCharacterAnimation(themeKey);
+            document.body.classList.remove('theme-shift-anim');
+            window.requestAnimationFrame(() => {
+                document.body.classList.add('theme-shift-anim');
+            });
+            window.setTimeout(() => {
+                document.body.classList.remove('theme-shift-anim');
+            }, 760);
         }
 
         function initAutoThemeSystem() {
@@ -11413,8 +11834,8 @@
             const quickPicksLinks = document.querySelectorAll('[data-store-page-link="quick-picks"]');
             const useMobileHomeLanding = shouldUseMobileHomeLanding();
             const hasCartItems = Array.isArray(cart) && cart.length > 0;
-            if (logoWrap) logoWrap.hidden = !isHomePage;
-            if (logoTagline) logoTagline.hidden = !isHomePage;
+            if (logoWrap) logoWrap.hidden = useMobileHomeLanding ? false : !isHomePage;
+            if (logoTagline) logoTagline.hidden = useMobileHomeLanding ? false : !isHomePage;
             const hideHeaderCartChip = useMobileHomeLanding
                 ? ((isHomePage || page === 'menu') && !hasCartItems)
                 : false;
@@ -16918,8 +17339,13 @@
         // Example (Node/Express): POST /create-payment-intent
         //   const paymentIntent = await stripe.paymentIntents.create({ amount, currency: 'usd' });
         //   res.json({ clientSecret: paymentIntent.client_secret });
-        const PAYMENT_INTENT_ENDPOINT = API_BASE + '/create-payment-intent'; // server endpoint
-        const ORDER_API_ENDPOINT = API_BASE + '/api/orders';
+        function getPaymentIntentEndpoint() {
+            return buildApiUrl('/create-payment-intent');
+        }
+
+        function getOrderApiEndpoint() {
+            return buildApiUrl('/api/orders');
+        }
         const CASH_APP_CASHTAG = '$freedomworksstore';
         const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
         let STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
@@ -16934,6 +17360,7 @@
         let stripeElements = null;
         let stripeCardElement = null;
         let stripeCardMounted = false;
+        let stripeLastMountError = '';
 
         function applyStripeConfigFromWindow() {
             const publishableKey = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' ? window.STRIPE_PUBLISHABLE_KEY.trim() : '';
@@ -16963,7 +17390,7 @@
                 candidates.push(url);
             };
 
-            pushCandidate(API_BASE || '');
+            pushCandidate(getActiveApiBase() || API_BASE || '');
             pushCandidate(window.location.origin || '');
 
             const isHttp = /^https?:$/i.test(window.location.protocol || '');
@@ -17015,7 +17442,19 @@
 
         function waitForStripeMountFrame() {
             return new Promise((resolve) => {
-                requestAnimationFrame(() => requestAnimationFrame(resolve));
+                let settled = false;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    resolve();
+                };
+                const fallbackTimer = setTimeout(finish, 140);
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        clearTimeout(fallbackTimer);
+                        finish();
+                    });
+                });
             });
         }
 
@@ -17044,12 +17483,30 @@
                 });
             }
 
-            if (!stripeCardMounted) {
-                const mountPoint = document.getElementById('stripe-card-element');
-                if (!mountPoint) return;
-                await waitForStripeMountFrame();
-                stripeCardElement.mount('#stripe-card-element');
-                stripeCardMounted = true;
+            const mountPoint = document.getElementById('stripe-card-element');
+            if (!mountPoint) return;
+            const hostHasStripeFrame = !!mountPoint.querySelector('iframe');
+            const shouldMount = !stripeCardMounted || !hostHasStripeFrame;
+            if (shouldMount) {
+                stripeCardMounted = false;
+                stripeLastMountError = '';
+                for (let attempt = 0; attempt < 3; attempt += 1) {
+                    try {
+                        stripeCardElement.unmount();
+                    } catch (_) {}
+                    await waitForStripeMountFrame();
+                    try {
+                        stripeCardElement.mount(mountPoint);
+                    } catch (mountError) {
+                        stripeLastMountError = String(mountError && mountError.message ? mountError.message : mountError || 'Unknown mount error');
+                    }
+                    await new Promise((resolve) => setTimeout(resolve, 280));
+                    if (mountPoint.querySelector('iframe')) {
+                        stripeCardMounted = true;
+                        stripeLastMountError = '';
+                        break;
+                    }
+                }
             }
         }
 
@@ -17083,8 +17540,22 @@
             const overlay = document.getElementById('stripe-modal-overlay');
             overlay.classList.add('open');
             updateModalBodyLock();
-            if (!stripeCardElement || !stripeCardMounted) {
-                void initStripe();
+            const stripeHost = document.getElementById('stripe-card-element');
+            const hostHasStripeFrame = !!stripeHost && !!stripeHost.querySelector('iframe');
+            if (!stripeCardElement || !stripeCardMounted || !hostHasStripeFrame) {
+                await Promise.race([
+                    initStripe(),
+                    new Promise((resolve) => setTimeout(resolve, 3000))
+                ]);
+                const refreshedHost = document.getElementById('stripe-card-element');
+                const refreshedHasStripeFrame = !!refreshedHost && !!refreshedHost.querySelector('iframe');
+                if ((!stripeCardElement || !stripeCardMounted || !refreshedHasStripeFrame) && !STRIPE_TEMP_DOWN) {
+                    const errEl = document.getElementById('stripe-error-msg');
+                    if (errEl) {
+                        const mountSuffix = stripeLastMountError ? (' (' + stripeLastMountError + ')') : '';
+                        errEl.textContent = 'Secure card form is still loading. Please wait a moment and try again.' + mountSuffix;
+                    }
+                }
             }
 
             // Mascot checkout reaction
@@ -17281,7 +17752,8 @@
             }
 
             try {
-                const resp = await fetch(ORDER_API_ENDPOINT, {
+                await discoverWorkingApiBase();
+                const resp = await fetch(getOrderApiEndpoint(), {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -17924,11 +18396,12 @@
             try {
                 const total = getCheckoutTotal();
                 const amountCents = Math.round(total * 100);
+                await discoverWorkingApiBase();
 
                 const paymentBody = { amount: amountCents, currency: 'usd' };
                 if (receiptEmail) paymentBody.receipt_email = receiptEmail;
 
-                const resp = await fetch(PAYMENT_INTENT_ENDPOINT, {
+                const resp = await fetch(getPaymentIntentEndpoint(), {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(paymentBody)
@@ -18095,19 +18568,57 @@
             var logoTransparentSrc = resolveAssetUrl('Freedom Works logo transparent.png');
             var verifiedTransparentLogoSrc = '';
 
-            function showFallbackImage(imgEl, src) {
-                if (!imgEl) return;
+            function getLogoCandidates(fileName) {
+                if (typeof getAssetUrlCandidates === 'function') {
+                    var list = getAssetUrlCandidates(fileName) || [];
+                    if (Array.isArray(list) && list.length) return list;
+                }
+                var fallback = resolveAssetUrl(fileName);
+                return fallback ? [fallback] : [];
+            }
+
+            function loadImageFromCandidates(imgEl, candidates, onDone) {
+                if (!imgEl) {
+                    if (typeof onDone === 'function') onDone('');
+                    return;
+                }
+                var queue = (Array.isArray(candidates) ? candidates : []).filter(Boolean);
+                if (!queue.length) {
+                    if (typeof onDone === 'function') onDone('');
+                    return;
+                }
+                var idx = 0;
                 imgEl.onerror = function() {
-                    if (src !== logoSrc && logoSrc) {
-                        showFallbackImage(imgEl, logoSrc);
+                    idx += 1;
+                    if (idx >= queue.length) {
+                        if (typeof onDone === 'function') onDone('');
                         return;
                     }
-                    imgEl.removeAttribute('src');
+                    imgEl.src = queue[idx];
                 };
-                imgEl.src = src || '';
+                imgEl.onload = function() {
+                    if (typeof onDone === 'function') onDone(queue[idx] || '');
+                };
+                imgEl.src = queue[idx];
+            }
+
+            function showFallbackImage(imgEl, src) {
+                if (!imgEl) return;
+                var candidates = [];
+                if (src) candidates.push(src);
+                getLogoCandidates('Freedom Works logo transparent.png').forEach(function(url) { candidates.push(url); });
+                getLogoCandidates('Freedom Works logo (15 x 15 in).jpg').forEach(function(url) { candidates.push(url); });
+                candidates = candidates.filter(function(url, index, arr) {
+                    return !!url && arr.indexOf(url) === index;
+                });
                 imgEl.decoding = 'async';
                 imgEl.loading = 'eager';
-                imgEl.style.display = src ? 'block' : 'none';
+                imgEl.style.display = candidates.length ? 'block' : 'none';
+                loadImageFromCandidates(imgEl, candidates, function(loadedSrc) {
+                    if (!loadedSrc) {
+                        imgEl.removeAttribute('src');
+                    }
+                });
             }
 
             function removeBg(canvas, sx, sy, sw, sh) {
@@ -18184,7 +18695,14 @@
                     if (fallbackImg) fallbackImg.style.display = 'block';
                 };
                 if (fallbackImg) fallbackImg.style.display = 'block';
-                img.src = logoSrc;
+                loadImageFromCandidates(img, getLogoCandidates('Freedom Works logo (15 x 15 in).jpg'), function(loadedSrc) {
+                    if (loadedSrc) {
+                        logoSrc = loadedSrc;
+                        return;
+                    }
+                    canvas.classList.remove('is-ready');
+                    if (fallbackImg) fallbackImg.style.display = 'block';
+                });
             }
 
             // Full logo (header)
@@ -18192,15 +18710,23 @@
             if (doveCanvas) {
                 if (logoTransparentSrc) {
                     var transparentProbe = new Image();
+                    transparentProbe.crossOrigin = 'anonymous';
                     transparentProbe.onload = function() {
-                        verifiedTransparentLogoSrc = logoTransparentSrc;
+                        verifiedTransparentLogoSrc = transparentProbe.src || logoTransparentSrc;
                         removeBg(doveCanvas, 0, 0, 1, 1);
                     };
                     transparentProbe.onerror = function() {
                         verifiedTransparentLogoSrc = '';
                         removeBg(doveCanvas, 0, 0, 1, 1);
                     };
-                    transparentProbe.src = logoTransparentSrc;
+                    loadImageFromCandidates(transparentProbe, getLogoCandidates('Freedom Works logo transparent.png'), function(loadedSrc) {
+                        if (loadedSrc) {
+                            logoTransparentSrc = loadedSrc;
+                            return;
+                        }
+                        verifiedTransparentLogoSrc = '';
+                        removeBg(doveCanvas, 0, 0, 1, 1);
+                    });
                 } else {
                     removeBg(doveCanvas, 0, 0, 1, 1);
                 }
