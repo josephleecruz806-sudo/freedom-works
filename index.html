@@ -6356,7 +6356,6 @@
     <nav class="side-quick-menu" aria-label="Page menu">
         <p class="side-menu-title">Browse</p>
         <div class="side-menu-links">
-            <button type="button" id="side-menu-back-btn" onclick="goBackStorePage()" hidden>Go Back</button>
             <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
             <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
             <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
@@ -18665,7 +18664,6 @@
                 var candidates = [];
                 if (src) candidates.push(src);
                 getLogoCandidates('Freedom Works logo transparent.png').forEach(function(url) { candidates.push(url); });
-                getLogoCandidates('Freedom Works logo (15 x 15 in).jpg').forEach(function(url) { candidates.push(url); });
                 candidates = candidates.filter(function(url, index, arr) {
                     return !!url && arr.indexOf(url) === index;
                 });
@@ -18686,8 +18684,26 @@
                     showFallbackImage(fallbackImg, verifiedTransparentLogoSrc || logoTransparentSrc || logoSrc);
                 }
                 if (verifiedTransparentLogoSrc) {
-                    canvas.classList.remove('is-ready');
-                    if (fallbackImg) fallbackImg.style.display = 'block';
+                    var cleanLogo = new Image();
+                    cleanLogo.crossOrigin = 'anonymous';
+                    cleanLogo.onload = function() {
+                        var w = cleanLogo.naturalWidth || 1;
+                        var h = cleanLogo.naturalHeight || 1;
+                        canvas.width = w;
+                        canvas.height = h;
+                        var cleanCtx = canvas.getContext('2d');
+                        cleanCtx.clearRect(0, 0, w, h);
+                        cleanCtx.drawImage(cleanLogo, 0, 0, w, h);
+                        canvas.style.width = '';
+                        canvas.style.height = '';
+                        canvas.classList.add('is-ready');
+                        if (fallbackImg) fallbackImg.style.display = 'none';
+                    };
+                    cleanLogo.onerror = function() {
+                        canvas.classList.remove('is-ready');
+                        if (fallbackImg) fallbackImg.style.display = 'block';
+                    };
+                    cleanLogo.src = verifiedTransparentLogoSrc;
                     return;
                 }
                 img.crossOrigin = 'anonymous';
