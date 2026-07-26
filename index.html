@@ -1016,10 +1016,10 @@
                 align-items: center;
             }
             .logo-wrap {
-                width: auto;
-                height: 36px !important;
-                min-height: 36px !important;
-                max-width: 140px;
+                width: min(78vw, 320px);
+                height: clamp(72px, 22vw, 120px) !important;
+                min-height: 72px !important;
+                max-width: 320px;
                 margin: 18px auto 0;
             }
             .dove-logo,
@@ -6320,7 +6320,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/freedom-works-logo.jpg';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried4){this.dataset.logoFallbackTried4='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -17625,6 +17625,12 @@
             STRIPE_TEMP_DOWN = typeof window.STRIPE_TEMP_DOWN === 'boolean'
                 ? window.STRIPE_TEMP_DOWN
                 : !STRIPE_PUBLISHABLE_KEY;
+
+            // If a valid publishable key is present, do not keep a stale temp-down flag.
+            if (/^pk_(test|live)_/i.test(STRIPE_PUBLISHABLE_KEY || '') && STRIPE_TEMP_DOWN) {
+                STRIPE_TEMP_DOWN = false;
+                window.STRIPE_TEMP_DOWN = false;
+            }
         }
 
         function parseStripeConfigScriptText(scriptText) {
@@ -18828,9 +18834,9 @@
     </script>
 
     <script>
-        /* Prefer transparent Freedom Works logo with resilient mobile fallback */
+        /* Prefer direct root logo files with resilient mobile fallback */
         (function() {
-            var logoSrc = resolveAssetUrl('freedom-works-logo-transparent.png');
+            var logoSrc = '/freedom-works-logo-transparent.png';
 
             var LOGO_TRANSPARENT_FILES = [
                 'freedom-works-logo-transparent.png',
@@ -18845,8 +18851,8 @@
             var LOGO_FILES = [
                 'freedom-works-logo-transparent.png',
                 'Freedom Works logo transparent.png',
-                'Freedom Works logo (15 x 15 in).jpg',
-                'freedom-works-logo.jpg'
+                'freedom-works-logo.jpg',
+                'Freedom Works logo (15 x 15 in).jpg'
             ];
 
             function collectLogoCandidates(fileNames) {
