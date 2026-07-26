@@ -645,14 +645,14 @@
             display: block;
         }
         .dove-logo-fallback {
-            width: min(98vw, 720px);
-            height: auto;
-            max-width: 98vw;
+            width: 100%;
+            height: 100%;
+            max-width: 100%;
             max-height: 100%;
             display: block;
             position: relative;
             z-index: 1;
-            flex: 0 1 auto;
+            flex: 1 1 auto;
             object-fit: contain;
             filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
         }
@@ -1024,9 +1024,9 @@
             }
             .dove-logo,
             .dove-logo-fallback {
-                width: min(140px, 80vw) !important;
-                height: auto !important;
-                max-width: min(140px, 80vw) !important;
+                width: 100% !important;
+                height: 100% !important;
+                max-width: 100% !important;
                 max-height: 100%;
             }
             .side-quick-menu {
@@ -5627,9 +5627,9 @@
 
             .dove-logo,
             .dove-logo-fallback {
-                width: min(420px, 96vw) !important;
-                max-width: min(420px, 96vw) !important;
-                height: auto !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                height: 100% !important;
             }
 
             #site-logo-tagline {
@@ -6268,24 +6268,30 @@
         }
 
         body.store-page-quick-pick-builder .side-quick-menu,
+        body.store-page-prints-only .side-quick-menu,
         body.store-page-quick-pick-builder #header-cart-chip,
-        body.store-page-quick-pick-builder #header-account-chip {
+        body.store-page-prints-only #header-cart-chip,
+        body.store-page-quick-pick-builder #header-account-chip,
+        body.store-page-prints-only #header-account-chip {
             display: none !important;
         }
 
         body.store-page-custom-builder.top-mini-menu-open .side-quick-menu,
-        body.store-page-quick-pick-builder.top-mini-menu-open .side-quick-menu {
+        body.store-page-quick-pick-builder.top-mini-menu-open .side-quick-menu,
+        body.store-page-prints-only.top-mini-menu-open .side-quick-menu {
             display: block !important;
         }
 
         body.store-page-custom-builder header,
-        body.store-page-quick-pick-builder header {
+        body.store-page-quick-pick-builder header,
+        body.store-page-prints-only header {
             padding-top: 12px !important;
             padding-bottom: 12px !important;
         }
 
         body.store-page-custom-builder .container,
-        body.store-page-quick-pick-builder .container {
+        body.store-page-quick-pick-builder .container,
+        body.store-page-prints-only .container {
             width: min(100vw - 16px, 980px) !important;
             max-width: min(100vw - 16px, 980px) !important;
             margin: 0 auto !important;
@@ -6293,7 +6299,8 @@
         }
 
         body.store-page-custom-builder .custom-design,
-        body.store-page-quick-pick-builder .front-back-mockup {
+        body.store-page-quick-pick-builder .front-back-mockup,
+        body.store-page-prints-only .front-back-mockup {
             width: 100% !important;
             max-width: 100% !important;
             margin: 16px auto !important;
@@ -6313,7 +6320,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/freedom-works-logo-transparent.png';}else{this.onerror=null;this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried4){this.dataset.logoFallbackTried4='1';this.src='/assets/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried5){this.dataset.logoFallbackTried5='1';this.src='/assets/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried6){this.dataset.logoFallbackTried6='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried7){this.dataset.logoFallbackTried7='1';this.src='/freedom-works-logo.jpg';}else{this.onerror=null;this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -6357,11 +6364,13 @@
         <p class="side-menu-title">Browse</p>
         <div class="side-menu-links">
             <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
-            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
             <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
             <a href="#custom-builder" data-store-page-link="custom-builder" onclick="navigateMenuToPage('custom-builder'); return false;">Custom Builder</a>
+            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
+            <a href="#print-files" onclick="openPrintsOnlyMenu(); return false;">Prints Only</a>
             <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder'); return false;">Company T-Shirt Builder</a>
             <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
+            <button type="button" onclick="openRewardsInfoPopup()">Points</button>
             <button type="button" onclick="openMenuAccount()">Account</button>
         </div>
         <p class="side-menu-note">Each menu item opens its own page view.</p>
@@ -6521,7 +6530,7 @@
                     <option value="Youth L">Youth L</option>
                     <option value="Youth XL">Youth XL</option>
                     <option value="Adult S">Adult S</option>
-                    <option value="Adult M">Adult M</option>
+                    <option value="Adult M" selected>Adult M</option>
                     <option value="Adult L">Adult L</option>
                     <option value="Adult XL">Adult XL</option>
                                             <option value="2X">2XL</option>
@@ -6778,14 +6787,14 @@
             <p style="margin:8px 0 0;color:#ffe08a;font-size:0.92rem;font-weight:700;letter-spacing:0.2px;display:none;" id="custom-labor-note">Breakdown: Shirt $0.00 = $0.00</p>
         </section>
 
-        <section class="front-back-mockup quick-pick-grid-builder" id="quick-pick-grid-section" data-store-page="quick-pick-builder" hidden>
-            <h2>Quick Pick Builder</h2>
-            <p style="color:#bbb; margin:0 0 12px;">Use your Quick Pick design on its own grid page, adjust print size, and add to cart.</p>
+        <section class="front-back-mockup quick-pick-grid-builder" id="quick-pick-grid-section" data-store-page="quick-pick-builder prints-only" hidden>
+            <h2 id="qp-grid-page-title">Quick Pick Builder</h2>
+            <p id="qp-grid-page-copy" style="color:#bbb; margin:0 0 12px;">Use your Quick Pick design or upload your own print image, adjust print size, and add to cart.</p>
 
             <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;">
                 <label for="qp-grid-shirt-size" style="color:#dce9ff;font-weight:700;white-space:nowrap;">T-Shirt Size:</label>
                 <select id="qp-grid-shirt-size" onchange="handleQuickPickGridSizeChange()" style="background:#1e1e3a;color:#fff;border:1.5px solid rgba(255,255,255,0.18);border-radius:8px;padding:7px 14px;font-size:0.97rem;cursor:pointer;">
-                    <option value="" selected>Choose a size</option>
+                    <option value="">Choose a size</option>
                     <option value="Newborn">Infant</option>
                     <option value="6M">3-6 Months</option>
                     <option value="9M">6-9 Months</option>
@@ -6801,7 +6810,7 @@
                     <option value="Youth L">Youth L</option>
                     <option value="Youth XL">Youth XL</option>
                     <option value="Adult S">Adult S</option>
-                    <option value="Adult M">Adult M</option>
+                    <option value="Adult M" selected>Adult M</option>
                     <option value="Adult L">Adult L</option>
                     <option value="Adult XL">Adult XL</option>
                     <option value="2X">2XL</option>
@@ -6825,6 +6834,16 @@
                     <div class="color-swatch" style="background:#27ae60" data-color="#27ae60" onclick="setQuickPickGridColor('#27ae60', this)" title="Green">Green</div>
                     <div class="color-swatch" style="background:#1e5631" data-color="#1e5631" onclick="setQuickPickGridColor('#1e5631', this)" title="Forest Green">Forest<br>Green</div>
                     <div class="color-swatch light-swatch" style="background:#ff6eb4" data-color="#ff6eb4" onclick="setQuickPickGridColor('#ff6eb4', this)" title="Safety Pink">Safety<br>Pink</div>
+                </div>
+            </div>
+
+            <div class="mockup-control" style="margin:0 0 16px;">
+                <label for="qp-grid-upload" style="display:block;color:#dce9ff;font-weight:700;margin:0 0 8px;">Upload Print Image</label>
+                <input type="file" id="qp-grid-upload" accept="image/*" onchange="previewQuickPickGridUpload()">
+                <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
+                <button type="button" onclick="clearQuickPickGridDesign()" style="margin-left:0;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Upload</button>
+                <div class="mockup-upload-preview" aria-live="polite">
+                    <img id="qp-grid-upload-preview" alt="Print upload preview" hidden>
                 </div>
             </div>
 
@@ -6971,37 +6990,37 @@
             </div>
 
             <details class="size-chart-panel">
-                <summary>Company Logo Print Size Chart (Pocket, Back)</summary>
-                <p class="size-chart-note">Recommended logo sizes in inches. Pocket sizes start at 0 for the smallest size and scale up to 4.5&quot; x 4.5&quot; on 3X.</p>
+                <summary>Company Logo Print Size Chart (T-Shirt, Back)</summary>
+                <p class="size-chart-note">Recommended logo sizes in inches using standard T-shirt print sizing for each shirt size.</p>
                 <table class="size-chart-table">
                     <thead>
                         <tr>
                             <th>Size</th>
-                            <th>Pocket</th>
+                            <th>T-Shirt</th>
                             <th>Back</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr><td>Newborn</td><td>1.5&quot; x 1.5&quot;</td><td>4.5&quot; x 5.0&quot;</td></tr>
-                        <tr><td>6M</td><td>1.6&quot; x 1.6&quot;</td><td>4.5&quot; x 5.5&quot;</td></tr>
-                        <tr><td>9M</td><td>1.7&quot; x 1.7&quot;</td><td>4.75&quot; x 5.75&quot;</td></tr>
-                        <tr><td>12M</td><td>1.8&quot; x 1.8&quot;</td><td>5.0&quot; x 6.0&quot;</td></tr>
-                        <tr><td>18M</td><td>1.9&quot; x 1.9&quot;</td><td>5.25&quot; x 6.25&quot;</td></tr>
-                        <tr><td>18-24M</td><td>2.0&quot; x 2.0&quot;</td><td>5.5&quot; x 6.75&quot;</td></tr>
-                        <tr><td>2T</td><td>2.1&quot; x 2.1&quot;</td><td>6.0&quot; x 8.0&quot;</td></tr>
-                        <tr><td>3T</td><td>2.2&quot; x 2.2&quot;</td><td>6.5&quot; x 9.0&quot;</td></tr>
-                        <tr><td>4T</td><td>2.3&quot; x 2.3&quot;</td><td>7.0&quot; x 9.5&quot;</td></tr>
-                        <tr><td>5T</td><td>2.4&quot; x 2.4&quot;</td><td>7.5&quot; x 9.75&quot;</td></tr>
-                        <tr><td>Youth S</td><td>2.6&quot; x 2.6&quot;</td><td>8.5&quot; x 10.0&quot;</td></tr>
-                        <tr><td>Youth M</td><td>2.8&quot; x 2.8&quot;</td><td>9.0&quot; x 10.5&quot;</td></tr>
-                        <tr><td>Youth L</td><td>3.0&quot; x 3.0&quot;</td><td>9.5&quot; x 10.75&quot;</td></tr>
-                        <tr><td>Youth XL</td><td>3.2&quot; x 3.2&quot;</td><td>9.75&quot; x 11.0&quot;</td></tr>
-                        <tr><td>Adult S</td><td>3.4&quot; x 3.4&quot;</td><td>10.5&quot; x 12.5&quot;</td></tr>
-                        <tr><td>Adult M</td><td>3.6&quot; x 3.6&quot;</td><td>11.5&quot; x 13.25&quot;</td></tr>
-                        <tr><td>Adult L</td><td>3.8&quot; x 3.8&quot;</td><td>12.0&quot; x 13.5&quot;</td></tr>
-                        <tr><td>Adult XL</td><td>4.0&quot; x 4.0&quot;</td><td>12.5&quot; x 13.75&quot;</td></tr>
-                        <tr><td>2X</td><td>4.2&quot; x 4.2&quot;</td><td>13.0&quot; x 14.5&quot;</td></tr>
-                        <tr><td>3X</td><td>4.5&quot; x 4.5&quot;</td><td>13.5&quot; x 15.0&quot;</td></tr>
+                        <tr><td>Newborn</td><td>4.0&quot; x 5.25&quot;</td><td>4.0&quot; x 5.25&quot;</td></tr>
+                        <tr><td>6M</td><td>4.5&quot; x 5.5&quot;</td><td>4.5&quot; x 5.5&quot;</td></tr>
+                        <tr><td>9M</td><td>4.75&quot; x 5.75&quot;</td><td>4.75&quot; x 5.75&quot;</td></tr>
+                        <tr><td>12M</td><td>5.0&quot; x 6.0&quot;</td><td>5.0&quot; x 6.0&quot;</td></tr>
+                        <tr><td>18M</td><td>5.25&quot; x 6.25&quot;</td><td>5.25&quot; x 6.25&quot;</td></tr>
+                        <tr><td>18-24M</td><td>5.5&quot; x 6.75&quot;</td><td>5.5&quot; x 6.75&quot;</td></tr>
+                        <tr><td>2T</td><td>6.0&quot; x 8.0&quot;</td><td>6.0&quot; x 8.0&quot;</td></tr>
+                        <tr><td>3T</td><td>6.5&quot; x 9.0&quot;</td><td>6.5&quot; x 9.0&quot;</td></tr>
+                        <tr><td>4T</td><td>7.0&quot; x 9.5&quot;</td><td>7.0&quot; x 9.5&quot;</td></tr>
+                        <tr><td>5T</td><td>7.5&quot; x 9.75&quot;</td><td>7.5&quot; x 9.75&quot;</td></tr>
+                        <tr><td>Youth S</td><td>8.5&quot; x 10.0&quot;</td><td>8.5&quot; x 10.0&quot;</td></tr>
+                        <tr><td>Youth M</td><td>9.0&quot; x 10.5&quot;</td><td>9.0&quot; x 10.5&quot;</td></tr>
+                        <tr><td>Youth L</td><td>9.5&quot; x 10.75&quot;</td><td>9.5&quot; x 10.75&quot;</td></tr>
+                        <tr><td>Youth XL</td><td>9.75&quot; x 11.0&quot;</td><td>9.75&quot; x 11.0&quot;</td></tr>
+                        <tr><td>Adult S</td><td>10.0&quot; x 11.5&quot;</td><td>10.0&quot; x 11.5&quot;</td></tr>
+                        <tr><td>Adult M</td><td>11.0&quot; x 12.5&quot;</td><td>11.0&quot; x 12.5&quot;</td></tr>
+                        <tr><td>Adult L</td><td>12.0&quot; x 13.25&quot;</td><td>12.0&quot; x 13.25&quot;</td></tr>
+                        <tr><td>Adult XL</td><td>12.5&quot; x 13.75&quot;</td><td>12.5&quot; x 13.75&quot;</td></tr>
+                        <tr><td>2X</td><td>13.0&quot; x 14.5&quot;</td><td>13.0&quot; x 14.5&quot;</td></tr>
+                        <tr><td>3X</td><td>13.5&quot; x 15.0&quot;</td><td>13.5&quot; x 15.0&quot;</td></tr>
                     </tbody>
                 </table>
             </details>
@@ -9644,6 +9663,26 @@
         let quickPickGridColorPicked = false;
         let activeQuickPickGridColor = '#ffffff';
         let quickPickGridSourcePage = 'quick-picks';
+
+        function isQuickPickGridPrintOnlyMode() {
+            const hashPage = String(window.location.hash || '').replace(/^#/, '').trim();
+            const bodyHasPrintsOnlyClass = !!document.body?.classList?.contains('store-page-prints-only');
+            return hashPage === 'prints-only'
+                || bodyHasPrintsOnlyClass
+                || String(quickPickGridSourcePage || '').trim() === 'prints-only';
+        }
+
+        function ensureQuickPickGridDefaultSize() {
+            const sizeSelect = document.getElementById('qp-grid-shirt-size');
+            if (!sizeSelect) return;
+            if (String(sizeSelect.value || '').trim()) return;
+            const preferredSize = Array.from(sizeSelect.options).some(function(option) {
+                return String(option.value || '').trim() === 'Adult M';
+            }) ? 'Adult M' : String(sizeSelect.querySelector('option[value]:not([value=""])')?.value || '');
+            if (!preferredSize) return;
+            sizeSelect.value = preferredSize;
+            if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
+        }
         let quickPickGridPrintWidthIn = 7.5;
         let quickPickGridPrintHeightIn = 7.5;
 
@@ -9670,6 +9709,17 @@
         function updateQuickPickGridSizeGate() {
             const cardsRow = document.getElementById('qp-grid-cards-row');
             const gateNote = document.getElementById('qp-grid-size-gate-note');
+            const sizeSelect = document.getElementById('qp-grid-shirt-size');
+            if (isQuickPickGridPrintOnlyMode() && sizeSelect && !String(sizeSelect.value || '').trim()) {
+                const preferredSize = Array.from(sizeSelect.options).some(function(option) {
+                    return String(option.value || '').trim() === 'Adult M';
+                }) ? 'Adult M' : String(sizeSelect.querySelector('option[value]:not([value=""])')?.value || '');
+                if (preferredSize) {
+                    sizeSelect.value = preferredSize;
+                    if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
+                    return;
+                }
+            }
             const hasSize = hasSelectedQuickPickGridSize();
             if (cardsRow) cardsRow.hidden = false;
             if (gateNote) gateNote.style.display = hasSize ? 'none' : '';
@@ -9713,6 +9763,12 @@
                 return String(option.value || '').trim() === previousValue;
             });
             selectEl.value = hasPreviousValue ? previousValue : '';
+            if (selectEl.id === 'qp-grid-shirt-size' && isQuickPickGridPrintOnlyMode() && !String(selectEl.value || '').trim()) {
+                const preferredSize = Array.from(selectEl.options).some(function(option) {
+                    return String(option.value || '').trim() === 'Adult M';
+                }) ? 'Adult M' : String(selectEl.querySelector('option[value]:not([value=""])')?.value || '');
+                if (preferredSize) selectEl.value = preferredSize;
+            }
         }
 
         function applyQuickPickSaleSizeOptions(catalogItem) {
@@ -9731,6 +9787,12 @@
             }
             if (landingSizeEl && String(landingSizeEl.value || '').trim() !== String(gridSizeEl?.value || '').trim()) {
                 landingSizeEl.value = String(gridSizeEl?.value || '').trim();
+            }
+            if (isQuickPickGridPrintOnlyMode() && gridSizeEl && !String(gridSizeEl.value || '').trim()) {
+                const preferredSize = Array.from(gridSizeEl.options).some(function(option) {
+                    return String(option.value || '').trim() === 'Adult M';
+                }) ? 'Adult M' : String(gridSizeEl.querySelector('option[value]:not([value=""])')?.value || '');
+                if (preferredSize) gridSizeEl.value = preferredSize;
             }
             if (typeof handleQuickPickGridSizeChange === 'function') handleQuickPickGridSizeChange();
         }
@@ -9907,7 +9969,8 @@
             if (!selectedSize) return 0;
             const printEl = document.getElementById('qp-grid-print');
             const hasPrint = printEl && printEl.dataset.hasImage === '1';
-            const shirtCharge = quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0;
+            const printOnlyMode = isQuickPickGridPrintOnlyMode();
+            const shirtCharge = printOnlyMode ? 0 : (quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0);
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
             return Math.max(0, Math.round((shirtCharge + printCharge) * 100) / 100);
         }
@@ -9924,9 +9987,12 @@
             }
             const printEl = document.getElementById('qp-grid-print');
             const hasPrint = printEl && printEl.dataset.hasImage === '1';
-            const shirtCharge = quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0;
+            const printOnlyMode = isQuickPickGridPrintOnlyMode();
+            const shirtCharge = printOnlyMode ? 0 : (quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0);
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
-            const laborCharge = hasPrint ? LABOR_COST_PER_SHIRT : 0;
+            const laborCharge = hasPrint
+                ? (printOnlyMode ? PRINT_ONLY_LABOR_COST : LABOR_COST_PER_SHIRT)
+                : 0;
             const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
             totalEl.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(breakdownEl, shirtCharge, printCharge, laborCharge);
@@ -9934,14 +10000,92 @@
 
         function clearQuickPickGridDesign() {
             const printEl = document.getElementById('qp-grid-print');
+            const uploadInput = document.getElementById('qp-grid-upload');
+            const uploadPreview = document.getElementById('qp-grid-upload-preview');
             if (!printEl) return;
             printEl.style.backgroundImage = 'none';
             printEl.dataset.hasImage = '';
             printEl.dataset.uploadName = '';
+            printEl.dataset.aspectRatio = '';
+            if (uploadInput) uploadInput.value = '';
+            if (uploadPreview) {
+                uploadPreview.src = '';
+                uploadPreview.hidden = true;
+            }
             window._quickPickGridThumb = '';
             applyQuickPickSaleSizeOptions(null);
             updateQuickPickGridPriceDisplay();
             updateQuickPickGridSizeReadout();
+        }
+
+        function previewQuickPickGridUpload() {
+            const input = document.getElementById('qp-grid-upload');
+            const printEl = document.getElementById('qp-grid-print');
+            const sizeSelect = document.getElementById('qp-grid-shirt-size');
+            const uploadPreview = document.getElementById('qp-grid-upload-preview');
+            if (!input || !printEl) return;
+
+            const selectedSize = (sizeSelect?.value || '').trim();
+            if (!selectedSize) {
+                alert('Please choose a T-shirt size first.');
+                input.value = '';
+                return;
+            }
+
+            const file = input.files && input.files[0] ? input.files[0] : null;
+            if (!file) return;
+
+            // Keep the same pricing flow used by Quick Pick grid by using the same print element and fee helpers.
+            applyQuickPickSaleSizeOptions(null);
+            if (!quickPickGridColorPicked) {
+                setQuickPickGridColor(activeQuickPickGridColor || '#ffffff');
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(event) {
+                const src = event?.target?.result ? String(event.target.result) : '';
+                if (!src) return;
+
+                const probe = new Image();
+                probe.onload = function() {
+                    const trimmed = trimTransparentImage(probe);
+                    const resolvedSrc = trimmed?.src || src;
+                    const resolvedWidth = trimmed?.width || probe.naturalWidth;
+                    const resolvedHeight = trimmed?.height || probe.naturalHeight;
+
+                    printEl.style.backgroundImage = `url("${resolvedSrc}")`;
+                    printEl.dataset.hasImage = '1';
+                    printEl.dataset.uploadName = file.name || 'uploaded-print.png';
+                    printEl.dataset.aspectRatio = String(resolvedWidth / Math.max(resolvedHeight, 1));
+                    window._quickPickGridThumb = resolvedSrc;
+
+                    if (uploadPreview) {
+                        uploadPreview.src = resolvedSrc;
+                        uploadPreview.hidden = false;
+                    }
+
+                    resetQuickPickGridPrintSizeToDefault(selectedSize || 'Adult M');
+                    updateQuickPickGridVisuals();
+                    updateQuickPickGridPriceDisplay();
+                    showUploadNotice('Print image uploaded to the builder preview.');
+                };
+                probe.onerror = function() {
+                    printEl.style.backgroundImage = `url("${src}")`;
+                    printEl.dataset.hasImage = '1';
+                    printEl.dataset.uploadName = file.name || 'uploaded-print.png';
+                    window._quickPickGridThumb = src;
+                    if (uploadPreview) {
+                        uploadPreview.src = src;
+                        uploadPreview.hidden = false;
+                    }
+                    resetQuickPickGridPrintSizeToDefault(selectedSize || 'Adult M');
+                    updateQuickPickGridVisuals();
+                    updateQuickPickGridPriceDisplay();
+                    showUploadNotice('Print image uploaded to the builder preview.');
+                };
+                probe.src = src;
+            };
+            reader.readAsDataURL(file);
         }
 
         function loadCatalogDesignIntoQuickPickGrid(src, options) {
@@ -10006,6 +10150,7 @@
                 alert('Please choose a T-shirt size before creating the shirt.');
                 return;
             }
+            const printOnlyMode = isQuickPickGridPrintOnlyMode();
             const printEl = document.getElementById('qp-grid-print');
             const hasPrint = printEl && printEl.dataset.hasImage === '1';
             if (!hasPrint) {
@@ -10015,7 +10160,7 @@
 
             const activeSwatch = document.querySelector('#qp-grid-color-swatches .color-swatch.active');
             const colorName = activeSwatch?.title || 'Selected color';
-            if (!ensureInventoryAvailableForSelection(gridSize, colorName)) {
+            if (!printOnlyMode && !ensureInventoryAvailableForSelection(gridSize, colorName)) {
                 return;
             }
             const price = getQuickPickGridPrice();
@@ -10030,17 +10175,22 @@
                     ? (String(catalogItem.saleOfferType || '') === 'bundle' ? catalogOriginalPrice : catalogSalePrice)
                     : price)
                 : price;
+            const lineLaborCost = printOnlyMode ? PRINT_ONLY_LABOR_COST : LABOR_COST_PER_SHIRT;
+            const lineItemName = printOnlyMode
+                ? ((catalogItem?.name || 'Print Only Transfer') + ' (Print Only, Size: ' + gridSize + ')')
+                : ((catalogItem?.name || 'Quick Pick Grid T-Shirt') + ' (Size: ' + gridSize + ')');
 
             cart.push({
-                name: (catalogItem?.name || 'Quick Pick Grid T-Shirt') + ' (Size: ' + gridSize + ')',
+                name: lineItemName,
                 price: linePrice,
-                type: 'quick-pick-grid',
+                type: printOnlyMode ? 'prints-only' : 'quick-pick-grid',
                 shirtSize: gridSize,
                 printLocation: 'Front',
                 shirtColorName: colorName,
                 shirtColorHex: activeQuickPickGridColor,
                 basePriceHidden: 0,
                 laborIncluded: true,
+                laborCost: lineLaborCost,
                 designType: 'catalog',
                 designName: catalogItem?.name || 'Quick Pick loaded design',
                 designFrontFile: uploadName,
@@ -10063,6 +10213,10 @@
             try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
             updateCart();
             clearQuickPickGridDesign();
+            if (printOnlyMode) {
+                scrollToPageSection('prints-only', '#quick-pick-grid-section');
+                return;
+            }
             const nextPage = quickPickGridSourcePage === 'on-sale' ? 'on-sale' : 'quick-picks';
             scrollToPageSection(nextPage, nextPage === 'on-sale' ? '#on-sale-gallery-wrap' : '#quick-pick-colors-section');
         }
@@ -10437,13 +10591,14 @@
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
         const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
         const INVENTORY_STATUS_ENDPOINT = API_BASE + '/api/inventory-status';
-        const STORE_PAGES = ['home', 'menu', 'quick-picks', 'on-sale', 'custom-builder', 'quick-pick-builder', 'company-builder', 'cart'];
+        const STORE_PAGES = ['home', 'menu', 'quick-picks', 'on-sale', 'custom-builder', 'quick-pick-builder', 'prints-only', 'company-builder', 'cart'];
         const MENU_PAGE_TARGETS = {
             home: '#home-page',
             'quick-picks': '#quick-pick-colors-section',
             'on-sale': '#on-sale-gallery-wrap',
             'custom-builder': '#builder-section',
             'quick-pick-builder': '#quick-pick-grid-section',
+            'prints-only': '#quick-pick-grid-section',
             'company-builder': '#mockup-section',
             cart: '#cart-section'
         };
@@ -11380,7 +11535,7 @@
 
         const LOCAL_CUSTOMER_STORAGE_KEY = 'fwLocalCustomers';
         const LOCAL_CUSTOMER_ORDER_STORAGE_KEY = 'fwLocalCustomerOrders';
-        const LOCAL_REWARDS_POINTS_PER_SHIRT = 1;
+        const LOCAL_REWARDS_POINTS_PER_SHIRT = 2;
         const LOCAL_REWARDS_POINTS_STEP = 10;
         const LOCAL_REWARDS_REWARD_STEP_DOLLARS = 5;
 
@@ -11864,7 +12019,8 @@
                     if (typeof updateMockupVisuals === 'function') updateMockupVisuals();
                 });
             }
-            if (page === 'quick-pick-builder') {
+            if (page === 'quick-pick-builder' || page === 'prints-only') {
+                updateQuickPickGridPageCopy(page);
                 requestAnimationFrame(() => {
                     if (typeof updateQuickPickGridVisuals === 'function') updateQuickPickGridVisuals();
                 });
@@ -11885,11 +12041,17 @@
                 }
             }
             currentStorePage = nextPage;
-            document.title = nextPage === 'quick-pick-builder' ? 'Quick Pick Builder' : 'Freedom Works';
+            if (nextPage === 'prints-only') {
+                quickPickGridSourcePage = 'prints-only';
+            }
+            document.title = nextPage === 'quick-pick-builder'
+                ? 'Quick Pick Builder'
+                : (nextPage === 'prints-only' ? 'Prints Only' : 'Freedom Works');
             document.body.classList.remove(...STORE_PAGES.map((entry) => 'store-page-' + entry));
             document.body.classList.add('store-page-' + nextPage);
             document.querySelectorAll('[data-store-page]').forEach((el) => {
-                el.hidden = el.getAttribute('data-store-page') !== nextPage;
+                const pageList = String(el.getAttribute('data-store-page') || '').split(/\s+/).map((entry) => entry.trim()).filter(Boolean);
+                el.hidden = !pageList.includes(nextPage);
             });
             updateStorePageLinks(nextPage);
             refreshVisiblePageUi(nextPage);
@@ -11909,6 +12071,20 @@
             });
         }
 
+        function updateQuickPickGridPageCopy(page) {
+            const titleEl = document.getElementById('qp-grid-page-title');
+            const copyEl = document.getElementById('qp-grid-page-copy');
+            const isPrintsOnlyPage = page === 'prints-only';
+            if (titleEl) {
+                titleEl.textContent = isPrintsOnlyPage ? 'Prints Only' : 'Quick Pick Builder';
+            }
+            if (copyEl) {
+                copyEl.textContent = isPrintsOnlyPage
+                    ? 'Upload your print image, adjust the print size, and add your print-only order to cart.'
+                    : 'Use your Quick Pick design or upload your own print image, adjust print size, and add to cart.';
+            }
+        }
+
         function navigateToPage(page) {
             if (page !== 'home' && !requireCustomerAccess('register')) return;
             renderStorePage(page, true);
@@ -11924,6 +12100,36 @@
                 return;
             }
             navigateToPage(page);
+        }
+
+        function openPrintsOnlyMenu() {
+            if (!requireCustomerAccess('register')) return;
+            quickPickGridSourcePage = 'prints-only';
+            navigateToPage('prints-only');
+            if (window._quickPickGridPrintOnlyDefaultTimer) {
+                window.clearInterval(window._quickPickGridPrintOnlyDefaultTimer);
+                window._quickPickGridPrintOnlyDefaultTimer = null;
+            }
+            let attempts = 0;
+            const applyDefaultAndScroll = function() {
+                attempts += 1;
+                ensureQuickPickGridDefaultSize();
+                const sizeSelected = !!String(document.getElementById('qp-grid-shirt-size')?.value || '').trim();
+                if (sizeSelected || attempts >= 80) {
+                    if (window._quickPickGridPrintOnlyDefaultTimer) {
+                        window.clearInterval(window._quickPickGridPrintOnlyDefaultTimer);
+                        window._quickPickGridPrintOnlyDefaultTimer = null;
+                    }
+                    const target = document.getElementById('quick-pick-grid-section');
+                    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                }
+            };
+            requestAnimationFrame(function() {
+                requestAnimationFrame(function() {
+                    applyDefaultAndScroll();
+                    window._quickPickGridPrintOnlyDefaultTimer = window.setInterval(applyDefaultAndScroll, 100);
+                });
+            });
         }
 
         function toggleTopMiniMenu() {
@@ -15053,6 +15259,7 @@
         let mockupColorPicked = false;
         const LABOR_COST_PER_SHIRT = 5;
         const POCKET_LABOR_COST = 1.75;
+        const PRINT_ONLY_LABOR_COST = 1.75;
         const SHIPPING_RATE_TIERS = [
             { maxItems: 2, amount: 5.99 },
             { maxItems: 5, amount: 8.99 },
@@ -18619,17 +18826,15 @@
     </script>
 
     <script>
-        /* Remove black background from Freedom Works logo */
+        /* Prefer transparent Freedom Works logo with JPG fallback */
         (function() {
-            var logoSrc = resolveAssetUrl('Freedom Works logo (15 x 15 in).jpg');
-            var logoTransparentSrc = resolveAssetUrl('Freedom Works logo transparent.png');
+            var logoSrc = resolveAssetUrl('freedom-works-logo-transparent.png');
+            var logoTransparentSrc = '';
             var verifiedTransparentLogoSrc = '';
 
-            var LOGO_TRANSPARENT_FILES = [
+            var LOGO_FILES = [
+                'freedom-works-logo-transparent.png',
                 'Freedom Works logo transparent.png',
-                'freedom-works-logo-transparent.png'
-            ];
-            var LOGO_JPG_FILES = [
                 'Freedom Works logo (15 x 15 in).jpg',
                 'freedom-works-logo.jpg'
             ];
@@ -18698,7 +18903,7 @@
                 if (!imgEl) return;
                 var candidates = [];
                 if (src) candidates.push(src);
-                collectLogoCandidates(LOGO_TRANSPARENT_FILES).forEach(function(url) { candidates.push(url); });
+                collectLogoCandidates(LOGO_FILES).forEach(function(url) { candidates.push(url); });
                 candidates = candidates.filter(function(url, index, arr) {
                     return !!url && arr.indexOf(url) === index;
                 });
@@ -18713,126 +18918,19 @@
             }
 
             function removeBg(canvas, sx, sy, sw, sh) {
-                var img = new Image();
                 var fallbackImg = document.getElementById('dove-logo-fallback');
                 if (fallbackImg) {
-                    showFallbackImage(fallbackImg, verifiedTransparentLogoSrc || logoTransparentSrc || logoSrc);
+                    showFallbackImage(fallbackImg, logoSrc);
+                    fallbackImg.style.display = 'block';
                 }
-                if (verifiedTransparentLogoSrc) {
-                    var cleanLogo = new Image();
-                    cleanLogo.crossOrigin = 'anonymous';
-                    cleanLogo.onload = function() {
-                        var w = cleanLogo.naturalWidth || 1;
-                        var h = cleanLogo.naturalHeight || 1;
-                        canvas.width = w;
-                        canvas.height = h;
-                        var cleanCtx = canvas.getContext('2d');
-                        cleanCtx.clearRect(0, 0, w, h);
-                        cleanCtx.drawImage(cleanLogo, 0, 0, w, h);
-                        canvas.style.width = '';
-                        canvas.style.height = '';
-                        canvas.classList.add('is-ready');
-                        if (fallbackImg) fallbackImg.style.display = 'none';
-                    };
-                    cleanLogo.onerror = function() {
-                        verifiedTransparentLogoSrc = '';
-                        removeBg(canvas, sx, sy, sw, sh);
-                    };
-                    cleanLogo.src = verifiedTransparentLogoSrc;
-                    return;
-                }
-                img.crossOrigin = 'anonymous';
-                img.onload = function() {
-                    var IW = img.naturalWidth;
-                    var IH = img.naturalHeight;
-                    var cropX = Math.round(sx * IW);
-                    var cropY = Math.round(sy * IH);
-                    var cropW = Math.round(sw * IW);
-                    var cropH = Math.round(sh * IH);
-                    canvas.width  = cropW;
-                    canvas.height = cropH;
-                    var ctx = canvas.getContext('2d');
-                    ctx.drawImage(img, cropX, cropY, cropW, cropH, 0, 0, cropW, cropH);
-                    var data = ctx.getImageData(0, 0, cropW, cropH);
-                    var px = data.data;
-                    for (var i = 0; i < px.length; i += 4) {
-                        var brightness = px[i]*0.299 + px[i+1]*0.587 + px[i+2]*0.114;
-                        if (brightness < 60) {
-                            px[i+3] = 0;
-                        } else if (brightness < 120) {
-                            px[i+3] = Math.round((brightness - 60) / 60 * 255);
-                        }
-                    }
-                    ctx.putImageData(data, 0, 0);
-
-                    // Trim transparent padding so the visible logo fills the canvas area.
-                    var minX = cropW, minY = cropH, maxX = -1, maxY = -1;
-                    for (var y = 0; y < cropH; y++) {
-                        for (var x = 0; x < cropW; x++) {
-                            var a = px[(y * cropW + x) * 4 + 3];
-                            if (a > 10) {
-                                if (x < minX) minX = x;
-                                if (y < minY) minY = y;
-                                if (x > maxX) maxX = x;
-                                if (y > maxY) maxY = y;
-                            }
-                        }
-                    }
-
-                    if (maxX >= minX && maxY >= minY) {
-                        var trimW = maxX - minX + 1;
-                        var trimH = maxY - minY + 1;
-                        var trimmed = ctx.getImageData(minX, minY, trimW, trimH);
-                        canvas.width = trimW;
-                        canvas.height = trimH;
-                        ctx = canvas.getContext('2d');
-                        ctx.putImageData(trimmed, 0, 0);
-                    }
-                    canvas.style.width = '';
-                    canvas.style.height = '';
-                    canvas.classList.add('is-ready');
-                    if (fallbackImg) fallbackImg.style.display = 'none';
-                };
-                img.onerror = function() {
-                    canvas.classList.remove('is-ready');
-                    if (fallbackImg) fallbackImg.style.display = 'block';
-                };
-                if (fallbackImg) fallbackImg.style.display = 'block';
-                loadImageFromCandidates(img, collectLogoCandidates(LOGO_JPG_FILES), function(loadedSrc) {
-                    if (loadedSrc) {
-                        logoSrc = loadedSrc;
-                        return;
-                    }
-                    canvas.classList.remove('is-ready');
-                    if (fallbackImg) fallbackImg.style.display = 'block';
-                });
+                canvas.classList.remove('is-ready');
+                canvas.style.display = 'none';
             }
 
             // Full logo (header)
             var doveCanvas = document.getElementById('dove-canvas');
             if (doveCanvas) {
-                if (logoTransparentSrc) {
-                    var transparentProbe = new Image();
-                    transparentProbe.crossOrigin = 'anonymous';
-                    transparentProbe.onload = function() {
-                        verifiedTransparentLogoSrc = transparentProbe.src || logoTransparentSrc;
-                        removeBg(doveCanvas, 0, 0, 1, 1);
-                    };
-                    transparentProbe.onerror = function() {
-                        verifiedTransparentLogoSrc = '';
-                        removeBg(doveCanvas, 0, 0, 1, 1);
-                    };
-                    loadImageFromCandidates(transparentProbe, collectLogoCandidates(LOGO_TRANSPARENT_FILES), function(loadedSrc) {
-                        if (loadedSrc) {
-                            logoTransparentSrc = loadedSrc;
-                            return;
-                        }
-                        verifiedTransparentLogoSrc = '';
-                        removeBg(doveCanvas, 0, 0, 1, 1);
-                    });
-                } else {
-                    removeBg(doveCanvas, 0, 0, 1, 1);
-                }
+                removeBg(doveCanvas, 0, 0, 1, 1);
             }
 
             // -- (bird animation removed) --
