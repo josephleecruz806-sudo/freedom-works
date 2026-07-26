@@ -6320,7 +6320,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried4){this.dataset.logoFallbackTried4='1';this.src='/assets/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried5){this.dataset.logoFallbackTried5='1';this.src='/assets/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried6){this.dataset.logoFallbackTried6='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried7){this.dataset.logoFallbackTried7='1';this.src='/freedom-works-logo.jpg';}else{this.onerror=null;this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/assets/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/assets/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/freedom-works-logo.jpg';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -17611,6 +17611,7 @@
             ? window.STRIPE_TEMP_DOWN
             : !STRIPE_PUBLISHABLE_KEY;
         let stripeConfigPromise = null;
+        let stripeConfigLoadedFromServer = false;
 
         let stripeInstance = null;
         let stripeElements = null;
@@ -17661,11 +17662,11 @@
 
         async function loadStripeConfig() {
             applyStripeConfigFromWindow();
-            if (STRIPE_PUBLISHABLE_KEY) return;
+            if (stripeConfigLoadedFromServer && STRIPE_PUBLISHABLE_KEY) return;
             if (stripeConfigPromise) {
                 await stripeConfigPromise;
                 applyStripeConfigFromWindow();
-                if (STRIPE_PUBLISHABLE_KEY) return;
+                if (stripeConfigLoadedFromServer && STRIPE_PUBLISHABLE_KEY) return;
             }
             stripeConfigPromise = (async function() {
                 const candidateUrls = getStripeConfigCandidateUrls();
@@ -17678,6 +17679,7 @@
                         if (!parsed.publishableKey) continue;
                         window.STRIPE_PUBLISHABLE_KEY = parsed.publishableKey;
                         window.STRIPE_TEMP_DOWN = parsed.tempDown;
+                        stripeConfigLoadedFromServer = true;
                         applyStripeConfigFromWindow();
                         return;
                     } catch (e) {}
@@ -17685,7 +17687,7 @@
                 applyStripeConfigFromWindow();
             })();
             await stripeConfigPromise;
-            if (!STRIPE_PUBLISHABLE_KEY) {
+            if (!stripeConfigLoadedFromServer && !STRIPE_PUBLISHABLE_KEY) {
                 stripeConfigPromise = null;
             }
         }
@@ -18826,11 +18828,19 @@
     </script>
 
     <script>
-        /* Prefer transparent Freedom Works logo with JPG fallback */
+        /* Prefer transparent Freedom Works logo with resilient mobile fallback */
         (function() {
             var logoSrc = resolveAssetUrl('freedom-works-logo-transparent.png');
-            var logoTransparentSrc = '';
-            var verifiedTransparentLogoSrc = '';
+
+            var LOGO_TRANSPARENT_FILES = [
+                'freedom-works-logo-transparent.png',
+                'Freedom Works logo transparent.png'
+            ];
+
+            var LOGO_JPG_FILES = [
+                'Freedom Works logo (15 x 15 in).jpg',
+                'freedom-works-logo.jpg'
+            ];
 
             var LOGO_FILES = [
                 'freedom-works-logo-transparent.png',
@@ -18912,19 +18922,144 @@
                 imgEl.style.display = candidates.length ? 'block' : 'none';
                 loadImageFromCandidates(imgEl, candidates, function(loadedSrc) {
                     if (!loadedSrc) {
+                        imgEl.style.display = 'none';
                         imgEl.removeAttribute('src');
                     }
                 });
             }
 
+            function findFirstLoadableImage(candidates, onDone) {
+                var queue = (Array.isArray(candidates) ? candidates : []).filter(Boolean);
+                if (!queue.length) {
+                    if (typeof onDone === 'function') onDone('');
+                    return;
+                }
+                var index = 0;
+
+                function probeNext() {
+                    if (index >= queue.length) {
+                        if (typeof onDone === 'function') onDone('');
+                        return;
+                    }
+
+                    var probe = new Image();
+                    probe.decoding = 'async';
+                    probe.loading = 'eager';
+                    probe.onload = function() {
+                        if (typeof onDone === 'function') onDone(queue[index] || '');
+                    };
+                    probe.onerror = function() {
+                        index += 1;
+                        probeNext();
+                    };
+                    probe.src = queue[index];
+                }
+
+                probeNext();
+            }
+
+            function drawJpgAsTransparent(canvas, jpgSrc, done) {
+                if (!canvas || !jpgSrc) {
+                    if (typeof done === 'function') done(false);
+                    return;
+                }
+                var img = new Image();
+                img.decoding = 'async';
+                img.onload = function() {
+                    try {
+                        var w = Math.max(1, img.naturalWidth || img.width || 1);
+                        var h = Math.max(1, img.naturalHeight || img.height || 1);
+                        canvas.width = w;
+                        canvas.height = h;
+                        var ctx = canvas.getContext('2d', { willReadFrequently: true });
+                        if (!ctx) {
+                            if (typeof done === 'function') done(false);
+                            return;
+                        }
+                        ctx.clearRect(0, 0, w, h);
+                        ctx.drawImage(img, 0, 0, w, h);
+
+                        var frame = ctx.getImageData(0, 0, w, h);
+                        var data = frame.data;
+                        for (var i = 0; i < data.length; i += 4) {
+                            var r = data[i];
+                            var g = data[i + 1];
+                            var b = data[i + 2];
+                            var a = data[i + 3];
+                            if (a === 0) continue;
+
+                            var max = Math.max(r, g, b);
+                            var min = Math.min(r, g, b);
+                            var neutral = (max - min) <= 18;
+                            var nearBlack = max <= 40;
+                            var softBlack = neutral && max <= 78;
+
+                            if (nearBlack) {
+                                data[i + 3] = 0;
+                            } else if (softBlack) {
+                                var fade = (max - 40) / (78 - 40);
+                                data[i + 3] = Math.max(0, Math.min(255, Math.round(a * fade)));
+                            }
+                        }
+                        ctx.putImageData(frame, 0, 0);
+                        if (typeof done === 'function') done(true);
+                    } catch (_) {
+                        if (typeof done === 'function') done(false);
+                    }
+                };
+                img.onerror = function() {
+                    if (typeof done === 'function') done(false);
+                };
+                img.src = jpgSrc;
+            }
+
             function removeBg(canvas, sx, sy, sw, sh) {
                 var fallbackImg = document.getElementById('dove-logo-fallback');
-                if (fallbackImg) {
-                    showFallbackImage(fallbackImg, logoSrc);
-                    fallbackImg.style.display = 'block';
-                }
-                canvas.classList.remove('is-ready');
-                canvas.style.display = 'none';
+                var transparentCandidates = collectLogoCandidates(LOGO_TRANSPARENT_FILES);
+                if (logoSrc) transparentCandidates.unshift(logoSrc);
+                transparentCandidates = transparentCandidates.filter(function(url, index, arr) {
+                    return !!url && arr.indexOf(url) === index;
+                });
+
+                findFirstLoadableImage(transparentCandidates, function(transparentSrc) {
+                    if (transparentSrc && fallbackImg) {
+                        fallbackImg.decoding = 'async';
+                        fallbackImg.loading = 'eager';
+                        fallbackImg.src = transparentSrc;
+                        fallbackImg.style.display = 'block';
+                        canvas.classList.remove('is-ready');
+                        canvas.style.display = 'none';
+                        return;
+                    }
+
+                    var jpgCandidates = collectLogoCandidates(LOGO_JPG_FILES);
+                    findFirstLoadableImage(jpgCandidates, function(jpgSrc) {
+                        if (!jpgSrc) {
+                            if (fallbackImg) {
+                                showFallbackImage(fallbackImg, '');
+                            }
+                            canvas.classList.remove('is-ready');
+                            canvas.style.display = 'none';
+                            return;
+                        }
+
+                        drawJpgAsTransparent(canvas, jpgSrc, function(success) {
+                            if (success) {
+                                canvas.style.display = 'block';
+                                canvas.classList.add('is-ready');
+                                if (fallbackImg) fallbackImg.style.display = 'none';
+                                return;
+                            }
+
+                            if (fallbackImg) {
+                                showFallbackImage(fallbackImg, jpgSrc);
+                                fallbackImg.style.display = 'block';
+                            }
+                            canvas.classList.remove('is-ready');
+                            canvas.style.display = 'none';
+                        });
+                    });
+                });
             }
 
             // Full logo (header)
