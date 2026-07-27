@@ -6320,7 +6320,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom-works-logo.jpg';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else if(!this.dataset.logoFallbackTried4){this.dataset.logoFallbackTried4='1';this.src='/Freedom%20Works%20logo%20(15%20x%2015%20in).jpg';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -9961,7 +9961,7 @@
             if (!printEl || printEl.dataset.hasImage !== '1') return 0;
             const widthInches = normalizeQuickPickGridInches(quickPickGridPrintWidthIn);
             const heightInches = normalizeQuickPickGridInches(quickPickGridPrintHeightIn);
-            return Math.round((widthInches + heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
+            return Math.round((widthInches * heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
         }
 
         function getQuickPickGridPrice() {
@@ -9972,7 +9972,7 @@
             const printOnlyMode = isQuickPickGridPrintOnlyMode();
             const shirtCharge = printOnlyMode ? 0 : (quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0);
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
-            return Math.max(0, Math.round((shirtCharge + printCharge) * 100) / 100);
+            return applyTargetMargin(shirtCharge + printCharge);
         }
 
         function updateQuickPickGridPriceDisplay() {
@@ -9990,10 +9990,8 @@
             const printOnlyMode = isQuickPickGridPrintOnlyMode();
             const shirtCharge = printOnlyMode ? 0 : (quickPickGridColorPicked ? getShirtChargeForSize(selectedSize) : 0);
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
-            const laborCharge = hasPrint
-                ? (printOnlyMode ? PRINT_ONLY_LABOR_COST : LABOR_COST_PER_SHIRT)
-                : 0;
-            const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
+            const laborCharge = 0;
+            const price = applyTargetMargin(shirtCharge + printCharge);
             totalEl.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(breakdownEl, shirtCharge, printCharge, laborCharge);
         }
@@ -10175,7 +10173,6 @@
                     ? (String(catalogItem.saleOfferType || '') === 'bundle' ? catalogOriginalPrice : catalogSalePrice)
                     : price)
                 : price;
-            const lineLaborCost = printOnlyMode ? PRINT_ONLY_LABOR_COST : LABOR_COST_PER_SHIRT;
             const lineItemName = printOnlyMode
                 ? ((catalogItem?.name || 'Print Only Transfer') + ' (Print Only, Size: ' + gridSize + ')')
                 : ((catalogItem?.name || 'Quick Pick Grid T-Shirt') + ' (Size: ' + gridSize + ')');
@@ -10189,8 +10186,8 @@
                 shirtColorName: colorName,
                 shirtColorHex: activeQuickPickGridColor,
                 basePriceHidden: 0,
-                laborIncluded: true,
-                laborCost: lineLaborCost,
+                laborIncluded: false,
+                laborCost: 0,
                 designType: 'catalog',
                 designName: catalogItem?.name || 'Quick Pick loaded design',
                 designFrontFile: uploadName,
@@ -12636,8 +12633,7 @@
                 const sizeLabel = itemSize && !/\bsize\s*:/i.test(String(item.name || ''))
                     ? ' (' + itemSize + ')'
                     : '';
-                const lineLabor = getLaborCostForCartItem(item);
-                const lineTotal = Math.round((Number(pricingState.lineTotals[index] || 0) + lineLabor) * 100) / 100;
+                const lineTotal = Math.round(Number(pricingState.lineTotals[index] || 0) * 100) / 100;
                 let imgHtml = '';
                 if (item.designFront) {
                     imgHtml = `<img src="${escapeHtml(resolveAssetUrl(item.designFront))}" alt="Design" style="width:38px;height:38px;object-fit:contain;margin-right:8px;border-radius:6px;vertical-align:middle;">`;
@@ -12669,7 +12665,7 @@
             const totalEl = document.getElementById('stripe-summary-total');
             if (totalEl) totalEl.textContent = '$' + total.toFixed(2);
             const stripePayBtn = document.getElementById('stripe-pay-btn');
-            if (stripePayBtn && !STRIPE_TEMP_DOWN) {
+            if (stripePayBtn && canUseCardCheckout()) {
                 stripePayBtn.innerHTML = 'Pay <span id="stripe-pay-amount">$' + total.toFixed(2) + '</span>';
             }
         }
@@ -15113,7 +15109,7 @@
                 price,
                 type: 'standard',
                 shirtSize: selectedSize,
-                laborIncluded: true,
+                laborIncluded: false,
                 ...colorInfo,
                 designPreview: _thumb,
             });
@@ -15138,7 +15134,8 @@
         let activeRealMaxWIn = 11.0;  // real print inches for the active size (labels + pricing)
         let activeRealMaxHIn = 12.0;
         const PX_PER_INCH = 24;
-        const PRINT_PRICE_PER_INCH = 0.40;
+        const PRINT_PRICE_PER_INCH = 0.04;
+        const TARGET_MARGIN_RATE = 0.40;
         const MAIN_PRINT_ZONE = { left: 0, top: 0, width: 360, height: 360 };
         // Real chest widths (inches) per size ? used to scale design visually on the fixed shirt mockup.
         const SIZE_CHEST_IN = {
@@ -15220,8 +15217,8 @@
             'Adult M': 2.85,
             'Adult L': 2.85,
             'Adult XL': 2.85,
-            '2X': 2.85,
-            '3X': 2.85,
+            '2X': 5.38,
+            '3X': 7.17,
         };
         const SIZE_PRINT_PROFILE = {
             // widthIn/heightIn = recommended default; maxWIn/maxHIn = real max for that shirt size
@@ -15864,8 +15861,8 @@
             const safeH = Math.max(1, Math.min(hPx, zone.height));
             const wIn = pxToGridInches(safeW);
             const hIn = pxToGridInches(safeH);
-            // Charge by both width and height inches.
-            return Math.round((wIn + hIn) * PRINT_PRICE_PER_INCH * 100) / 100;
+            // Charge by square inches.
+            return Math.round((wIn * hIn) * PRINT_PRICE_PER_INCH * 100) / 100;
         }
 
         function getSelectedCustomDesignCount() {
@@ -15899,17 +15896,14 @@
         }
 
         function getShirtChargeForSize(size) {
-            const adultCoreSizes = ['Adult S', 'Adult M', 'Adult L', 'Adult XL'];
-            const infantSizes = ['Newborn', '6M', '9M', '12M', '18M', '18-24M'];
-            const toddlerSizes = ['2T', '3T', '4T', '5T'];
-            const youthSizes = ['Youth XS', 'Youth S', 'Youth M', 'Youth L', 'Youth XL'];
-            if (infantSizes.includes(size)) return 7.5;
-            if (toddlerSizes.includes(size)) return 4.5;
-            if (youthSizes.includes(size)) return 3.5;
-            if (adultCoreSizes.includes(size)) return 3;
-            if (size === '2X') return 6;
-            if (size === '3X') return 8;
-            return 5;
+            const normalizedSize = String(size || '').trim();
+            const mapped = Number(SIZE_BASE_PRICE[normalizedSize]);
+            if (Number.isFinite(mapped) && mapped > 0) {
+                return Math.round(mapped * 100) / 100;
+            }
+            if (normalizedSize === '2X' || normalizedSize === '2XL') return 5.38;
+            if (normalizedSize === '3X' || normalizedSize === '3XL') return 7.17;
+            return 2.85;
         }
 
         function getCurrentCustomPrice() {
@@ -15923,9 +15917,15 @@
                 return shirtCharge;
             }
 
-            // Subtotal stays as shirt + print; labor is applied once per shirt at checkout.
-            const total = getSelectedCustomPrintCharge() + shirtCharge;
-            return Math.max(0, Math.round(total * 100) / 100);
+            const subtotal = getSelectedCustomPrintCharge() + shirtCharge;
+            return applyTargetMargin(subtotal);
+        }
+
+        function applyTargetMargin(baseAmount) {
+            const base = Math.max(0, Number(baseAmount) || 0);
+            if (base <= 0) return 0;
+            const divisor = Math.max(0.01, 1 - TARGET_MARGIN_RATE);
+            return Math.round((base / divisor) * 100) / 100;
         }
 
         function formatPriceAmount(amount) {
@@ -15968,8 +15968,8 @@
             const designCount = getSelectedCustomDesignCount();
             const printCharge = getSelectedCustomPrintCharge();
             const shirtCharge = shirtColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const laborCharge = designCount > 0 ? LABOR_COST_PER_SHIRT : 0;
-            const fullPrice = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
+            const laborCharge = 0;
+            const fullPrice = designCount > 0 ? getCurrentCustomPrice() : shirtCharge;
             const displayText = `Total: $${fullPrice.toFixed(2)}`;
             const customTotal = document.getElementById('custom-live-total');
             if (customTotal) {
@@ -17546,7 +17546,7 @@
                     printLocation: 'Front',
                     ...colorInfo,
                     basePriceHidden: 0,
-                    laborIncluded: true,
+                    laborIncluded: false,
                     designName: catalogItem.name || 'Catalog Design',
                     designType: 'catalog',
                     designFrontFile: catalogItem.src || '',
@@ -17574,7 +17574,7 @@
                     printLocation,
                     ...colorInfo,
                     basePriceHidden: 0,
-                    laborIncluded: true,
+                    laborIncluded: false,
                     designType: 'upload',
                     designName: 'Uploaded custom design',
                     designFrontFile: frontUploadName || '',
@@ -17631,6 +17631,10 @@
                 STRIPE_TEMP_DOWN = false;
                 window.STRIPE_TEMP_DOWN = false;
             }
+        }
+
+        function canUseCardCheckout() {
+            return /^pk_(test|live)_/i.test(String(STRIPE_PUBLISHABLE_KEY || '').trim());
         }
 
         function parseStripeConfigScriptText(scriptText) {
@@ -17777,15 +17781,16 @@
         async function openStripeModal() {
             // Reset form state
             await loadStripeConfig();
+            const cardCheckoutEnabled = canUseCardCheckout();
             document.getElementById('stripe-form-wrap').style.display = '';
             document.getElementById('stripe-success-msg').style.display = 'none';
-            document.getElementById('stripe-error-msg').textContent = STRIPE_TEMP_DOWN
+            document.getElementById('stripe-error-msg').textContent = !cardCheckoutEnabled
                 ? 'Card checkout is temporarily unavailable. Please use Cash App below.'
                 : '';
             document.getElementById('cashapp-note').textContent = '';
             const stripePayBtn = document.getElementById('stripe-pay-btn');
-            stripePayBtn.disabled = STRIPE_TEMP_DOWN;
-            if (STRIPE_TEMP_DOWN) {
+            stripePayBtn.disabled = !cardCheckoutEnabled;
+            if (!cardCheckoutEnabled) {
                 stripePayBtn.textContent = 'Card Payment Temporarily Unavailable';
             }
             document.getElementById('stripe-payment-form').reset();
@@ -17813,7 +17818,7 @@
                 ]);
                 const refreshedHost = document.getElementById('stripe-card-element');
                 const refreshedHasStripeFrame = !!refreshedHost && !!refreshedHost.querySelector('iframe');
-                if ((!stripeCardElement || !stripeCardMounted || !refreshedHasStripeFrame) && !STRIPE_TEMP_DOWN) {
+                if ((!stripeCardElement || !stripeCardMounted || !refreshedHasStripeFrame) && cardCheckoutEnabled) {
                     const errEl = document.getElementById('stripe-error-msg');
                     if (errEl) {
                         const mountSuffix = stripeLastMountError ? (' (' + stripeLastMountError + ')') : '';
@@ -18169,12 +18174,7 @@
         }
 
         function getCheckoutLaborTotal() {
-            const laborTotal = Array.isArray(cart)
-                ? cart.reduce(function(sum, item) {
-                    return sum + getLaborCostForCartItem(item);
-                }, 0)
-                : 0;
-            return Math.round(laborTotal * 100) / 100;
+            return 0;
         }
 
         function getCheckoutShirtCount() {
@@ -18191,7 +18191,7 @@
         }
 
         function getCheckoutTotal() {
-            return Math.round((getCartBaseTotal() + getCheckoutLaborTotal() + getCheckoutShippingTotal()) * 100) / 100;
+            return Math.round((getCartBaseTotal() + getCheckoutShippingTotal()) * 100) / 100;
         }
 
         function getMockupPrice() {
@@ -18205,8 +18205,7 @@
             const hasPocket = pocketPrint && pocketPrint.dataset.hasImage === '1';
             const hasBack = backPrint && backPrint.dataset.hasImage === '1';
             const printCharge = (hasFront ? getMockupPrintFee('front') : 0) + (hasPocket ? getMockupPrintFee('pocket') : 0) + (hasBack ? getMockupPrintFee('back') : 0);
-            const price = shirtCharge + printCharge;
-            return Math.max(0, Math.round(price * 100) / 100);
+            return applyTargetMargin(shirtCharge + printCharge);
         }
 
         function getMockupPrintFee(side) {
@@ -18216,14 +18215,14 @@
                 const dims = getMockupPrintDimensions('pocket');
                 const widthInches = normalizeMockupInches(dims.widthIn);
                 const heightInches = normalizeMockupInches(dims.heightIn);
-                return Math.round((widthInches + heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
+                return Math.round((widthInches * heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
             }
             const printEl = document.getElementById(side === 'back' ? 'mockup-back-print' : 'mockup-front-print');
             if (!printEl || printEl.dataset.hasImage !== '1') return 0;
             const dims = getMockupPrintDimensions(side === 'back' ? 'back' : 'front');
             const widthInches = normalizeMockupInches(dims.widthIn);
             const heightInches = normalizeMockupInches(dims.heightIn);
-            return Math.round((widthInches + heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
+            return Math.round((widthInches * heightInches) * PRINT_PRICE_PER_INCH * 100) / 100;
         }
 
         function updateMockupPriceDisplay() {
@@ -18243,8 +18242,8 @@
             const hasBack = backPrint && backPrint.dataset.hasImage === '1';
             const printCharge = (hasFront ? getMockupPrintFee('front') : 0) + (hasPocket ? getMockupPrintFee('pocket') : 0) + (hasBack ? getMockupPrintFee('back') : 0);
             const shirtCharge = mockupColorPicked ? getShirtChargeForSize(selectedSize) : 0;
-            const laborCharge = getMockupLaborCharge(hasFront, hasPocket, hasBack);
-            const price = Math.max(0, Math.round((shirtCharge + printCharge + laborCharge) * 100) / 100);
+            const laborCharge = 0;
+            const price = applyTargetMargin(shirtCharge + printCharge);
             el.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(document.getElementById('mockup-breakdown-note'), shirtCharge, printCharge, laborCharge);
         }
@@ -18271,7 +18270,6 @@
             }
 
             const price = getMockupPrice();
-            const laborCost = getMockupLaborCharge(hasFront, hasPocket, hasBack);
             const _mockupThumb = window._mockupThumbFront || window._mockupThumbBack || window._mockupThumbPocket || '';
             const colorInfo = getCurrentShirtColorDetails(true);
             if (!ensureInventoryAvailableForSelection(mockupSize, colorInfo.shirtColorName || '')) {
@@ -18285,8 +18283,8 @@
                 printLocation: 'Front',
                 ...colorInfo,
                 basePriceHidden: 0,
-                laborIncluded: true,
-                laborCost,
+                laborIncluded: false,
+                laborCost: 0,
                 designType: 'upload',
                 designName: 'Square preview uploaded design',
                 designFrontFile: hasFront ? frontUploadName : '',
@@ -18327,9 +18325,8 @@
                 let label = item.name || 'Item';
                 if (item.shirtSize) label += ' (Size: ' + item.shirtSize + ')';
                 const thumbSrc = resolveAssetUrl(cartThumbs[index] || '');
-                const lineLabor = getLaborCostForCartItem(item);
-                const lineTotal = (Number(pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
-                const originalLineTotal = (Number(pricingState.originalLineTotals[index] || pricingState.lineTotals[index] || 0) + lineLabor).toFixed(2);
+                const lineTotal = Number(pricingState.lineTotals[index] || 0).toFixed(2);
+                const originalLineTotal = Number(pricingState.originalLineTotals[index] || pricingState.lineTotals[index] || 0).toFixed(2);
                 const lineSavings = Number(pricingState.lineSavings[index] || 0);
                 const thumbHtml = thumbSrc
                     ? `<img class="cart-item-thumb" src="${thumbSrc}" alt="${label}">`
@@ -18633,7 +18630,7 @@
 
             await loadStripeConfig();
 
-            if (STRIPE_TEMP_DOWN) {
+            if (!canUseCardCheckout()) {
                 errEl.textContent = 'Card checkout is temporarily unavailable. Please use Cash App below.';
                 return;
             }
@@ -18843,16 +18840,9 @@
                 'Freedom Works logo transparent.png'
             ];
 
-            var LOGO_JPG_FILES = [
-                'Freedom Works logo (15 x 15 in).jpg',
-                'freedom-works-logo.jpg'
-            ];
-
             var LOGO_FILES = [
                 'freedom-works-logo-transparent.png',
-                'Freedom Works logo transparent.png',
-                'freedom-works-logo.jpg',
-                'Freedom Works logo (15 x 15 in).jpg'
+                'Freedom Works logo transparent.png'
             ];
 
             function collectLogoCandidates(fileNames) {
@@ -19038,33 +19028,11 @@
                         return;
                     }
 
-                    var jpgCandidates = collectLogoCandidates(LOGO_JPG_FILES);
-                    findFirstLoadableImage(jpgCandidates, function(jpgSrc) {
-                        if (!jpgSrc) {
-                            if (fallbackImg) {
-                                showFallbackImage(fallbackImg, '');
-                            }
-                            canvas.classList.remove('is-ready');
-                            canvas.style.display = 'none';
-                            return;
-                        }
-
-                        drawJpgAsTransparent(canvas, jpgSrc, function(success) {
-                            if (success) {
-                                canvas.style.display = 'block';
-                                canvas.classList.add('is-ready');
-                                if (fallbackImg) fallbackImg.style.display = 'none';
-                                return;
-                            }
-
-                            if (fallbackImg) {
-                                showFallbackImage(fallbackImg, jpgSrc);
-                                fallbackImg.style.display = 'block';
-                            }
-                            canvas.classList.remove('is-ready');
-                            canvas.style.display = 'none';
-                        });
-                    });
+                    if (fallbackImg) {
+                        showFallbackImage(fallbackImg, '');
+                    }
+                    canvas.classList.remove('is-ready');
+                    canvas.style.display = 'none';
                 });
             }
 
