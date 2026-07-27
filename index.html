@@ -11,6 +11,9 @@
     <script src="https://js.stripe.com/v3/"></script>
     <script>
         (function() {
+            const API_BASE_STORAGE_KEYS = ['fwApiBase', 'fw_api_base'];
+            const API_BASE_FALLBACKS = ['https://freedom-works.onrender.com'];
+
             function normalizeApiBase(input) {
                 const value = String(input || '').trim();
                 return value ? value.replace(/\/+$/, '') : '';
@@ -21,11 +24,15 @@
                     const params = new URLSearchParams(window.location.search || '');
                     const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
                     if (fromUrl) {
-                        try { localStorage.setItem('fwApiBase', fromUrl); } catch (e) {}
+                        try {
+                            API_BASE_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, fromUrl));
+                        } catch (e) {}
                         return fromUrl;
                     }
-                    const fromStorage = normalizeApiBase(localStorage.getItem('fwApiBase'));
-                    if (fromStorage) return fromStorage;
+                    for (const key of API_BASE_STORAGE_KEYS) {
+                        const fromStorage = normalizeApiBase(localStorage.getItem(key));
+                        if (fromStorage) return fromStorage;
+                    }
                 } catch (e) {}
 
                 const isHttp = /^https?:$/i.test(window.location.protocol || '');
@@ -33,6 +40,10 @@
                 const port = String(window.location.port || '').trim();
                 if (isHttp && host && port && port !== '3000') {
                     return window.location.protocol + '//' + host + ':3000';
+                }
+                for (const fallbackBase of API_BASE_FALLBACKS) {
+                    const normalizedFallback = normalizeApiBase(fallbackBase);
+                    if (normalizedFallback) return normalizedFallback;
                 }
                 return '';
             }
@@ -6372,7 +6383,6 @@
             <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
             <button type="button" onclick="openRewardsInfoPopup()">Points</button>
             <button type="button" onclick="openMenuAccount()">Account</button>
-            <button type="button" onclick="openAdminModal()">Owner Login</button>
         </div>
         <p class="side-menu-note">Each menu item opens its own page view.</p>
     </nav>
@@ -6400,7 +6410,6 @@
                     <div class="home-login-actions">
                         <button type="button" class="home-main-btn" onclick="openAuthModal('register')">Create Account</button>
                         <button type="button" id="header-account-action" class="home-secondary-btn" onclick="openAuthModal('login')">Login</button>
-                        <button type="button" class="home-secondary-btn" onclick="openAdminModal()">Owner Login</button>
                         <button type="button" class="home-secondary-btn" onclick="enterStoreAsGuest()">Skip For Now</button>
                     </div>
                     <div class="home-payment-strip" aria-label="Available payments">
@@ -7256,7 +7265,6 @@
             <div class="auth-mode-tabs">
                 <button type="button" class="auth-tab-btn active" id="auth-mode-login" onclick="setAuthMode('login')">Login</button>
                 <button type="button" class="auth-tab-btn" id="auth-mode-register" onclick="setAuthMode('register')">Register</button>
-                <button type="button" class="auth-tab-btn" id="auth-mode-owner" onclick="setAuthMode('owner')">Owner</button>
             </div>
             <h2 id="auth-modal-title">Customer Login</h2>
             <p class="auth-subtitle" id="auth-modal-subtitle">Log in to save your account details and speed up checkout.</p>
@@ -10460,6 +10468,8 @@
         let cartThumbs = [];
         const CUSTOMER_AUTH_STORAGE_KEY = 'fwCustomerSession';
         const GUEST_STORE_ACCESS_KEY = 'fwGuestStoreAccess';
+        const API_BASE_STORAGE_KEYS = ['fwApiBase', 'fw_api_base'];
+        const API_BASE_FALLBACKS = ['https://freedom-works.onrender.com'];
         function normalizeApiBase(input) {
             const value = String(input || '').trim();
             if (!value) return '';
@@ -10473,11 +10483,15 @@
                 const params = new URLSearchParams(window.location.search || '');
                 const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
                 if (fromUrl) {
-                    try { localStorage.setItem('fwApiBase', fromUrl); } catch (e) {}
+                    try {
+                        API_BASE_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, fromUrl));
+                    } catch (e) {}
                     return fromUrl;
                 }
-                const fromStorage = normalizeApiBase(localStorage.getItem('fwApiBase'));
-                if (fromStorage) return fromStorage;
+                for (const key of API_BASE_STORAGE_KEYS) {
+                    const fromStorage = normalizeApiBase(localStorage.getItem(key));
+                    if (fromStorage) return fromStorage;
+                }
             } catch (e) {}
 
             const isHttp = /^https?:$/i.test(window.location.protocol || '');
@@ -10485,6 +10499,10 @@
             const port = String(window.location.port || '').trim();
             if (isHttp && host && port && port !== '3000') {
                 return window.location.protocol + '//' + host + ':3000';
+            }
+            for (const fallbackBase of API_BASE_FALLBACKS) {
+                const normalizedFallback = normalizeApiBase(fallbackBase);
+                if (normalizedFallback) return normalizedFallback;
             }
             return '';
         }
@@ -10496,7 +10514,9 @@
         function rememberApiBase(base) {
             activeApiBase = normalizeApiBase(base);
             try {
-                if (activeApiBase) localStorage.setItem('fwApiBase', activeApiBase);
+                if (activeApiBase) {
+                    API_BASE_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, activeApiBase));
+                }
             } catch (e) {}
             return activeApiBase;
         }
@@ -10561,6 +10581,7 @@
             if (isHttp && host && port && port !== '3000') {
                 pushCandidate(window.location.protocol + '//' + host + ':3000');
             }
+            API_BASE_FALLBACKS.forEach((base) => pushCandidate(base));
 
             return candidates;
         }
@@ -10571,8 +10592,15 @@
                     const candidates = getApiBaseCandidates('/api/health');
                     for (const candidate of candidates) {
                         try {
-                            const response = await fetch(candidate.url, { cache: 'no-store' });
+                            const response = await fetch(candidate.url, {
+                                cache: 'no-store',
+                                headers: { Accept: 'application/json' }
+                            });
                             if (!response.ok) continue;
+                            const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+                            if (!contentType.includes('application/json')) continue;
+                            const payload = await response.json().catch(() => null);
+                            if (!payload || payload.ok !== true) continue;
                             return rememberApiBase(candidate.base);
                         } catch (e) {}
                     }
@@ -18596,7 +18624,13 @@
                 document.getElementById('admin-auth-form').reset();
                 openAdminModal();
             } catch (err) {
-                statusEl.textContent = err.message || 'Unable to sign in as owner.';
+                const rawMessage = String((err && err.message) || 'Unable to sign in as owner.');
+                if (rawMessage.toLowerCase().includes('unable to reach api endpoint')) {
+                    const fallbackBase = encodeURIComponent('https://freedom-works.onrender.com');
+                    statusEl.innerHTML = 'Cannot reach owner API from this device. <a href="/owner?api=' + fallbackBase + '">Tap here to open owner login with the correct API.</a>';
+                } else {
+                    statusEl.textContent = rawMessage;
+                }
             } finally {
                 submitBtn.disabled = false;
             }
@@ -18871,7 +18905,9 @@
 
             var LOGO_FILES = [
                 'freedom-works-logo-transparent.png',
-                'Freedom Works logo transparent.png'
+                'Freedom Works logo transparent.png',
+                'freedom-works-logo.jpg',
+                'Freedom Works logo (15 x 15 in).jpg'
             ];
 
             function collectLogoCandidates(fileNames) {
