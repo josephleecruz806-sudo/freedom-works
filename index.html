@@ -6320,7 +6320,7 @@
     <header>
         <div class="logo-wrap" id="site-logo-wrap">
             <canvas class="dove-logo" id="dove-canvas" aria-label="Freedom Works Logo"></canvas>
-            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom%20works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/assets/freedom-works-logo-transparent.png';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
+            <img class="dove-logo-fallback" id="dove-logo-fallback" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom%20works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried3){this.dataset.logoFallbackTried3='1';this.src='/assets/freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried4){this.dataset.logoFallbackTried4='1';this.src='./freedom-works-logo-transparent.png';}else if(!this.dataset.logoFallbackTried5){this.dataset.logoFallbackTried5='1';this.src='freedom-works-logo-transparent.png';}else{this.onerror=null;this.style.display='none';this.removeAttribute('src');}">
         </div>
             <p id="site-logo-tagline">Where you have the freedom to make your own custom t-shirts</p>
         <div class="header-cart-display" id="header-cart-chip">
@@ -6372,6 +6372,7 @@
             <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
             <button type="button" onclick="openRewardsInfoPopup()">Points</button>
             <button type="button" onclick="openMenuAccount()">Account</button>
+            <button type="button" onclick="openAdminModal()">Owner Login</button>
         </div>
         <p class="side-menu-note">Each menu item opens its own page view.</p>
     </nav>
@@ -6399,6 +6400,7 @@
                     <div class="home-login-actions">
                         <button type="button" class="home-main-btn" onclick="openAuthModal('register')">Create Account</button>
                         <button type="button" id="header-account-action" class="home-secondary-btn" onclick="openAuthModal('login')">Login</button>
+                        <button type="button" class="home-secondary-btn" onclick="openAdminModal()">Owner Login</button>
                         <button type="button" class="home-secondary-btn" onclick="enterStoreAsGuest()">Skip For Now</button>
                     </div>
                     <div class="home-payment-strip" aria-label="Available payments">
@@ -7254,6 +7256,7 @@
             <div class="auth-mode-tabs">
                 <button type="button" class="auth-tab-btn active" id="auth-mode-login" onclick="setAuthMode('login')">Login</button>
                 <button type="button" class="auth-tab-btn" id="auth-mode-register" onclick="setAuthMode('register')">Register</button>
+                <button type="button" class="auth-tab-btn" id="auth-mode-owner" onclick="setAuthMode('owner')">Owner</button>
             </div>
             <h2 id="auth-modal-title">Customer Login</h2>
             <p class="auth-subtitle" id="auth-modal-subtitle">Log in to save your account details and speed up checkout.</p>
@@ -10507,6 +10510,34 @@
             return getActiveApiBase() + suffix;
         }
 
+        async function fetchWithApiCandidates(pathSuffix, fetchOptions) {
+            await discoverWorkingApiBase();
+            const suffix = String(pathSuffix || '');
+            const candidates = getApiBaseCandidates(suffix);
+            let lastResponse = null;
+            let sawNetworkError = false;
+
+            for (const candidate of candidates) {
+                try {
+                    const response = await fetch(candidate.url, fetchOptions || {});
+                    lastResponse = response;
+                    // Treat all non-404 client responses as authoritative (e.g., invalid credentials 401).
+                    if (response.ok || (response.status >= 400 && response.status < 500 && response.status !== 404)) {
+                        rememberApiBase(candidate.base);
+                        return response;
+                    }
+                } catch (e) {
+                    sawNetworkError = true;
+                }
+            }
+
+            if (lastResponse) return lastResponse;
+            if (sawNetworkError) {
+                throw new TypeError('Unable to reach API endpoint: ' + suffix);
+            }
+            throw new Error('No API candidates available for endpoint: ' + suffix);
+        }
+
         function getApiBaseCandidates(pathSuffix) {
             const candidates = [];
             const seen = new Set();
@@ -10600,7 +10631,7 @@
             cart: '#cart-section'
         };
         const ADMIN_AUTH_STORAGE_KEY = 'fwAdminSession';
-        const ADMIN_AUTH_ENDPOINT = API_BASE + '/api/admin';
+        const ADMIN_AUTH_ENDPOINT = '/api/admin';
         const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
         const ADMIN_INVENTORY_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/inventory';
         const CUSTOMER_GUIDE_STORAGE_KEY = 'fwCustomerGuideSeen';
@@ -11841,7 +11872,7 @@
             if (nameEl) nameEl.textContent = ownerName;
             if (actionBtn) {
                 actionBtn.textContent = adminSession ? 'Dashboard' : 'Owner Login';
-                actionBtn.onclick = function() { adminSession ? openOwnerPortal() : openAuthModal('login'); };
+                actionBtn.onclick = function() { adminSession ? openOwnerPortal() : openAdminModal(); };
             }
             if (logoutBtn) logoutBtn.style.display = adminSession ? '' : 'none';
             if (modalName) modalName.textContent = adminSession?.admin?.name || 'Owner';
@@ -12390,7 +12421,7 @@
                 statusEl.classList.remove('success');
             }
             try {
-                const resp = await fetch(ADMIN_DASHBOARD_ENDPOINT, {
+                const resp = await fetchWithApiCandidates(ADMIN_DASHBOARD_ENDPOINT, {
                     headers: getAdminAuthHeaders(),
                 });
                 const data = await resp.json().catch(() => ({}));
@@ -12449,7 +12480,7 @@
                 statusEl.classList.remove('success');
             }
             try {
-                const resp = await fetch(ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId), {
+                const resp = await fetchWithApiCandidates(ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId), {
                     method: 'DELETE',
                     headers: getAdminAuthHeaders(),
                 });
@@ -12546,7 +12577,7 @@
                 return;
             }
             try {
-                const resp = await fetch(ADMIN_AUTH_ENDPOINT + '/me', {
+                const resp = await fetchWithApiCandidates(ADMIN_AUTH_ENDPOINT + '/me', {
                     headers: {
                         Authorization: 'Bearer ' + stored.token,
                     },
@@ -18484,7 +18515,11 @@
                 }
 
                 if (!resp.ok && !isRegisterMode) {
-                    const ownerResp = await tryLogin(ADMIN_AUTH_ENDPOINT + '/login', { email, password });
+                    const ownerResp = await fetchWithApiCandidates(ADMIN_AUTH_ENDPOINT + '/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ email, password }),
+                    });
                     const ownerData = await parseApiResponseJson(ownerResp);
                     if (ownerResp.ok) {
                         resp = ownerResp;
@@ -18548,7 +18583,7 @@
             submitBtn.disabled = true;
 
             try {
-                const resp = await fetch(ADMIN_AUTH_ENDPOINT + '/login', {
+                const resp = await fetchWithApiCandidates(ADMIN_AUTH_ENDPOINT + '/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password }),
@@ -18587,7 +18622,8 @@
             submitBtn.disabled = true;
 
             try {
-                const resp = await fetch(itemId ? (ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId)) : ADMIN_INVENTORY_ENDPOINT, {
+                const inventoryEndpoint = itemId ? (ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId)) : ADMIN_INVENTORY_ENDPOINT;
+                const resp = await fetchWithApiCandidates(inventoryEndpoint, {
                     method: itemId ? 'PUT' : 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -19004,29 +19040,12 @@
 
             function removeBg(canvas, sx, sy, sw, sh) {
                 var fallbackImg = document.getElementById('dove-logo-fallback');
-                var transparentCandidates = collectLogoCandidates(LOGO_TRANSPARENT_FILES);
-                if (logoSrc) transparentCandidates.unshift(logoSrc);
-                transparentCandidates = transparentCandidates.filter(function(url, index, arr) {
-                    return !!url && arr.indexOf(url) === index;
-                });
-
-                findFirstLoadableImage(transparentCandidates, function(transparentSrc) {
-                    if (transparentSrc && fallbackImg) {
-                        fallbackImg.decoding = 'async';
-                        fallbackImg.loading = 'eager';
-                        fallbackImg.src = transparentSrc;
-                        fallbackImg.style.display = 'block';
-                        canvas.classList.remove('is-ready');
-                        canvas.style.display = 'none';
-                        return;
-                    }
-
-                    if (fallbackImg) {
-                        showFallbackImage(fallbackImg, '');
-                    }
-                    canvas.classList.remove('is-ready');
-                    canvas.style.display = 'none';
-                });
+                if (fallbackImg) {
+                    // Use explicit candidate probing so mobile browsers resolve path/casing differences reliably.
+                    showFallbackImage(fallbackImg, logoSrc || '/freedom-works-logo-transparent.png');
+                }
+                canvas.classList.remove('is-ready');
+                canvas.style.display = 'none';
             }
 
             // Full logo (header)
