@@ -65,6 +65,15 @@ function setNoCacheHeaders(res) {
   res.setHeader('Surrogate-Control', 'no-store');
 }
 
+function setImageCacheHeaders(res) {
+  // Design images rarely change once uploaded, so let browsers cache them for a
+  // week instead of re-downloading every single design on every page load.
+  res.setHeader('Cache-Control', 'public, max-age=604800');
+  res.removeHeader('Pragma');
+  res.removeHeader('Expires');
+  res.removeHeader('Surrogate-Control');
+}
+
 function buildImageIndex() {
   const entries = fs.readdirSync(__dirname, { withFileTypes: true });
   const map = new Map();
@@ -1234,7 +1243,7 @@ app.get('/assets/:name', (req, res) => {
   const requested = path.basename(requestedRaw);
   const directPath = path.join(__dirname, requested);
   if (fs.existsSync(directPath) && fs.statSync(directPath).isFile()) {
-    setNoCacheHeaders(res);
+    setImageCacheHeaders(res);
     return res.sendFile(directPath);
   }
 
@@ -1243,7 +1252,7 @@ app.get('/assets/:name', (req, res) => {
     return res.status(404).send('Asset not found');
   }
 
-  setNoCacheHeaders(res);
+  setImageCacheHeaders(res);
   return res.sendFile(path.join(__dirname, match));
 });
 
@@ -1257,23 +1266,21 @@ app.get('/app-config.js', (_req, res) => {
 });
 
 app.use(express.static(__dirname, {
-  etag: false,
-  lastModified: false,
+  etag: true,
+  lastModified: true,
   maxAge: 0,
   setHeaders(res, filePath) {
     const lowerPath = String(filePath || '').toLowerCase();
-    if (
-      lowerPath.endsWith('.html')
-      || lowerPath.endsWith('.js')
-      || lowerPath.endsWith('.css')
-      || lowerPath.endsWith('.png')
+    const isImage = lowerPath.endsWith('.png')
       || lowerPath.endsWith('.jpg')
       || lowerPath.endsWith('.jpeg')
       || lowerPath.endsWith('.webp')
       || lowerPath.endsWith('.gif')
       || lowerPath.endsWith('.svg')
-      || lowerPath.endsWith('.avif')
-    ) {
+      || lowerPath.endsWith('.avif');
+    if (isImage) {
+      setImageCacheHeaders(res);
+    } else if (lowerPath.endsWith('.html') || lowerPath.endsWith('.js') || lowerPath.endsWith('.css')) {
       setNoCacheHeaders(res);
     }
   },
