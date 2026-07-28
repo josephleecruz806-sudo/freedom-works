@@ -1,0 +1,2913 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Freedom Works Owner</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+            color: #edf4ff;
+            background:
+                radial-gradient(circle at 15% 15%, rgba(110,198,255,0.15), transparent 25%),
+                radial-gradient(circle at 85% 20%, rgba(255,110,199,0.12), transparent 22%),
+                linear-gradient(135deg, #0f1630 0%, #16244f 45%, #0a2f4f 100%);
+        }
+        a { color: inherit; }
+        .owner-shell {
+            width: min(1120px, calc(100vw - 28px));
+            margin: 24px auto 40px;
+        }
+        .owner-topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 18px;
+            padding: 16px 18px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(9, 17, 40, 0.72);
+            backdrop-filter: blur(12px);
+            box-shadow: 0 18px 38px rgba(0,0,0,0.28);
+        }
+        .owner-topbar h1 {
+            margin: 0;
+            font-size: 1.45rem;
+            color: #fff;
+        }
+        .owner-topbar p {
+            margin: 4px 0 0;
+            color: #a8bddf;
+            font-size: 0.9rem;
+        }
+        .owner-links {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .owner-link,
+        .owner-logout-btn,
+        .owner-primary-btn,
+        .owner-secondary-btn,
+        .admin-inline-btn,
+        .admin-danger-btn {
+            border-radius: 12px;
+            text-decoration: none;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .owner-link,
+        .owner-secondary-btn,
+        .admin-inline-btn {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.08);
+            color: #eef6ff;
+            padding: 10px 14px;
+        }
+        .owner-primary-btn {
+            border: none;
+            background: linear-gradient(45deg, #4a90e2, #a259ff);
+            color: #fff;
+            padding: 12px 16px;
+            box-shadow: 0 8px 22px rgba(74,144,226,0.34);
+        }
+        .admin-design-picker-wrap {
+            margin-bottom: 16px;
+        }
+        .admin-design-picker-note {
+            margin: 0 0 10px;
+            color: #a9bcdb;
+            font-size: 0.8rem;
+        }
+        .admin-design-picker-selection {
+            margin: 0 0 10px;
+            color: #fff3c1;
+            font-size: 0.8rem;
+            font-weight: 800;
+        }
+        .admin-design-picker {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(96px, 1fr));
+            gap: 10px;
+            max-height: 320px;
+            overflow-y: auto;
+            padding: 10px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+        }
+        .admin-design-picker-card {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: center;
+            padding: 8px;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+            cursor: pointer;
+            transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+        }
+        .admin-design-picker-card:hover {
+            transform: translateY(-2px);
+            border-color: rgba(139,232,255,0.4);
+            box-shadow: 0 10px 22px rgba(0,0,0,0.18);
+        }
+        .admin-design-picker-card.active {
+            border-color: rgba(255,216,106,0.52);
+            background: rgba(255,216,106,0.12);
+            box-shadow: 0 0 0 2px rgba(255,216,106,0.14);
+        }
+        .admin-design-picker-card img {
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 10px;
+            background: rgba(7, 14, 34, 0.85);
+        }
+        .admin-size-picker {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 14px;
+        }
+        .admin-size-chip {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: #dfeaff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.76rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .admin-size-chip.active {
+            background: rgba(255,216,106,0.14);
+            border-color: rgba(255,216,106,0.5);
+            color: #fff3c1;
+        }
+        .admin-design-picker-card span {
+            width: 100%;
+            color: #d9e7ff;
+            font-size: 0.7rem;
+            line-height: 1.35;
+            text-align: center;
+            word-break: break-word;
+        }
+        .admin-offer-card-media {
+            display: flex;
+            gap: 14px;
+            align-items: flex-start;
+        }
+        .admin-offer-card-thumb {
+            width: 82px;
+            aspect-ratio: 1 / 1;
+            object-fit: contain;
+            border-radius: 12px;
+            background: rgba(7, 14, 34, 0.85);
+            border: 1px solid rgba(255,255,255,0.08);
+            flex: 0 0 auto;
+        }
+        .owner-logout-btn {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(231, 76, 60, 0.14);
+            color: #ffd6d6;
+            padding: 10px 14px;
+        }
+        .owner-page {
+            border-radius: 28px;
+            border: 1px solid rgba(255,255,255,0.12);
+            background: linear-gradient(160deg, rgba(12,22,52,0.94), rgba(23,34,74,0.92));
+            box-shadow: 0 24px 60px rgba(0,0,0,0.32);
+            padding: 26px;
+        }
+        .owner-hero {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 18px;
+        }
+        .owner-hero-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+        .owner-hero h2 {
+            margin: 0 0 6px;
+            font-size: 1.5rem;
+            color: #fff;
+        }
+        .owner-hero p {
+            margin: 0;
+            color: #9fb1d6;
+            font-size: 0.93rem;
+            line-height: 1.5;
+        }
+        .admin-meta {
+            text-align: right;
+            color: #cfe0ff;
+            font-size: 0.9rem;
+            line-height: 1.45;
+        }
+        .admin-meta strong {
+            display: block;
+            font-size: 1rem;
+            color: #fff;
+        }
+        .owner-login-wrap {
+            max-width: 460px;
+        }
+        .owner-intro-panel {
+            max-width: 560px;
+            padding: 22px;
+            border-radius: 22px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+        }
+        .owner-intro-panel p {
+            margin: 0 0 16px;
+            color: #c6d7f4;
+            line-height: 1.6;
+        }
+        .stripe-field-group,
+        .admin-form-grid {
+            display: grid;
+            gap: 12px;
+        }
+        .admin-form-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            margin-bottom: 12px;
+        }
+        .stripe-field {
+            display: flex;
+            flex-direction: column;
+            gap: 7px;
+        }
+        .stripe-field label {
+            font-size: 0.84rem;
+            font-weight: 700;
+            color: #dfe7ff;
+        }
+        .stripe-field input,
+        .stripe-field select {
+            width: 100%;
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            padding: 12px 14px;
+            font-size: 0.95rem;
+            outline: none;
+        }
+        .stripe-field select {
+            appearance: none;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            padding-right: 46px;
+            background-image:
+                linear-gradient(135deg, rgba(255,216,106,0.18), rgba(78,186,255,0.12)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='M3 5.25 7 9l4-3.75' fill='none' stroke='%23ffe08a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75'/%3E%3C/svg%3E");
+            background-repeat: no-repeat, no-repeat;
+            background-position: 0 0, calc(100% - 16px) 50%;
+            background-size: auto, 14px 14px;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+            cursor: pointer;
+        }
+        .stripe-field select option {
+            background: #122042;
+            color: #eef5ff;
+        }
+        #admin-sale-type {
+            border-color: rgba(255,216,106,0.28);
+            background-image:
+                linear-gradient(135deg, rgba(255,216,106,0.2), rgba(78,186,255,0.12)),
+                url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 14 14'%3E%3Cpath d='M3 5.25 7 9l4-3.75' fill='none' stroke='%23ffe08a' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.75'/%3E%3C/svg%3E");
+            font-weight: 700;
+        }
+        .stripe-field input:focus,
+        .stripe-field select:focus {
+            border-color: rgba(110,198,255,0.5);
+            box-shadow: 0 0 0 3px rgba(110,198,255,0.14);
+        }
+        #admin-status-msg,
+        #admin-login-status-msg,
+        #admin-inventory-status,
+        #admin-design-sale-status {
+            min-height: 20px;
+            margin-top: 12px;
+            color: #ffd6d6;
+            font-size: 0.86rem;
+        }
+        #admin-status-msg.success,
+        #admin-login-status-msg.success,
+        #admin-inventory-status.success,
+        #admin-design-sale-status.success {
+            color: #b8f7cf;
+        }
+        .admin-sale-config-note {
+            margin: 0 0 14px;
+            color: #bfd0eb;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+        .admin-sale-offer-fields {
+            display: contents;
+        }
+        .admin-offer-intro {
+            margin: 0 0 16px;
+            padding: 14px 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: linear-gradient(135deg, rgba(255,215,117,0.12), rgba(78,186,255,0.08));
+            color: #dbe9ff;
+            font-size: 0.85rem;
+            line-height: 1.6;
+        }
+        .admin-offer-presets {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 0 0 14px;
+        }
+        .admin-offer-preset {
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.07);
+            color: #eef6ff;
+            border-radius: 999px;
+            padding: 8px 12px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .admin-offer-summary {
+            margin: 0 0 14px;
+            color: #fff3c1;
+            font-size: 0.84rem;
+            font-weight: 800;
+        }
+        .admin-offer-list {
+            display: grid;
+            gap: 12px;
+        }
+        .admin-offer-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 14px;
+            padding: 16px;
+            border-radius: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: linear-gradient(180deg, rgba(255,255,255,0.06), rgba(255,255,255,0.03));
+        }
+        .admin-offer-card strong {
+            display: block;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+        .admin-offer-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 8px;
+        }
+        .admin-offer-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 0.72rem;
+            font-weight: 900;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            background: rgba(255,189,89,0.18);
+            color: #ffe2a9;
+            border: 1px solid rgba(255,189,89,0.22);
+        }
+        .admin-offer-copy {
+            margin: 0;
+            color: #bfd0eb;
+            font-size: 0.84rem;
+            line-height: 1.55;
+        }
+        .admin-offer-actions {
+            display: flex;
+            align-items: center;
+        }
+        .admin-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+            gap: 12px;
+            margin-bottom: 18px;
+        }
+        .admin-stat-card {
+            border-radius: 16px;
+            padding: 16px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
+            border: 1px solid rgba(255,255,255,0.1);
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+        }
+        .admin-stat-card span {
+            display: block;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .admin-stat-card strong {
+            font-size: 1.4rem;
+        }
+        .admin-stat-card small {
+            display: block;
+            margin-top: 7px;
+            color: #b7c8e6;
+            font-size: 0.78rem;
+        }
+        .admin-overview-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.75fr);
+            margin-bottom: 18px;
+        }
+        .admin-trend-head {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 16px;
+            justify-content: space-between;
+        }
+        .admin-trend-summary {
+            flex-direction: column;
+            align-items: flex-end;
+            text-align: right;
+        }
+        .admin-trend-summary span {
+            color: #fff;
+            font-size: 0.82rem;
+        }
+        .admin-trend-controls {
+            display: inline-grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 14px;
+        }
+        .admin-trend-controls button {
+            border: 1px solid rgba(255,255,255,0.12);
+            background: rgba(255,255,255,0.06);
+            color: #dfe7ff;
+            border-radius: 12px;
+            padding: 9px 12px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .admin-trend-controls button.active {
+            background: linear-gradient(135deg, rgba(139,232,255,0.22), rgba(74,144,226,0.24));
+            border-color: rgba(139,232,255,0.36);
+            color: #fff;
+        }
+        .admin-trend-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 10px;
+            border-radius: 999px;
+            font-size: 0.78rem;
+            font-weight: 800;
+            background: rgba(255,255,255,0.08);
+            color: #dfe7ff;
+        }
+        .admin-trend-badge.up {
+            background: rgba(78, 201, 126, 0.18);
+            color: #b8f7cf;
+        }
+        .admin-trend-badge.good {
+            background: rgba(78, 201, 126, 0.2);
+            color: #b8f7cf;
+        }
+        .admin-trend-badge.down {
+            background: rgba(231, 76, 60, 0.18);
+            color: #ffd6d6;
+        }
+        .admin-trend-badge.bad {
+            background: rgba(231, 76, 60, 0.2);
+            color: #ffd6d6;
+        }
+        .admin-trend-badge.flat {
+            background: rgba(255, 196, 86, 0.18);
+            color: #ffe08a;
+        }
+        .admin-trend-badge.fair {
+            background: rgba(255, 196, 86, 0.2);
+            color: #ffe08a;
+        }
+        .admin-month-chart {
+            display: grid;
+            grid-template-columns: repeat(6, minmax(0, 1fr));
+            gap: 12px;
+            align-items: end;
+            min-height: 230px;
+        }
+        .admin-month-chart.days {
+            grid-template-columns: repeat(7, minmax(0, 1fr));
+        }
+        .admin-month-chart.weeks {
+            grid-template-columns: repeat(8, minmax(0, 1fr));
+        }
+        .admin-month-bar {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 10px;
+            min-width: 0;
+        }
+        .admin-month-value {
+            font-size: 0.78rem;
+            color: #dce8ff;
+            font-weight: 700;
+            text-align: center;
+            min-height: 18px;
+        }
+        .admin-month-track {
+            position: relative;
+            width: 100%;
+            max-width: 72px;
+            height: 160px;
+            border-radius: 18px;
+            padding: 8px;
+            display: flex;
+            align-items: flex-end;
+            justify-content: center;
+            background: linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.08));
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-month-fill {
+            width: 100%;
+            min-height: 4px;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffd86a 0%, #ffb15a 55%, #ff8f4d 100%);
+            box-shadow: 0 10px 22px rgba(255, 177, 90, 0.28);
+            transform-origin: bottom center;
+            animation: adminSalesBarRise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+            animation-delay: var(--bar-delay, 0ms);
+            transition: height 420ms ease, filter 220ms ease, box-shadow 220ms ease;
+        }
+        .admin-month-fill.good {
+            background: linear-gradient(180deg, #98f4bb 0%, #4ec97e 55%, #2f9a5a 100%);
+            box-shadow: 0 10px 22px rgba(78, 201, 126, 0.34);
+        }
+        .admin-month-fill.bad {
+            background: linear-gradient(180deg, #ffb2a9 0%, #f07262 55%, #c84a3e 100%);
+            box-shadow: 0 10px 22px rgba(231, 76, 60, 0.34);
+        }
+        .admin-month-fill.fair {
+            background: linear-gradient(180deg, #ffd86a 0%, #ffb15a 55%, #ff8f4d 100%);
+            box-shadow: 0 10px 22px rgba(255, 177, 90, 0.28);
+        }
+        .admin-month-fill.active {
+            filter: brightness(1.08);
+            animation: adminSalesBarRise 700ms cubic-bezier(0.2, 0.8, 0.2, 1) both, adminSalesBarPulse 2400ms ease-in-out infinite;
+            animation-delay: var(--bar-delay, 0ms), calc(var(--bar-delay, 0ms) + 700ms);
+        }
+        @keyframes adminSalesBarRise {
+            0% {
+                transform: scaleY(0.08);
+                opacity: 0.35;
+            }
+            100% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+        @keyframes adminSalesBarPulse {
+            0%, 100% {
+                transform: translateY(0);
+            }
+            50% {
+                transform: translateY(-3px);
+            }
+        }
+        .admin-month-label {
+            font-size: 0.78rem;
+            color: #a9bcdb;
+            text-align: center;
+        }
+        .admin-highlight-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .admin-highlight-card {
+            border-radius: 18px;
+            padding: 16px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.05);
+        }
+        .admin-highlight-card h4 {
+            margin: 0 0 8px;
+            font-size: 0.92rem;
+            color: #fff;
+        }
+        .admin-highlight-card p,
+        .admin-highlight-card ul {
+            margin: 0;
+            color: #bfd0eb;
+            font-size: 0.85rem;
+            line-height: 1.55;
+        }
+        .admin-highlight-card ul {
+            padding-left: 18px;
+        }
+        .admin-highlight-card li + li {
+            margin-top: 6px;
+        }
+        .admin-panel-subtitle {
+            margin: 0 0 14px;
+            color: #9fb1d6;
+            font-size: 0.9rem;
+        }
+        .admin-toolbar {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 14px;
+        }
+        .admin-toolbar-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-toolbar-note {
+            color: #a9bcdb;
+            font-size: 0.82rem;
+        }
+        .admin-search,
+        .admin-filter-select {
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.14);
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+            padding: 11px 13px;
+            min-height: 44px;
+        }
+        .admin-search {
+            min-width: min(280px, 100%);
+        }
+        .admin-filter-select option {
+            color: #081224;
+        }
+        .admin-panel-stack {
+            display: grid;
+            gap: 16px;
+        }
+        .admin-mini-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+        }
+        .admin-mini-card {
+            border-radius: 16px;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(255,255,255,0.04);
+        }
+        .admin-mini-card span {
+            display: block;
+            color: #9fb1d6;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+        .admin-mini-card strong {
+            color: #fff;
+            font-size: 1.05rem;
+        }
+        .admin-collection {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .admin-collection-item {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: flex-start;
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: rgba(255,255,255,0.04);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-collection-item strong {
+            color: #fff;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .admin-collection-item p {
+            margin: 0;
+            color: #a9bcdb;
+            font-size: 0.82rem;
+        }
+        .admin-collection-metric {
+            white-space: nowrap;
+            color: #fff;
+            font-weight: 800;
+        }
+        .admin-source-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 10px;
+        }
+        .admin-source-card {
+            border-radius: 14px;
+            padding: 12px 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-source-card span {
+            display: block;
+            color: #9fb1d6;
+            font-size: 0.75rem;
+            margin-bottom: 6px;
+            text-transform: uppercase;
+        }
+        .admin-source-card strong {
+            color: #fff;
+            font-size: 1rem;
+        }
+        .admin-order-meta {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-order-items {
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-order-items strong {
+            display: block;
+            margin-bottom: 8px;
+            font-size: 0.84rem;
+        }
+        .admin-order-items ul {
+            margin: 0;
+            padding-left: 18px;
+            color: #c7d7ef;
+            font-size: 0.82rem;
+            line-height: 1.5;
+        }
+        .admin-order-items li + li {
+            margin-top: 4px;
+        }
+        .admin-order-item-grid {
+            display: grid;
+            gap: 10px;
+        }
+        .admin-order-item-card {
+            border-radius: 12px;
+            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255,255,255,0.04);
+            padding: 10px;
+        }
+        .admin-order-item-head {
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: baseline;
+            margin-bottom: 8px;
+            color: #fff;
+            font-size: 0.84rem;
+            font-weight: 700;
+        }
+        .admin-order-item-body {
+            display: grid;
+            grid-template-columns: 78px minmax(0, 1fr);
+            gap: 10px;
+            align-items: start;
+        }
+        .admin-order-item-media {
+            width: 78px;
+            height: 78px;
+            border-radius: 10px;
+            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(12, 23, 51, 0.9);
+            object-fit: contain;
+        }
+        .admin-order-item-media-wrap {
+            width: 78px;
+            height: 78px;
+        }
+        .admin-order-item-media-stack {
+            width: 78px;
+            display: grid;
+            gap: 4px;
+        }
+        .admin-order-item-media-stack .admin-order-item-media {
+            width: 78px;
+            height: 37px;
+        }
+        .admin-order-item-meta {
+            display: grid;
+            gap: 4px;
+            font-size: 0.8rem;
+            color: #c7d7ef;
+        }
+        .admin-dashboard-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.9fr);
+            gap: 16px;
+        }
+        .admin-panel {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 18px;
+            padding: 18px;
+        }
+        .admin-panel-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 12px;
+            margin-bottom: 14px;
+        }
+        .admin-panel-head p {
+            margin: 4px 0 0;
+            color: #9fb1d6;
+            font-size: 0.9rem;
+        }
+        .admin-section-title {
+            margin: 0 0 12px;
+            color: #fff;
+            font-size: 1.05rem;
+        }
+        .admin-form-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .admin-table-wrap {
+            overflow-x: auto;
+            border-radius: 14px;
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 720px;
+            background: rgba(255,255,255,0.03);
+        }
+        .admin-table th,
+        .admin-table td {
+            text-align: left;
+            padding: 12px 10px;
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+            font-size: 0.88rem;
+            vertical-align: top;
+        }
+        .admin-table th {
+            color: #9fb1d6;
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            background: rgba(255,255,255,0.04);
+        }
+        .admin-stock-pill {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            background: rgba(78, 201, 126, 0.18);
+            color: #b8f7cf;
+        }
+        .admin-stock-pill.low {
+            background: rgba(255, 196, 86, 0.18);
+            color: #ffe08a;
+        }
+        .admin-stock-pill.out {
+            background: rgba(231, 76, 60, 0.18);
+            color: #ffd6d6;
+        }
+        .admin-row-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .admin-inline-btn {
+            padding: 7px 10px;
+        }
+        .admin-danger-btn {
+            border: 1px solid rgba(231, 76, 60, 0.25);
+            background: rgba(231, 76, 60, 0.16);
+            color: #ffd6d6;
+            padding: 7px 10px;
+        }
+        .admin-sales-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        .admin-sale-card {
+            border-radius: 16px;
+            padding: 14px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+        .admin-sale-card-top {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            margin-bottom: 8px;
+            align-items: flex-start;
+        }
+        .admin-sale-card strong {
+            color: #fff;
+        }
+        .admin-sale-card p {
+            margin: 0;
+            color: #9fb1d6;
+            font-size: 0.85rem;
+            line-height: 1.45;
+        }
+        .admin-empty {
+            text-align: center;
+            border: 1px dashed rgba(255,255,255,0.16);
+            border-radius: 16px;
+            padding: 24px 18px;
+            color: #b9c6de;
+            background: rgba(255,255,255,0.04);
+        }
+        .account-order-badge {
+            border-radius: 999px;
+            padding: 5px 10px;
+            font-size: 0.75rem;
+            font-weight: 800;
+            text-transform: uppercase;
+            letter-spacing: 0.4px;
+            background: rgba(255,255,255,0.08);
+            color: #dfe7ff;
+        }
+        .account-order-badge.paid {
+            background: rgba(78, 201, 126, 0.18);
+            color: #b8f7cf;
+        }
+        .account-order-badge.pending {
+            background: rgba(255, 196, 86, 0.18);
+            color: #ffe08a;
+        }
+        .account-order-total {
+            font-size: 1rem;
+            font-weight: 800;
+            color: #fff;
+        }
+        @media (max-width: 860px) {
+            .owner-topbar,
+            .owner-hero,
+            .admin-panel-head,
+            .admin-sale-card-top {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .admin-meta {
+                text-align: left;
+            }
+            .admin-dashboard-grid,
+            .admin-form-grid {
+                grid-template-columns: 1fr;
+            }
+            .owner-shell {
+                width: calc(100vw - 18px);
+                margin-top: 10px;
+            }
+            .owner-page {
+                padding: 18px;
+            }
+                .admin-overview-grid,
+                .admin-month-chart,
+                .admin-highlight-grid,
+                .admin-mini-grid,
+                .admin-source-grid {
+                    grid-template-columns: 1fr;
+                }
+                .admin-toolbar,
+                .admin-toolbar-group,
+                .admin-collection-item,
+                .admin-trend-head,
+                .admin-trend-summary {
+                    flex-direction: column;
+                    align-items: stretch;
+                }
+                .admin-search,
+                .admin-filter-select {
+                    width: 100%;
+                }
+        }
+    </style>
+</head>
+<body>
+    <div class="owner-shell">
+        <div class="owner-topbar">
+            <div>
+                <h1>Freedom Works Owner</h1>
+                <p>Private inventory and sales dashboard.</p>
+            </div>
+            <div class="owner-links">
+                <a class="owner-link" href="/">Back To Store</a>
+                <button type="button" class="owner-logout-btn" id="owner-logout-btn" style="display:none;">Logout</button>
+            </div>
+        </div>
+
+        <main class="owner-page">
+            <div class="owner-hero">
+                <div>
+                    <h2>Owner Dashboard</h2>
+                    <p>Manage inventory, review revenue, watch low stock items, and keep recent orders moving without leaving one dashboard.</p>
+                    <div class="owner-hero-actions" id="owner-hero-actions" style="display:none;">
+                        <button type="button" class="owner-primary-btn" id="owner-refresh-btn">Refresh Dashboard</button>
+                        <button type="button" class="owner-secondary-btn" id="owner-show-login-btn">Switch Owner</button>
+                    </div>
+                </div>
+                <div class="admin-meta">
+                    <strong id="admin-modal-name">Owner</strong>
+                    <span id="admin-modal-email">Not signed in</span>
+                    <span id="owner-last-sync" style="display:block;margin-top:8px;color:#9fb1d6;">Waiting for sign in</span>
+                </div>
+            </div>
+
+            <div id="owner-intro-panel" class="owner-intro-panel">
+                <h3 class="admin-section-title">Private Owner Area</h3>
+                <p>This page is only for the store owner. Open the sign-in form when you want to manage inventory or review sales.</p>
+                <button type="button" class="owner-primary-btn" onclick="showOwnerLogin()">Open Owner Sign In</button>
+            </div>
+
+            <div id="admin-login-panel" class="owner-login-wrap" style="display:none;">
+                <h3 class="admin-section-title">Owner Login</h3>
+                <form id="admin-auth-form" novalidate>
+                    <div class="stripe-field-group">
+                        <div class="stripe-field">
+                            <label for="admin-email">Email</label>
+                            <input id="admin-email" type="email" placeholder="owner@example.com" autocomplete="username">
+                        </div>
+                        <div class="stripe-field">
+                            <label for="admin-password">Password</label>
+                            <input id="admin-password" type="password" placeholder="Owner password" autocomplete="current-password">
+                        </div>
+                    </div>
+                    <button id="admin-login-submit-btn" class="owner-primary-btn" type="submit">Open Dashboard</button>
+                    <div id="admin-login-status-msg" role="alert"></div>
+                </form>
+            </div>
+
+            <div id="admin-dashboard-panel" style="display:none;">
+                <div id="admin-status-msg"></div>
+                <div class="admin-stats-grid" id="admin-stats-grid"></div>
+                <section class="admin-panel admin-trend-panel">
+                    <div class="admin-trend-head">
+                        <div class="admin-trend-copy">
+                            <h3 class="admin-section-title">Sales Trend Grid</h3>
+                            <p id="admin-trend-description">Compare the last six months of paid sales and see whether this month is moving up or down.</p>
+                            <div class="admin-trend-controls" id="admin-trend-controls">
+                                <button type="button" class="admin-trend-toggle" data-trend-mode="days">Days</button>
+                                <button type="button" class="admin-trend-toggle" data-trend-mode="weeks">Weeks</button>
+                                <button type="button" class="admin-trend-toggle active" data-trend-mode="months">Months</button>
+                            </div>
+                        </div>
+                        <div class="admin-trend-summary">
+                            <strong id="admin-trend-total">$0.00</strong>
+                            <span id="admin-trend-range">Current month</span>
+                            <span class="admin-trend-badge fair" id="admin-trend-badge">No change yet</span>
+                        </div>
+                    </div>
+                    <div class="admin-month-chart" id="admin-month-chart"></div>
+                </section>
+                <div class="admin-overview-grid">
+                    <section class="admin-panel">
+                        <div class="admin-panel-head">
+                            <div>
+                                <h3 class="admin-section-title">Operations Snapshot</h3>
+                                <p>Fast signals for what needs attention right now.</p>
+                            </div>
+                        </div>
+                        <div class="admin-highlight-grid" id="admin-highlight-grid"></div>
+                    </section>
+                    <section class="admin-panel">
+                        <div class="admin-panel-head">
+                            <div>
+                                <h3 class="admin-section-title">Revenue Channels</h3>
+                                <p>Source mix based on saved orders.</p>
+                            </div>
+                        </div>
+                        <div class="admin-source-grid" id="admin-source-grid"></div>
+                    </section>
+                </div>
+                <div class="admin-dashboard-grid">
+                    <section class="admin-panel">
+                        <div class="admin-panel-head">
+                            <div>
+                                <h3 class="admin-section-title">Inventory</h3>
+                                <p>Add products, update stock counts, and mark low-stock items before they run out.</p>
+                            </div>
+                        </div>
+                        <div class="admin-toolbar">
+                            <div class="admin-toolbar-group">
+                                <input id="admin-inventory-search" class="admin-search" type="search" placeholder="Search item name, SKU, category, or notes">
+                                <select id="admin-inventory-filter" class="admin-filter-select" aria-label="Inventory status filter">
+                                    <option value="all">All inventory</option>
+                                    <option value="low">Low stock</option>
+                                    <option value="out">Out of stock</option>
+                                    <option value="healthy">Healthy stock</option>
+                                </select>
+                            </div>
+                            <div class="admin-toolbar-group">
+                                <span class="admin-toolbar-note" id="admin-inventory-count">0 items</span>
+                            </div>
+                        </div>
+                        <form id="admin-inventory-form" novalidate>
+                            <input type="hidden" id="admin-item-id">
+                            <div class="admin-form-grid">
+                                <div class="stripe-field">
+                                    <label for="admin-item-name">Item Name</label>
+                                    <input id="admin-item-name" type="text" placeholder="Adult Black Tee">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-sku">SKU</label>
+                                    <input id="admin-item-sku" type="text" placeholder="TEE-BLK-AD-M">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-category">Category</label>
+                                    <input id="admin-item-category" type="text" placeholder="Blank shirts">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-stock">In Stock</label>
+                                    <input id="admin-item-stock" type="number" min="0" step="1" placeholder="24">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-reorder">Reorder Level</label>
+                                    <input id="admin-item-reorder" type="number" min="0" step="1" placeholder="8">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-price">Unit Price</label>
+                                    <input id="admin-item-price" type="number" min="0" step="0.01" placeholder="6.50">
+                                </div>
+                                <div class="stripe-field">
+                                    <label for="admin-item-notes">Notes</label>
+                                    <input id="admin-item-notes" type="text" placeholder="Main adult black shirt stock">
+                                </div>
+                                <div class="stripe-field" style="grid-column:1 / -1;">
+                                    <label>Color Availability</label>
+                                    <p class="admin-design-picker-note" id="admin-color-stock-summary">No color rules added yet.</p>
+                                    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+                                        <input id="admin-color-stock-name" type="text" placeholder="Color name (ex: Black)" style="max-width:240px;">
+                                        <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add Color</button>
+                                    </div>
+                                    <div id="admin-color-stock-list"></div>
+                                </div>
+                            </div>
+                            <div class="admin-form-actions">
+                                <button id="admin-inventory-submit-btn" class="owner-primary-btn" type="submit">Save Inventory Item</button>
+                                <button id="admin-inventory-reset-btn" class="owner-secondary-btn" type="button">Clear Form</button>
+                            </div>
+                            <div id="admin-inventory-status" role="alert"></div>
+                        </form>
+                        <div class="admin-table-wrap" id="admin-inventory-list"></div>
+
+                        <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
+                            <div class="admin-panel-head">
+                                <div>
+                                    <h3 class="admin-section-title">Special Offers</h3>
+                                    <p>Build cleaner promotions for the storefront with fixed-price, percentage, or bundle-style offers.</p>
+                                </div>
+                            </div>
+                            <p class="admin-offer-intro">Choose a design, apply a clean promo structure, and publish a limited-time offer that automatically expires after 24 hours.</p>
+                            <form id="admin-design-sale-form" novalidate>
+                                <div class="admin-form-grid">
+                                    <div class="stripe-field">
+                                        <label for="admin-sale-design">Design</label>
+                                        <select id="admin-sale-design" style="display:none;">
+                                            <option value="">Loading designs...</option>
+                                        </select>
+                                    </div>
+                                    <div class="stripe-field">
+                                        <label for="admin-sale-type">Offer Type</label>
+                                        <select id="admin-sale-type">
+                                            <option value="single">Single Design Price</option>
+                                            <option value="percentage">Percentage Off</option>
+                                            <option value="bundle">Bundle Offer</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="admin-design-picker-wrap">
+                                    <p class="admin-design-picker-note">Tap a design image to select it for the special offer.</p>
+                                    <p class="admin-design-picker-selection" id="admin-design-picker-selection">No designs selected yet.</p>
+                                    <div class="admin-design-picker" id="admin-sale-design-picker"></div>
+                                </div>
+                                <div class="stripe-field">
+                                    <label>Sizes Included In Sale</label>
+                                    <p class="admin-design-picker-note" id="admin-sale-size-selection">Sale applies to every available size.</p>
+                                    <div class="admin-size-picker" id="admin-sale-size-picker"></div>
+                                </div>
+                                <div class="admin-form-grid admin-sale-offer-fields">
+                                    <div class="stripe-field" id="admin-sale-single-wrap">
+                                        <label for="admin-sale-price">Sale Price</label>
+                                        <input id="admin-sale-price" type="number" min="0" max="24.98" step="0.01" placeholder="19.99">
+                                    </div>
+                                    <div class="stripe-field" id="admin-sale-percent-wrap" style="display:none;">
+                                        <label for="admin-sale-percent">Percent Off</label>
+                                        <input id="admin-sale-percent" type="number" min="1" max="99.99" step="0.01" value="10" placeholder="10">
+                                    </div>
+                                    <div class="stripe-field" id="admin-sale-bundle-qty-wrap" style="display:none;">
+                                        <label for="admin-sale-bundle-qty">Bundle Quantity</label>
+                                        <input id="admin-sale-bundle-qty" type="number" min="2" step="1" placeholder="2">
+                                    </div>
+                                    <div class="stripe-field" id="admin-sale-bundle-price-wrap" style="display:none;">
+                                        <label for="admin-sale-bundle-price">Bundle Total</label>
+                                        <input id="admin-sale-bundle-price" type="number" min="0" step="0.01" placeholder="25.00">
+                                    </div>
+                                </div>
+                                <div class="admin-offer-presets">
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="percentage:10">10% Off</button>
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="percentage:15">15% Off</button>
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="percentage:20">20% Off</button>
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="bundle:2:25">Bundle: 2 for $25</button>
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="bundle:3:36">Bundle: 3 for $36</button>
+                                    <button type="button" class="admin-offer-preset" data-offer-preset="bundle:4:45">Bundle: 4 for $45</button>
+                                </div>
+                                <p class="admin-offer-summary" id="admin-offer-summary">Offer preview: Single design promo at $19.99 for 24 hours.</p>
+                                <p class="admin-sale-config-note" id="admin-sale-config-note">Website shirt pricing changes by size. Saving starts a fresh 24-hour sale window for the selected design.</p>
+                                <div class="admin-form-actions">
+                                    <button id="admin-design-sale-submit-btn" class="owner-primary-btn" type="submit">Publish Special Offer</button>
+                                </div>
+                                <div id="admin-design-sale-status" role="alert"></div>
+                            </form>
+                            <div class="admin-table-wrap" id="admin-design-sale-list"></div>
+                        </div>
+                    </section>
+
+                    <section class="admin-panel">
+                        <div class="admin-panel-stack">
+                            <div>
+                                <div class="admin-panel-head">
+                                    <div>
+                                        <h3 class="admin-section-title">Sales Overview</h3>
+                                        <p>Recent orders, revenue totals, and source breakdowns from saved orders.</p>
+                                    </div>
+                                </div>
+                                <div class="admin-mini-grid" id="admin-sales-mini-grid"></div>
+                            </div>
+                            <div>
+                                <h3 class="admin-section-title">Recent Orders</h3>
+                                <p class="admin-panel-subtitle">The latest customer activity saved by checkout.</p>
+                                <div class="admin-sales-list" id="admin-sales-list"></div>
+                            </div>
+                            <div>
+                                <h3 class="admin-section-title">Restock Watchlist</h3>
+                                <p class="admin-panel-subtitle">Items trending toward reorder or already out.</p>
+                                <div class="admin-collection" id="admin-restock-list"></div>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        const ADMIN_AUTH_STORAGE_KEY = 'fwAdminSession';
+        const ADMIN_AUTH_ENDPOINT = '/api/admin';
+        const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
+        const ADMIN_INVENTORY_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/inventory';
+        const ADMIN_DESIGN_SALES_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/design-sales';
+        const DESIGN_CATALOG_ENDPOINT = '/api/design-catalog';
+        const API_BASE_STORAGE_KEYS = ['fwApiBase', 'fw_api_base'];
+        const API_BASE_FALLBACKS = ['https://freedom-works.onrender.com'];
+        function normalizeApiBase(input) {
+            const value = String(input || '').trim();
+            if (!value) return '';
+            return value.replace(/\/+$/, '');
+        }
+
+        function resolveApiBase() {
+            const initialBase = normalizeApiBase(window.__FW_API_BASE || '');
+            if (initialBase) return initialBase;
+            try {
+                const params = new URLSearchParams(window.location.search || '');
+                const fromUrl = normalizeApiBase(params.get('apiBase') || params.get('api'));
+                if (fromUrl) {
+                    try {
+                        API_BASE_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, fromUrl));
+                    } catch (e) {}
+                    return fromUrl;
+                }
+                for (const key of API_BASE_STORAGE_KEYS) {
+                    const fromStorage = normalizeApiBase(localStorage.getItem(key));
+                    if (fromStorage) return fromStorage;
+                }
+            } catch (e) {}
+
+            const isHttp = /^https?:$/i.test(window.location.protocol || '');
+            const host = String(window.location.hostname || '').trim();
+            const port = String(window.location.port || '').trim();
+            if (isHttp && host && port && port !== '3000') {
+                return window.location.protocol + '//' + host + ':3000';
+            }
+            return '';
+        }
+
+        const API_BASE = resolveApiBase();
+        let activeApiBase = normalizeApiBase(API_BASE);
+        let apiBaseProbePromise = null;
+
+        function rememberApiBase(base) {
+            activeApiBase = normalizeApiBase(base);
+            try {
+                if (activeApiBase) {
+                    API_BASE_STORAGE_KEYS.forEach((key) => localStorage.setItem(key, activeApiBase));
+                }
+            } catch (e) {}
+            return activeApiBase;
+        }
+
+        function getApiBaseCandidates(pathSuffix) {
+            const candidates = [];
+            const seen = new Set();
+            const suffix = String(pathSuffix || '');
+            const pushCandidate = (base) => {
+                const normalizedBase = normalizeApiBase(base);
+                const url = normalizedBase + suffix;
+                if (seen.has(url)) return;
+                seen.add(url);
+                candidates.push({ base: normalizedBase, url });
+            };
+
+            const isHttp = /^https?:$/i.test(window.location.protocol || '');
+            const host = String(window.location.hostname || '').trim();
+            const port = String(window.location.port || '').trim();
+
+            if (isHttp && window.location.origin) pushCandidate(window.location.origin);
+            pushCandidate(activeApiBase || API_BASE || '');
+            if (isHttp && host && port && port !== '3000') {
+                pushCandidate(window.location.protocol + '//' + host + ':3000');
+            }
+            API_BASE_FALLBACKS.forEach((base) => pushCandidate(base));
+            return candidates;
+        }
+
+        async function discoverWorkingApiBase() {
+            if (!apiBaseProbePromise) {
+                apiBaseProbePromise = (async function() {
+                    const candidates = getApiBaseCandidates('/api/health');
+                    for (const candidate of candidates) {
+                        try {
+                            const response = await fetch(candidate.url, {
+                                cache: 'no-store',
+                                headers: { Accept: 'application/json' }
+                            });
+                            if (!response.ok) continue;
+                            const contentType = String(response.headers.get('content-type') || '').toLowerCase();
+                            if (!contentType.includes('application/json')) continue;
+                            const payload = await response.json().catch(() => null);
+                            if (!payload || payload.ok !== true) continue;
+                            return rememberApiBase(candidate.base);
+                        } catch (e) {}
+                    }
+                    return normalizeApiBase(activeApiBase || API_BASE || '');
+                })();
+            }
+            return apiBaseProbePromise;
+        }
+
+        async function fetchWithApiCandidates(pathSuffix, fetchOptions) {
+            await discoverWorkingApiBase();
+            const suffix = String(pathSuffix || '');
+            const candidates = getApiBaseCandidates(suffix);
+            let lastResponse = null;
+            let sawNetworkError = false;
+            for (const candidate of candidates) {
+                try {
+                    const response = await fetch(candidate.url, fetchOptions || {});
+                    lastResponse = response;
+                    if (response.ok || (response.status >= 400 && response.status < 500 && response.status !== 404)) {
+                        rememberApiBase(candidate.base);
+                        return response;
+                    }
+                } catch (e) {
+                    sawNetworkError = true;
+                }
+            }
+            if (lastResponse) return lastResponse;
+            if (sawNetworkError) throw new TypeError('Unable to reach API endpoint: ' + suffix);
+            throw new Error('No API candidates available for endpoint: ' + suffix);
+        }
+        const ADMIN_SALE_SIZE_OPTIONS = [
+            'Newborn', '6M', '9M', '12M', '18M',
+            '2T', '3T', '4T', '5T',
+            'Youth S', 'Youth M', 'Youth L', 'Youth XL',
+            'Adult S', 'Adult M', 'Adult L', 'Adult XL',
+            '2X', '3X'
+        ];
+        const ADMIN_INVENTORY_SIZE_OPTIONS = [
+            'Newborn', '6M', '9M', '12M', '18M', '18-24M',
+            '2T', '3T', '4T', '5T',
+            'Youth S', 'Youth M', 'Youth L', 'Youth XL',
+            'Adult S', 'Adult M', 'Adult L', 'Adult XL',
+            '2X', '3X'
+        ];
+
+        let adminSession = null;
+        let adminDashboardState = { inventory: [], inventorySummary: {}, sales: {}, designSales: [] };
+        let adminCatalogFiles = [];
+        let adminSelectedDesignFiles = [];
+        let adminSelectedSaleSizes = [];
+        let adminColorStockEntries = [];
+        let ownerLastSyncAt = '';
+        let adminRenderedTrendKey = '';
+        let adminTrendMode = 'months';
+
+        function escapeHtml(value) {
+            return String(value || '')
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        function resolveAdminAssetUrl(src) {
+            const raw = String(src || '').trim();
+            if (!raw) return '';
+            if (/^data:/i.test(raw)) return raw;
+            if (/^https?:/i.test(raw)) return raw;
+
+            function extractFileName(value) {
+                const cleaned = String(value || '').split('?')[0].split('#')[0];
+                const leaf = cleaned.split('/').pop() || '';
+                try {
+                    return decodeURIComponent(leaf).trim();
+                } catch (_) {
+                    return leaf.trim();
+                }
+            }
+
+            function hasCatalogAsset(fileName) {
+                if (!fileName) return false;
+                if (!Array.isArray(adminCatalogFiles) || !adminCatalogFiles.length) return true;
+                const lower = String(fileName).toLowerCase();
+                return adminCatalogFiles.some(function(entry) {
+                    return String(entry || '').toLowerCase() === lower;
+                });
+            }
+
+            if (raw.startsWith('/')) {
+                if (/^\/assets\/?$/i.test(raw)) return '';
+                const fileName = extractFileName(raw);
+                if (!fileName) return '';
+                if (!hasCatalogAsset(fileName)) return '';
+                return raw;
+            }
+
+            const fileName = extractFileName(raw);
+            if (!fileName) return '';
+            if (!hasCatalogAsset(fileName)) return '';
+            return String(fileName).split('/').map(function(part) {
+                return encodeURIComponent(part);
+            }).join('/');
+        }
+
+        function formatAdminDesignLabel(value) {
+            return String(value || '')
+                .replace(/\.[^.]+$/, '')
+                .replace(/[_-]+/g, ' ')
+                .replace(/\s+/g, ' ')
+                .trim() || 'Design';
+        }
+
+        function formatPriceAmount(amount) {
+            return '$' + (Math.round((amount || 0) * 100) / 100).toFixed(2);
+        }
+        
+        function getAdminCatalogBasePriceForSize(size) {
+            const normalizedSize = String(size || '').trim();
+            const printWidthMap = {
+                'Newborn': 4.0,
+                '6M': 4.5,
+                '9M': 4.75,
+                '12M': 5.0,
+                '18M': 5.25,
+                '2T': 6.0,
+                '3T': 6.5,
+                '4T': 7.0,
+                '5T': 7.5,
+                'Youth S': 8.5,
+                'Youth M': 9.0,
+                'Youth L': 9.5,
+                'Youth XL': 9.75,
+                'Adult S': 10.0,
+                'Adult M': 11.0,
+                'Adult L': 12.0,
+                'Adult XL': 12.5,
+                '2X': 13.0,
+                '3X': 13.5,
+            };
+            const adultCoreSizes = ['Adult S', 'Adult M', 'Adult L', 'Adult XL'];
+            const infantSizes = ['Newborn', '6M', '9M', '12M', '18M'];
+            const toddlerSizes = ['2T', '3T', '4T', '5T'];
+            const youthSizes = ['Youth S', 'Youth M', 'Youth L', 'Youth XL'];
+            let shirtCharge = 5;
+            if (infantSizes.includes(normalizedSize)) shirtCharge = 7.5;
+            else if (toddlerSizes.includes(normalizedSize)) shirtCharge = 4.5;
+            else if (youthSizes.includes(normalizedSize)) shirtCharge = 3.5;
+            else if (adultCoreSizes.includes(normalizedSize)) shirtCharge = 3;
+            else if (normalizedSize === '2X') shirtCharge = 6;
+            else if (normalizedSize === '3X') shirtCharge = 8;
+            const printCharge = Math.round(Number((printWidthMap[normalizedSize] || printWidthMap['Adult M']) * 0.75) * 100) / 100;
+            return Math.round((shirtCharge + printCharge + 5) * 100) / 100;
+        }
+
+        function getAdminOfferSizes(values) {
+            const normalized = Array.isArray(values)
+                ? values.map(function(size) { return String(size || '').trim(); }).filter(function(size) { return ADMIN_SALE_SIZE_OPTIONS.includes(size); })
+                : [];
+            return normalized.length ? normalized : ADMIN_SALE_SIZE_OPTIONS.slice();
+        }
+
+        function getAdminSizeLabel(size) {
+            if (size === '2X') return '2XL';
+            if (size === '3X') return '3XL';
+            return size;
+        }
+
+        function normalizeAdminColorStockEntries(entries) {
+            const source = Array.isArray(entries) ? entries : [];
+            const seen = new Map();
+            source.forEach(function(entry) {
+                const color = String(entry && entry.color || '').trim();
+                if (!color) return;
+                const key = color.toLowerCase();
+                const outOfStock = entry && entry.outOfStock === true;
+                const outOfStockSizes = Array.isArray(entry && entry.outOfStockSizes)
+                    ? entry.outOfStockSizes
+                        .map(function(size) { return String(size || '').trim(); })
+                        .filter(function(size) { return ADMIN_INVENTORY_SIZE_OPTIONS.includes(size); })
+                    : [];
+                const prior = seen.get(key);
+                if (prior) {
+                    prior.outOfStock = prior.outOfStock || outOfStock;
+                    prior.outOfStockSizes = Array.from(new Set(prior.outOfStockSizes.concat(outOfStockSizes)));
+                } else {
+                    seen.set(key, {
+                        color: color,
+                        outOfStock: outOfStock,
+                        outOfStockSizes: Array.from(new Set(outOfStockSizes)),
+                    });
+                }
+            });
+            return Array.from(seen.values());
+        }
+
+        function renderAdminColorStockEditor() {
+            adminColorStockEntries = normalizeAdminColorStockEntries(adminColorStockEntries);
+            const listEl = document.getElementById('admin-color-stock-list');
+            const summaryEl = document.getElementById('admin-color-stock-summary');
+            if (!listEl || !summaryEl) return;
+
+            if (!adminColorStockEntries.length) {
+                listEl.innerHTML = '<div class="admin-empty">Add a color, then choose whether the full color or only specific sizes are out of stock.</div>';
+                summaryEl.textContent = 'No color rules added yet.';
+                return;
+            }
+
+            summaryEl.textContent = adminColorStockEntries.length + ' color rule' + (adminColorStockEntries.length === 1 ? '' : 's') + ' configured.';
+            listEl.innerHTML = adminColorStockEntries.map(function(entry, index) {
+                const sizeChips = ADMIN_INVENTORY_SIZE_OPTIONS.map(function(size) {
+                    const active = entry.outOfStockSizes.includes(size);
+                    return '<button type="button" class="admin-size-chip' + (active ? ' active' : '') + '" data-color-size-index="' + index + '" data-color-size="' + escapeHtml(size) + '">' + escapeHtml(getAdminSizeLabel(size)) + '</button>';
+                }).join('');
+                return '<div style="border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:12px;margin-bottom:10px;">'
+                    + '<div style="display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;">'
+                    + '<strong>' + escapeHtml(entry.color) + '</strong>'
+                    + '<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">'
+                    + '<label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" data-color-out-index="' + index + '"' + (entry.outOfStock ? ' checked' : '') + '> Entire color out of stock</label>'
+                    + '<button type="button" class="admin-danger-btn" data-color-remove-index="' + index + '">Remove</button>'
+                    + '</div>'
+                    + '</div>'
+                    + '<div style="margin-top:10px;">'
+                    + '<p class="admin-design-picker-note" style="margin:0 0 8px;">Select sizes that are out of stock for this color:</p>'
+                    + '<div class="admin-size-picker">' + sizeChips + '</div>'
+                    + '</div>'
+                    + '</div>';
+            }).join('');
+
+            listEl.querySelectorAll('[data-color-remove-index]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const idx = Number(button.getAttribute('data-color-remove-index'));
+                    if (!Number.isFinite(idx)) return;
+                    adminColorStockEntries = adminColorStockEntries.filter(function(_, colorIdx) { return colorIdx !== idx; });
+                    renderAdminColorStockEditor();
+                });
+            });
+
+            listEl.querySelectorAll('[data-color-out-index]').forEach(function(inputEl) {
+                inputEl.addEventListener('change', function() {
+                    const idx = Number(inputEl.getAttribute('data-color-out-index'));
+                    if (!Number.isFinite(idx) || !adminColorStockEntries[idx]) return;
+                    adminColorStockEntries[idx].outOfStock = inputEl.checked;
+                    renderAdminColorStockEditor();
+                });
+            });
+
+            listEl.querySelectorAll('[data-color-size-index]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const idx = Number(button.getAttribute('data-color-size-index'));
+                    const size = String(button.getAttribute('data-color-size') || '').trim();
+                    if (!Number.isFinite(idx) || !adminColorStockEntries[idx] || !ADMIN_INVENTORY_SIZE_OPTIONS.includes(size)) return;
+                    const currentSizes = adminColorStockEntries[idx].outOfStockSizes || [];
+                    adminColorStockEntries[idx].outOfStockSizes = currentSizes.includes(size)
+                        ? currentSizes.filter(function(value) { return value !== size; })
+                        : currentSizes.concat(size);
+                    renderAdminColorStockEditor();
+                });
+            });
+        }
+
+        function addAdminColorStockEntryFromInput() {
+            const inputEl = document.getElementById('admin-color-stock-name');
+            const colorName = String(inputEl && inputEl.value || '').trim();
+            if (!colorName) return;
+            const alreadyExists = adminColorStockEntries.some(function(entry) {
+                return String(entry.color || '').trim().toLowerCase() === colorName.toLowerCase();
+            });
+            if (!alreadyExists) {
+                adminColorStockEntries = adminColorStockEntries.concat({ color: colorName, outOfStock: false, outOfStockSizes: [] });
+            }
+            if (inputEl) {
+                inputEl.value = '';
+                inputEl.focus();
+            }
+            renderAdminColorStockEditor();
+        }
+
+        function formatAdminColorStockSummary(item) {
+            const entries = normalizeAdminColorStockEntries(item && item.colorStock);
+            if (!entries.length) return 'No color rules';
+            return entries.map(function(entry) {
+                const fullLabel = entry.outOfStock ? 'all sizes out' : '';
+                const sizeLabel = entry.outOfStockSizes.length
+                    ? ('sizes: ' + entry.outOfStockSizes.map(getAdminSizeLabel).join(', '))
+                    : '';
+                const detail = [fullLabel, sizeLabel].filter(Boolean).join(' | ');
+                return detail ? (entry.color + ' (' + detail + ')') : entry.color;
+            }).join(' | ');
+        }
+
+        function formatAdminPriceRange(values) {
+            const prices = (Array.isArray(values) ? values : [])
+                .map(function(value) { return Math.round(Number(value || 0) * 100) / 100; })
+                .filter(function(value) { return Number.isFinite(value) && value >= 0; });
+            if (!prices.length) return formatPriceAmount(0);
+            const minPrice = Math.min.apply(null, prices);
+            const maxPrice = Math.max.apply(null, prices);
+            return Math.abs(maxPrice - minPrice) < 0.01
+                ? formatPriceAmount(minPrice)
+                : (formatPriceAmount(minPrice) + ' - ' + formatPriceAmount(maxPrice));
+        }
+
+        function getAdminOfferRegularRangeText(values) {
+            return formatAdminPriceRange(getAdminOfferSizes(values).map(function(size) {
+                return getAdminCatalogBasePriceForSize(size);
+            }));
+        }
+
+        function getAdminOfferDiscountedRangeText(values, salePercent) {
+            const percent = Number(salePercent || 0);
+            return formatAdminPriceRange(getAdminOfferSizes(values).map(function(size) {
+                const basePrice = getAdminCatalogBasePriceForSize(size);
+                return Math.round((basePrice * ((100 - percent) / 100)) * 100) / 100;
+            }));
+        }
+
+        function collectAdminSelectedDesignFiles() {
+            const pickerSelections = Array.from(document.querySelectorAll('#admin-sale-design-picker .admin-design-picker-card.active'))
+                .map(function(button) {
+                    const directValue = String(button.getAttribute('data-design-file') || '').trim();
+                    const imageSrc = String(button.querySelector('img')?.getAttribute('src') || '').trim();
+                    const decodedImageSrc = imageSrc ? decodeURIComponent(imageSrc.split('?')[0].split('#')[0].split('/').pop() || '') : '';
+                    return directValue || decodedImageSrc;
+                });
+            const selectValue = String(document.getElementById('admin-sale-design')?.value || '').trim();
+            const combined = adminSelectedDesignFiles
+                .concat(pickerSelections)
+                .concat(selectValue ? [selectValue] : []);
+            const normalized = Array.from(new Set(combined.filter(function(file) {
+                return Array.isArray(adminCatalogFiles) && adminCatalogFiles.includes(file);
+            })));
+            adminSelectedDesignFiles = normalized;
+            return normalized.slice();
+        }
+
+        function formatAccountOrderDate(value) {
+            if (!value) return 'Date unavailable';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return 'Date unavailable';
+            return parsed.toLocaleString();
+        }
+
+        let adminSaleCountdownTimer = null;
+
+        function getAdminSaleEndTime(value) {
+            if (!value) return null;
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return null;
+            return parsed;
+        }
+
+        function formatAdminSaleCountdown(value) {
+            const endTime = getAdminSaleEndTime(value);
+            if (!endTime) return 'Ends in 24h 00m 00s';
+            const remainingMs = endTime.getTime() - Date.now();
+            if (remainingMs <= 0) return 'Sale expired';
+            const totalSeconds = Math.floor(remainingMs / 1000);
+            const hours = Math.floor(totalSeconds / 3600);
+            const minutes = Math.floor((totalSeconds % 3600) / 60);
+            const seconds = totalSeconds % 60;
+            return 'Ends in '
+                + String(hours).padStart(2, '0') + 'h '
+                + String(minutes).padStart(2, '0') + 'm '
+                + String(seconds).padStart(2, '0') + 's';
+        }
+
+        function getAdminSaleDeadlineMarkup(value) {
+            const endTime = getAdminSaleEndTime(value);
+            if (!endTime) return '<span class="admin-offer-countdown">' + escapeHtml(formatAdminSaleCountdown(value)) + '</span>';
+            return '<span class="admin-offer-countdown" data-offer-ends-at="' + escapeHtml(endTime.toISOString()) + '">' + escapeHtml(formatAdminSaleCountdown(endTime.toISOString())) + '</span>';
+        }
+
+        function refreshAdminSaleCountdowns() {
+            document.querySelectorAll('.admin-offer-countdown[data-offer-ends-at]').forEach(function(node) {
+                node.textContent = formatAdminSaleCountdown(node.getAttribute('data-offer-ends-at') || '');
+            });
+        }
+
+        function initAdminSaleCountdowns() {
+            refreshAdminSaleCountdowns();
+            if (adminSaleCountdownTimer) return;
+            adminSaleCountdownTimer = window.setInterval(refreshAdminSaleCountdowns, 1000);
+        }
+
+        function formatAdminDesignSaleOffer(item) {
+            if (String(item && item.offerType || 'single') === 'bundle') {
+                return String(Number(item && item.bundleQuantity || 0)) + ' for ' + formatPriceAmount(Number(item && item.bundlePrice || 0));
+            }
+            if (String(item && item.offerType || 'single') === 'percentage') {
+                return String(Number(item && item.salePercent || 0)) + '% off';
+            }
+            return formatPriceAmount(Number(item && item.salePrice || 0)) + ' each';
+        }
+
+        function getAdminOfferPreviewText() {
+            const offerType = String(document.getElementById('admin-sale-type')?.value || 'single');
+            const salePrice = Number(document.getElementById('admin-sale-price')?.value || 19.99);
+            const salePercent = Number(document.getElementById('admin-sale-percent')?.value || 10);
+            const bundleQuantity = Number(document.getElementById('admin-sale-bundle-qty')?.value || 2);
+            const bundlePrice = Number(document.getElementById('admin-sale-bundle-price')?.value || 25);
+            const selectedCount = adminSelectedDesignFiles.length;
+            const targetSizes = getAdminOfferSizes(adminSelectedSaleSizes);
+            const regularRangeText = getAdminOfferRegularRangeText(targetSizes);
+            const targetLabel = selectedCount > 1 ? (selectedCount + ' designs') : (selectedCount === 1 ? '1 design' : 'the selected design');
+            if (offerType === 'bundle') {
+                return 'Offer preview: Customers get ' + Math.max(2, Math.round(bundleQuantity)) + ' matching shirts for ' + formatPriceAmount(bundlePrice) + ' on ' + targetLabel + ' during the 24-hour window. Regular website pricing for the selected sizes runs ' + regularRangeText + ' each.';
+            }
+            if (offerType === 'percentage') {
+                return 'Offer preview: ' + targetLabel.charAt(0).toUpperCase() + targetLabel.slice(1) + ' will run at ' + String(salePercent) + '% off for 24 hours. Selected sizes currently run ' + regularRangeText + ', dropping to ' + getAdminOfferDiscountedRangeText(targetSizes, salePercent) + '.';
+            }
+            return 'Offer preview: ' + targetLabel.charAt(0).toUpperCase() + targetLabel.slice(1) + ' will run at ' + formatPriceAmount(salePrice) + ' for 24 hours. Selected sizes currently run ' + regularRangeText + ' on the website.';
+        }
+
+        function updateAdminOfferPreview() {
+            const selectedDesigns = collectAdminSelectedDesignFiles();
+            const previewEl = document.getElementById('admin-offer-summary');
+            if (previewEl) previewEl.textContent = getAdminOfferPreviewText();
+            const selectionEl = document.getElementById('admin-design-picker-selection');
+            if (selectionEl) {
+                selectionEl.textContent = selectedDesigns.length > 0
+                    ? (selectedDesigns.length + ' design' + (selectedDesigns.length === 1 ? '' : 's') + ' selected for this special offer.')
+                    : 'No designs selected yet.';
+            }
+        }
+
+        function renderAdminSaleSizePicker() {
+            const pickerEl = document.getElementById('admin-sale-size-picker');
+            const summaryEl = document.getElementById('admin-sale-size-selection');
+            if (!pickerEl || !summaryEl) return;
+            pickerEl.innerHTML = ADMIN_SALE_SIZE_OPTIONS.map(function(size) {
+                const isActive = adminSelectedSaleSizes.includes(size);
+                const label = size === '2X' ? '2XL' : (size === '3X' ? '3XL' : size);
+                return '<button type="button" class="admin-size-chip' + (isActive ? ' active' : '') + '" data-sale-size="' + escapeHtml(size) + '">' + escapeHtml(label) + '</button>';
+            }).join('');
+            summaryEl.textContent = adminSelectedSaleSizes.length
+                ? ('Sale applies to ' + adminSelectedSaleSizes.length + ' size' + (adminSelectedSaleSizes.length === 1 ? '' : 's') + '.')
+                : 'Sale applies to every available size.';
+            pickerEl.querySelectorAll('[data-sale-size]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const nextSize = button.getAttribute('data-sale-size') || '';
+                    if (adminSelectedSaleSizes.includes(nextSize)) {
+                        adminSelectedSaleSizes = adminSelectedSaleSizes.filter(function(size) { return size !== nextSize; });
+                    } else {
+                        adminSelectedSaleSizes = adminSelectedSaleSizes.concat(nextSize);
+                    }
+                    renderAdminSaleSizePicker();
+                });
+            });
+        }
+
+        function applyAdminOfferPreset(preset) {
+            const parts = String(preset || '').split(':');
+            if (parts[0] === 'bundle') {
+                document.getElementById('admin-sale-type').value = 'bundle';
+                document.getElementById('admin-sale-bundle-qty').value = parts[1] || '2';
+                document.getElementById('admin-sale-bundle-price').value = parts[2] || '25';
+            } else if (parts[0] === 'percentage') {
+                document.getElementById('admin-sale-type').value = 'percentage';
+                document.getElementById('admin-sale-percent').value = parts[1] || '10';
+            } else {
+                document.getElementById('admin-sale-type').value = 'single';
+                document.getElementById('admin-sale-price').value = parts[1] || '19.99';
+            }
+            toggleAdminDesignSaleFields();
+            updateAdminOfferPreview();
+        }
+
+        function toggleAdminDesignSaleFields() {
+            const selectedDesigns = collectAdminSelectedDesignFiles();
+            const offerType = String(document.getElementById('admin-sale-type')?.value || 'single');
+            const percentInput = document.getElementById('admin-sale-percent');
+            const singleWrap = document.getElementById('admin-sale-single-wrap');
+            const percentWrap = document.getElementById('admin-sale-percent-wrap');
+            const bundleQtyWrap = document.getElementById('admin-sale-bundle-qty-wrap');
+            const bundlePriceWrap = document.getElementById('admin-sale-bundle-price-wrap');
+            const noteEl = document.getElementById('admin-sale-config-note');
+            const submitBtn = document.getElementById('admin-design-sale-submit-btn');
+            const selectedCount = selectedDesigns.length;
+            if (offerType === 'percentage' && percentInput && !String(percentInput.value || '').trim()) {
+                percentInput.value = '10';
+            }
+            if (singleWrap) singleWrap.style.display = offerType === 'single' ? '' : 'none';
+            if (percentWrap) percentWrap.style.display = offerType === 'percentage' ? '' : 'none';
+            if (bundleQtyWrap) bundleQtyWrap.style.display = offerType === 'bundle' ? '' : 'none';
+            if (bundlePriceWrap) bundlePriceWrap.style.display = offerType === 'bundle' ? '' : 'none';
+            if (noteEl) {
+                const regularRangeText = getAdminOfferRegularRangeText(adminSelectedSaleSizes);
+                noteEl.textContent = offerType === 'bundle'
+                    ? (selectedCount > 1
+                        ? ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + ' each. This bundle offer will be published across every selected design as a clearance-style special.')
+                        : ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + ' each. Bundle offers apply when the cart has enough of the same design to complete the bundle.'))
+                    : (offerType === 'percentage'
+                        ? (selectedCount > 1
+                            ? ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + '. Publishing now will apply the same percentage-off offer to every selected design for the next 24 hours.')
+                            : ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + '. Saving starts a fresh 24-hour percentage-off sale window for the selected design.'))
+                        : (selectedCount > 1
+                            ? ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + '. Publishing now will apply the same clearance price to every selected design for the next 24 hours.')
+                            : ('Website shirt pricing for the selected sizes currently runs ' + regularRangeText + '. Saving starts a fresh 24-hour sale window for the selected design.')));
+            }
+            if (submitBtn) {
+                if (selectedCount > 1) {
+                    submitBtn.textContent = offerType === 'bundle'
+                        ? 'Publish Clearance Bundle'
+                        : (offerType === 'percentage' ? 'Publish Percentage Clearance' : 'Publish Clearance Sale');
+                } else {
+                    submitBtn.textContent = offerType === 'bundle'
+                        ? 'Publish Bundle Offer'
+                        : (offerType === 'percentage' ? 'Publish Percentage Offer' : 'Publish Special Offer');
+                }
+            }
+            updateAdminOfferPreview();
+        }
+
+        function getInventoryHealth(item) {
+            const stock = Number(item && item.stock || 0);
+            const reorderLevel = Number(item && item.reorderLevel || 0);
+            if (stock <= 0) return 'out';
+            if (reorderLevel > 0 && stock <= reorderLevel) return 'low';
+            return 'healthy';
+        }
+
+        function formatRelativeSync(value) {
+            if (!value) return 'Waiting for sign in';
+            const parsed = new Date(value);
+            if (Number.isNaN(parsed.getTime())) return 'Dashboard updated';
+            return 'Last updated ' + parsed.toLocaleString();
+        }
+
+        function getCurrentMonthKey() {
+            const now = new Date();
+            return String(now.getFullYear()) + '-' + String(now.getMonth() + 1).padStart(2, '0');
+        }
+
+        function getCurrentTrendKey(mode) {
+            const now = new Date();
+            if (mode === 'days') {
+                return now.toISOString().slice(0, 10);
+            }
+            if (mode === 'weeks') {
+                return getStartOfWeek(now).toISOString().slice(0, 10);
+            }
+            return getCurrentMonthKey();
+        }
+
+        function getStartOfWeek(date) {
+            const value = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+            const day = value.getDay();
+            const diff = day === 0 ? -6 : 1 - day;
+            value.setDate(value.getDate() + diff);
+            value.setHours(0, 0, 0, 0);
+            return value;
+        }
+
+        function formatShortDate(value) {
+            return value.toLocaleString('en-US', { month: 'short', day: 'numeric' });
+        }
+
+        function buildSalesTrendBuckets(timeline, mode) {
+            const now = new Date();
+            const entries = Array.isArray(timeline) ? timeline : [];
+            const buckets = [];
+            const bucketIndex = new Map();
+
+            if (mode === 'days') {
+                for (let offset = 6; offset >= 0; offset -= 1) {
+                    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate() - offset);
+                    const key = day.toISOString().slice(0, 10);
+                    buckets.push({
+                        key,
+                        total: 0,
+                        orderCount: 0,
+                        label: day.toLocaleString('en-US', { weekday: 'short' }),
+                        rangeLabel: day.toLocaleString('en-US', { month: 'long', day: 'numeric', year: 'numeric' }),
+                    });
+                    bucketIndex.set(key, buckets.length - 1);
+                }
+                entries.forEach(function(entry) {
+                    const parsed = new Date(entry.createdAt || 0);
+                    if (Number.isNaN(parsed.getTime())) return;
+                    const key = parsed.toISOString().slice(0, 10);
+                    const idx = bucketIndex.get(key);
+                    if (idx === undefined) return;
+                    buckets[idx].total += Number(entry.total || 0);
+                    buckets[idx].orderCount += 1;
+                });
+            } else if (mode === 'weeks') {
+                const currentWeekStart = getStartOfWeek(now);
+                for (let offset = 7; offset >= 0; offset -= 1) {
+                    const weekStart = new Date(currentWeekStart);
+                    weekStart.setDate(currentWeekStart.getDate() - (offset * 7));
+                    const weekEnd = new Date(weekStart);
+                    weekEnd.setDate(weekStart.getDate() + 6);
+                    const key = weekStart.toISOString().slice(0, 10);
+                    buckets.push({
+                        key,
+                        total: 0,
+                        orderCount: 0,
+                        label: formatShortDate(weekStart),
+                        rangeLabel: formatShortDate(weekStart) + ' - ' + formatShortDate(weekEnd),
+                    });
+                    bucketIndex.set(key, buckets.length - 1);
+                }
+                entries.forEach(function(entry) {
+                    const parsed = new Date(entry.createdAt || 0);
+                    if (Number.isNaN(parsed.getTime())) return;
+                    const key = getStartOfWeek(parsed).toISOString().slice(0, 10);
+                    const idx = bucketIndex.get(key);
+                    if (idx === undefined) return;
+                    buckets[idx].total += Number(entry.total || 0);
+                    buckets[idx].orderCount += 1;
+                });
+            } else {
+                for (let offset = 5; offset >= 0; offset -= 1) {
+                    const bucketDate = new Date(now.getFullYear(), now.getMonth() - offset, 1);
+                    const key = String(bucketDate.getFullYear()) + '-' + String(bucketDate.getMonth() + 1).padStart(2, '0');
+                    buckets.push({
+                        key,
+                        total: 0,
+                        orderCount: 0,
+                        label: bucketDate.toLocaleString('en-US', { month: 'short', year: 'numeric' }),
+                        rangeLabel: bucketDate.toLocaleString('en-US', { month: 'long', year: 'numeric' }),
+                    });
+                    bucketIndex.set(key, buckets.length - 1);
+                }
+                entries.forEach(function(entry) {
+                    const parsed = new Date(entry.createdAt || 0);
+                    if (Number.isNaN(parsed.getTime())) return;
+                    const key = String(parsed.getFullYear()) + '-' + String(parsed.getMonth() + 1).padStart(2, '0');
+                    const idx = bucketIndex.get(key);
+                    if (idx === undefined) return;
+                    buckets[idx].total += Number(entry.total || 0);
+                    buckets[idx].orderCount += 1;
+                });
+            }
+
+            buckets.forEach(function(bucket) {
+                bucket.total = Number(bucket.total.toFixed(2));
+            });
+            return buckets;
+        }
+
+        function getSalesPerformanceState(currentTotal, previousTotal) {
+            const current = Number(currentTotal || 0);
+            const previous = Number(previousTotal || 0);
+            if (previous <= 0) {
+                if (current <= 0) return 'fair';
+                return 'good';
+            }
+            const changePercent = ((current - previous) / previous) * 100;
+            if (changePercent >= 8) return 'good';
+            if (changePercent <= -8) return 'bad';
+            return 'fair';
+        }
+
+        function getTrendBarHeightPercent(total, minPositiveTotal, maxTotal) {
+            const numericTotal = Number(total || 0);
+            if (numericTotal <= 0 || maxTotal <= 0) return 3;
+            if (maxTotal === minPositiveTotal) return 72;
+            const normalized = (numericTotal - minPositiveTotal) / (maxTotal - minPositiveTotal);
+            const eased = Math.pow(Math.max(0, Math.min(1, normalized)), 0.65);
+            return Math.round(18 + (eased * 82));
+        }
+
+        function getTrendText(mode) {
+            if (mode === 'days') return 'Track the last seven days of paid sales and watch each day trend good, fair, or bad.';
+            if (mode === 'weeks') return 'Compare the last eight weeks of paid sales and see whether this week is moving up or down.';
+            return 'Compare the last six months of paid sales and see whether this month is moving up or down.';
+        }
+
+        function formatSignedCurrency(amount) {
+            const numeric = Number(amount || 0);
+            const prefix = numeric > 0 ? '+' : (numeric < 0 ? '-' : '');
+            return prefix + formatPriceAmount(Math.abs(numeric));
+        }
+
+        function formatSignedPercent(value) {
+            const numeric = Number(value || 0);
+            const prefix = numeric > 0 ? '+' : (numeric < 0 ? '' : '');
+            return prefix + numeric.toFixed(1) + '%';
+        }
+
+        function getAdminAuthHeaders() {
+            const token = adminSession && adminSession.token ? adminSession.token : '';
+            return token ? { Authorization: 'Bearer ' + token } : {};
+        }
+
+        function updateAdminUi() {
+            const modalName = document.getElementById('admin-modal-name');
+            const modalEmail = document.getElementById('admin-modal-email');
+            const logoutBtn = document.getElementById('owner-logout-btn');
+            const heroActions = document.getElementById('owner-hero-actions');
+            const syncEl = document.getElementById('owner-last-sync');
+            if (modalName) modalName.textContent = (adminSession && adminSession.admin && adminSession.admin.name) || 'Owner';
+            if (modalEmail) modalEmail.textContent = (adminSession && adminSession.admin && adminSession.admin.email) || 'Not signed in';
+            if (logoutBtn) logoutBtn.style.display = adminSession ? '' : 'none';
+            if (heroActions) heroActions.style.display = adminSession ? '' : 'none';
+            if (syncEl) syncEl.textContent = adminSession ? formatRelativeSync(ownerLastSyncAt) : 'Waiting for sign in';
+        }
+
+        function showOwnerLogin() {
+            const introPanel = document.getElementById('owner-intro-panel');
+            const loginPanel = document.getElementById('admin-login-panel');
+            const dashboardPanel = document.getElementById('admin-dashboard-panel');
+            if (introPanel) introPanel.style.display = 'none';
+            if (dashboardPanel) dashboardPanel.style.display = 'none';
+            if (loginPanel) loginPanel.style.display = '';
+            document.getElementById('admin-email')?.focus();
+        }
+
+        function persistAdminSession(session) {
+            adminSession = session;
+            try {
+                if (session) {
+                    localStorage.setItem(ADMIN_AUTH_STORAGE_KEY, JSON.stringify(session));
+                } else {
+                    localStorage.removeItem(ADMIN_AUTH_STORAGE_KEY);
+                }
+            } catch (_) {}
+            updateAdminUi();
+        }
+
+        function renderAdminStats(summary, sales) {
+            const grid = document.getElementById('admin-stats-grid');
+            if (!grid) return;
+            const inventorySummary = summary || {};
+            const salesSummary = sales || {};
+            const cards = [
+                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.' },
+                { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.' },
+                { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.' },
+                { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.' },
+                { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.' },
+                { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.' },
+                { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.' },
+                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.' }
+            ];
+            grid.innerHTML = cards.map(function(card) {
+                return '<div class="admin-stat-card"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></div>';
+            }).join('');
+        }
+
+        function renderMonthlySalesTrend(sales) {
+            const chartEl = document.getElementById('admin-month-chart');
+            const totalEl = document.getElementById('admin-trend-total');
+            const rangeEl = document.getElementById('admin-trend-range');
+            const badgeEl = document.getElementById('admin-trend-badge');
+            const descEl = document.getElementById('admin-trend-description');
+            if (!chartEl || !totalEl || !rangeEl || !badgeEl || !descEl) return;
+            const timeline = Array.isArray(sales && sales.paidSalesTimeline) ? sales.paidSalesTimeline : [];
+            const buckets = buildSalesTrendBuckets(timeline, adminTrendMode);
+            const currentBucket = buckets[buckets.length - 1] || { key: getCurrentMonthKey(), total: 0, label: 'Current Period', rangeLabel: 'Current Period' };
+            const previousBucket = buckets[buckets.length - 2] || { total: 0, label: 'Previous Period', rangeLabel: 'Previous Period' };
+            const deltaAmount = Number((Number(currentBucket.total || 0) - Number(previousBucket.total || 0)).toFixed(2));
+            const deltaPercent = Number(previousBucket.total || 0) > 0
+                ? Number((((Number(currentBucket.total || 0) - Number(previousBucket.total || 0)) / Number(previousBucket.total || 0)) * 100).toFixed(1))
+                : (Number(currentBucket.total || 0) > 0 ? 100 : 0);
+            const direction = deltaAmount > 0 ? 'up' : (deltaAmount < 0 ? 'down' : 'flat');
+            const performanceState = getSalesPerformanceState(currentBucket.total, previousBucket.total);
+            const highestTotal = buckets.reduce(function(max, entry) {
+                return Math.max(max, Number(entry && entry.total || 0));
+            }, 0);
+            const minPositiveTotal = buckets.reduce(function(min, entry) {
+                const total = Number(entry && entry.total || 0);
+                if (total <= 0) return min;
+                return Math.min(min, total);
+            }, Number.POSITIVE_INFINITY);
+            adminRenderedTrendKey = String(currentBucket.key || getCurrentTrendKey(adminTrendMode));
+            descEl.textContent = getTrendText(adminTrendMode);
+            chartEl.className = 'admin-month-chart ' + adminTrendMode;
+            document.querySelectorAll('[data-trend-mode]').forEach(function(button) {
+                button.classList.toggle('active', button.getAttribute('data-trend-mode') === adminTrendMode);
+            });
+
+            if (!buckets.length) {
+                chartEl.innerHTML = '<div class="admin-empty">Monthly sales data will appear here after paid orders are recorded.</div>';
+                totalEl.textContent = '$0.00';
+                rangeEl.textContent = 'Current period';
+                badgeEl.className = 'admin-trend-badge fair';
+                badgeEl.textContent = 'No change yet';
+                return;
+            }
+
+            chartEl.innerHTML = buckets.map(function(entry, index) {
+                const total = Number(entry && entry.total || 0);
+                const height = getTrendBarHeightPercent(total, Number.isFinite(minPositiveTotal) ? minPositiveTotal : 0, highestTotal);
+                const isActive = index === buckets.length - 1;
+                const previousTotal = index > 0 ? Number((buckets[index - 1] && buckets[index - 1].total) || 0) : 0;
+                const barState = getSalesPerformanceState(total, previousTotal);
+                const barDelay = (index * 70) + 'ms';
+                return '<div class="admin-month-bar">'
+                    + '<div class="admin-month-value">' + escapeHtml(formatPriceAmount(total)) + '</div>'
+                    + '<div class="admin-month-track"><div class="admin-month-fill ' + barState + ' ' + (isActive ? 'active' : '') + '" style="height:' + height + '%;--bar-delay:' + barDelay + ';"></div></div>'
+                    + '<div class="admin-month-label">' + escapeHtml(entry.label || '') + '</div>'
+                    + '</div>';
+            }).join('');
+
+            totalEl.textContent = formatPriceAmount(Number(currentBucket.total || 0));
+            rangeEl.textContent = String(currentBucket.rangeLabel || 'Current Period') + ' vs ' + String(previousBucket.rangeLabel || 'Previous Period');
+            badgeEl.className = 'admin-trend-badge ' + performanceState;
+            if (direction === 'up' && performanceState === 'good') {
+                badgeEl.textContent = 'Good: Up ' + formatSignedPercent(deltaPercent) + ' (' + formatSignedCurrency(deltaAmount) + ')';
+            } else if (direction === 'down' && performanceState === 'bad') {
+                badgeEl.textContent = 'Bad: Down ' + Math.abs(deltaPercent).toFixed(1) + '% (' + formatSignedCurrency(deltaAmount) + ')';
+            } else {
+                badgeEl.textContent = 'Fair: Steady vs last period';
+            }
+        }
+
+        function getFilteredInventory(items) {
+            const records = Array.isArray(items) ? items : [];
+            const searchValue = String(document.getElementById('admin-inventory-search')?.value || '').trim().toLowerCase();
+            const filterValue = String(document.getElementById('admin-inventory-filter')?.value || 'all');
+            return records.filter(function(item) {
+                const health = getInventoryHealth(item);
+                const haystack = [item.name, item.sku, item.category, item.notes].join(' ').toLowerCase();
+                const matchesSearch = !searchValue || haystack.includes(searchValue);
+                const matchesFilter = filterValue === 'all' || health === filterValue;
+                return matchesSearch && matchesFilter;
+            });
+        }
+
+        function renderAdminHighlights(summary, sales, inventory) {
+            const grid = document.getElementById('admin-highlight-grid');
+            if (!grid) return;
+            const inventorySummary = summary || {};
+            const salesSummary = sales || {};
+            const lowStockItems = (Array.isArray(inventory) ? inventory : []).filter(function(item) {
+                return getInventoryHealth(item) === 'low' || getInventoryHealth(item) === 'out';
+            }).slice(0, 4);
+            const bestChannel = Object.entries((salesSummary && salesSummary.salesBySource) || {}).sort(function(a, b) {
+                return Number(b[1] || 0) - Number(a[1] || 0);
+            })[0];
+            const cards = [
+                '<div class="admin-highlight-card"><h4>Store Health</h4><p>'
+                    + escapeHtml(String(Number(inventorySummary.lowStock || 0))) + ' low-stock item(s) and '
+                    + escapeHtml(String(Number(inventorySummary.outOfStock || 0))) + ' out-of-stock item(s) need attention.</p></div>',
+                '<div class="admin-highlight-card"><h4>Top Sales Channel</h4><p>'
+                    + (bestChannel ? escapeHtml(String(bestChannel[0]).toUpperCase()) + ' is leading with ' + escapeHtml(formatPriceAmount(Number(bestChannel[1] || 0))) : 'Sales channels will appear here after more orders are saved.')
+                    + '</p></div>',
+                '<div class="admin-highlight-card"><h4>Restock Queue</h4>'
+                    + (lowStockItems.length
+                        ? '<ul>' + lowStockItems.map(function(item) {
+                            return '<li>' + escapeHtml(item.name || 'Item') + ' - ' + escapeHtml(String(Number(item.stock || 0))) + ' left</li>';
+                        }).join('') + '</ul>'
+                        : '<p>No urgent restock items right now.</p>')
+                    + '</div>',
+                '<div class="admin-highlight-card"><h4>Order Pulse</h4><p>'
+                    + escapeHtml(String(Number(salesSummary.paidOrderCount || 0) + Number(salesSummary.pendingOrderCount || 0)))
+                    + ' total order(s) tracked with an average value of '
+                    + escapeHtml(formatPriceAmount(Number(salesSummary.averageOrderValue || 0))) + '.</p></div>'
+            ];
+            grid.innerHTML = cards.join('');
+        }
+
+        function renderSalesChannels(sales) {
+            const grid = document.getElementById('admin-source-grid');
+            if (!grid) return;
+            const entries = Object.entries((sales && sales.salesBySource) || {});
+            if (!entries.length) {
+                grid.innerHTML = '<div class="admin-empty">Sales channel totals will appear here after orders are saved.</div>';
+                return;
+            }
+            grid.innerHTML = entries.sort(function(a, b) {
+                return Number(b[1] || 0) - Number(a[1] || 0);
+            }).map(function(entry) {
+                return '<div class="admin-source-card"><span>' + escapeHtml(String(entry[0]).toUpperCase()) + '</span><strong>' + escapeHtml(formatPriceAmount(Number(entry[1] || 0))) + '</strong></div>';
+            }).join('');
+        }
+
+        function renderAdminSalesMini(sales) {
+            const grid = document.getElementById('admin-sales-mini-grid');
+            if (!grid) return;
+            const summary = sales || {};
+            const cards = [
+                { label: 'Revenue Per Unit', value: Number(summary.unitsSold || 0) > 0 ? formatPriceAmount(Number(summary.revenue || 0) / Number(summary.unitsSold || 1)) : '$0.00' },
+                { label: 'Order Mix', value: String(Number(summary.paidOrderCount || 0)) + ' paid / ' + String(Number(summary.pendingOrderCount || 0)) + ' pending' },
+                { label: 'Recent Orders', value: String(Array.isArray(summary.recentOrders) ? summary.recentOrders.length : 0) + ' tracked' },
+                { label: 'Units Moving', value: String(Number(summary.unitsSold || 0)) + ' total units' }
+            ];
+            grid.innerHTML = cards.map(function(card) {
+                return '<div class="admin-mini-card"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong></div>';
+            }).join('');
+        }
+
+        function renderRestockWatch(items) {
+            const listEl = document.getElementById('admin-restock-list');
+            if (!listEl) return;
+            const records = (Array.isArray(items) ? items : []).filter(function(item) {
+                return getInventoryHealth(item) !== 'healthy';
+            }).sort(function(a, b) {
+                return Number(a.stock || 0) - Number(b.stock || 0);
+            }).slice(0, 6);
+            if (!records.length) {
+                listEl.innerHTML = '<div class="admin-empty">Everything currently looks stocked and healthy.</div>';
+                return;
+            }
+            listEl.innerHTML = records.map(function(item) {
+                const health = getInventoryHealth(item);
+                const statusLabel = health === 'out' ? 'Out of stock' : 'Low stock';
+                return '<div class="admin-collection-item"><div><strong>' + escapeHtml(item.name || 'Item') + '</strong><p>'
+                    + escapeHtml(item.category || 'Uncategorized') + ' • ' + escapeHtml(item.sku || 'No SKU') + '</p></div><div class="admin-collection-metric">'
+                    + escapeHtml(String(Number(item.stock || 0))) + ' left<br><span class="admin-stock-pill ' + health + '">' + escapeHtml(statusLabel) + '</span></div></div>';
+            }).join('');
+        }
+
+        function populateAdminDesignSaleOptions() {
+            const selectEl = document.getElementById('admin-sale-design');
+            if (!selectEl) return;
+            const submitBtn = document.getElementById('admin-design-sale-submit-btn');
+            const currentValues = adminSelectedDesignFiles.slice();
+            if (!Array.isArray(adminCatalogFiles) || !adminCatalogFiles.length) {
+                selectEl.innerHTML = '<option value="">No catalog designs available</option>';
+                const pickerEl = document.getElementById('admin-sale-design-picker');
+                if (pickerEl) pickerEl.innerHTML = '<div class="admin-empty">No design images are available right now.</div>';
+                if (submitBtn) {
+                    submitBtn.disabled = true;
+                    submitBtn.title = 'Add catalog design images before publishing a special offer.';
+                }
+                adminSelectedDesignFiles = [];
+                updateAdminOfferPreview();
+                return;
+            }
+            if (submitBtn) {
+                submitBtn.disabled = false;
+                submitBtn.removeAttribute('title');
+            }
+            selectEl.innerHTML = '<option value="">Choose a design</option>' + adminCatalogFiles.map(function(file) {
+                return '<option value="' + escapeHtml(file) + '">' + escapeHtml(file) + '</option>';
+            }).join('');
+            adminSelectedDesignFiles = currentValues.filter(function(file) { return adminCatalogFiles.includes(file); });
+            selectEl.value = adminSelectedDesignFiles[0] || '';
+            renderAdminDesignSalePicker();
+        }
+
+        function renderAdminDesignSalePicker() {
+            const pickerEl = document.getElementById('admin-sale-design-picker');
+            const selectEl = document.getElementById('admin-sale-design');
+            if (!pickerEl || !selectEl) return;
+            if (!Array.isArray(adminCatalogFiles) || !adminCatalogFiles.length) {
+                pickerEl.innerHTML = '<div class="admin-empty">No design images are available right now.</div>';
+                return;
+            }
+            pickerEl.innerHTML = adminCatalogFiles.map(function(file) {
+                const isActive = adminSelectedDesignFiles.includes(file);
+                return '<button type="button" class="admin-design-picker-card' + (isActive ? ' active' : '') + '" data-design-file="' + escapeHtml(file) + '">'
+                    + '<img src="' + escapeHtml(resolveAdminAssetUrl(file)) + '" alt="' + escapeHtml(formatAdminDesignLabel(file)) + '">'
+                    + '<span>' + escapeHtml(formatAdminDesignLabel(file)) + '</span>'
+                    + '</button>';
+            }).join('');
+
+            pickerEl.querySelectorAll('[data-design-file]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const nextValue = button.getAttribute('data-design-file') || '';
+                    if (adminSelectedDesignFiles.includes(nextValue)) {
+                        adminSelectedDesignFiles = adminSelectedDesignFiles.filter(function(file) { return file !== nextValue; });
+                    } else {
+                        adminSelectedDesignFiles = adminSelectedDesignFiles.concat(nextValue);
+                    }
+                    selectEl.value = adminSelectedDesignFiles[0] || '';
+                    renderAdminDesignSalePicker();
+                    toggleAdminDesignSaleFields();
+                });
+            });
+            updateAdminOfferPreview();
+        }
+
+        function renderAdminDesignSales(items) {
+            const listEl = document.getElementById('admin-design-sale-list');
+            if (!listEl) return;
+            const records = Array.isArray(items) ? items : [];
+            if (!records.length) {
+                listEl.innerHTML = '<div class="admin-empty">No special offers are active right now.</div>';
+                return;
+            }
+            listEl.innerHTML = '<div class="admin-offer-list">'
+                + records.map(function(item) {
+                    const isBundle = String(item.offerType || 'single') === 'bundle';
+                    const isPercentage = String(item.offerType || 'single') === 'percentage';
+                    const regularRangeText = getAdminOfferRegularRangeText(item.shirtSizes);
+                    const discountedRangeText = isPercentage ? getAdminOfferDiscountedRangeText(item.shirtSizes, item.salePercent) : '';
+                    const offerLabel = isBundle ? 'Bundle Offer' : (isPercentage ? 'Percentage Off' : 'Single Price');
+                    const offerCopy = isBundle
+                        ? 'Customers must add ' + escapeHtml(String(Number(item.bundleQuantity || 0))) + ' of this exact design to unlock ' + escapeHtml(formatPriceAmount(Number(item.bundlePrice || 0))) + '. Regular website pricing for the included sizes runs ' + escapeHtml(regularRangeText) + ' each.'
+                        : (isPercentage
+                            ? 'This design is discounted by ' + escapeHtml(String(Number(item.salePercent || 0)) + '%') + ' from website pricing of ' + escapeHtml(regularRangeText) + ' down to ' + escapeHtml(discountedRangeText) + ' for the promo window.'
+                            : 'This design uses website pricing of ' + escapeHtml(regularRangeText) + ' and drops to ' + escapeHtml(formatPriceAmount(Number(item.salePrice || 0))) + ' where that offer is lower than the regular size price.');
+                    return '<div class="admin-offer-card">'
+                        + '<div class="admin-offer-card-media"><img class="admin-offer-card-thumb" src="' + escapeHtml(resolveAdminAssetUrl(item.src || '')) + '" alt="' + escapeHtml(formatAdminDesignLabel(item.src || '')) + '"><div><strong>' + escapeHtml(formatAdminDesignLabel(item.src || '')) + '</strong>'
+                        + '<div class="admin-offer-meta"><span class="admin-offer-pill">' + escapeHtml(offerLabel) + '</span><span class="admin-offer-pill">' + escapeHtml(formatAdminDesignSaleOffer(item)) + '</span></div>'
+                        + '<p class="admin-offer-copy">Regular website pricing: ' + escapeHtml(regularRangeText) + '. ' + offerCopy + ' '
+                        + (Array.isArray(item.shirtSizes) && item.shirtSizes.length ? ('Sizes on sale: ' + escapeHtml(item.shirtSizes.map(function(size) { return size === '2X' ? '2XL' : (size === '3X' ? '3XL' : size); }).join(', ')) + '. ') : 'All sizes are included. ')
+                        + getAdminSaleDeadlineMarkup(item.endsAt) + '.</p></div></div>'
+                        + '<div class="admin-offer-actions"><button type="button" class="admin-danger-btn" onclick="deleteAdminDesignSale(' + "'" + escapeHtml(item.id || '') + "'" + ')">Remove</button></div>'
+                        + '</div>';
+                }).join('')
+                + '</div>';
+                    initAdminSaleCountdowns();
+        }
+
+        function renderAdminInventory(items) {
+            const listEl = document.getElementById('admin-inventory-list');
+            if (!listEl) return;
+            const records = getFilteredInventory(items);
+            const countEl = document.getElementById('admin-inventory-count');
+            if (countEl) countEl.textContent = records.length + ' item' + (records.length === 1 ? '' : 's');
+            if (!records.length) {
+                listEl.innerHTML = '<div class="admin-empty">No inventory items match the current search or filter.</div>';
+                return;
+            }
+            listEl.innerHTML = '<table class="admin-table"><thead><tr><th>Item</th><th>Category</th><th>Stock</th><th>Price</th><th>Color Availability</th><th>Notes</th><th>Actions</th></tr></thead><tbody>'
+                + records.map(function(item) {
+                    const stock = Number(item.stock || 0);
+                    const reorderLevel = Number(item.reorderLevel || 0);
+                    const stockClass = getInventoryHealth(item) === 'out' ? 'out' : (getInventoryHealth(item) === 'low' ? 'low' : '');
+                    const stockLabel = getInventoryHealth(item) === 'out' ? 'Out' : (getInventoryHealth(item) === 'low' ? 'Low' : 'Healthy');
+                    return '<tr>'
+                        + '<td><strong>' + escapeHtml(item.name || '') + '</strong><br><span style="color:#9fb1d6;font-size:0.8rem;">' + escapeHtml(item.sku || 'No SKU') + '</span></td>'
+                        + '<td>' + escapeHtml(item.category || 'Uncategorized') + '</td>'
+                        + '<td><div>' + stock + ' on hand</div><div style="color:#9fb1d6;font-size:0.79rem;">Reorder at ' + escapeHtml(String(reorderLevel)) + '</div><span class="admin-stock-pill ' + stockClass + '">' + stockLabel + '</span></td>'
+                        + '<td>' + escapeHtml(formatPriceAmount(Number(item.price || 0))) + '</td>'
+                        + '<td style="max-width:280px;white-space:normal;">' + escapeHtml(formatAdminColorStockSummary(item)) + '</td>'
+                        + '<td>' + escapeHtml(item.notes || '') + '</td>'
+                        + '<td><div class="admin-row-actions"><button type="button" class="admin-inline-btn" onclick="editAdminInventoryItem(' + "'" + escapeHtml(item.id || '') + "'" + ')">Edit</button><button type="button" class="admin-danger-btn" onclick="deleteAdminInventoryItem(' + "'" + escapeHtml(item.id || '') + "'" + ')">Delete</button></div></td>'
+                        + '</tr>';
+                }).join('')
+                + '</tbody></table>';
+        }
+
+        function renderAdminSales(sales) {
+            const listEl = document.getElementById('admin-sales-list');
+            if (!listEl) return;
+            const orders = Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : [];
+            if (!orders.length) {
+                listEl.innerHTML = '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>';
+                return;
+            }
+            listEl.innerHTML = orders.map(function(order) {
+                const items = Array.isArray(order.items) ? order.items : [];
+                const shipping = order.shipping || {};
+                const fulfillmentMethod = String(order.fulfillmentMethod || shipping.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup' ? 'pickup' : 'delivery';
+                const shippingAmount = Number(order.shippingAmount || 0);
+                const shippingLine = (fulfillmentMethod === 'pickup'
+                    ? [shipping.fullName || '', shipping.email || '']
+                    : [
+                        shipping.fullName || '',
+                        shipping.addressLine1 || '',
+                        shipping.addressLine2 || '',
+                        [shipping.city || '', shipping.state || '', shipping.postalCode || ''].filter(Boolean).join(', '),
+                        shipping.email || ''
+                    ]).filter(Boolean).join(' | ');
+                return '<div class="admin-sale-card">'
+                    + '<div class="admin-sale-card-top">'
+                    + '<div><strong>' + escapeHtml(order.id || 'Order') + '</strong><p>' + escapeHtml(formatAccountOrderDate(order.createdAt)) + '</p></div>'
+                        + '<div class="admin-order-meta"><span class="account-order-badge ' + (String(order.status || '').toLowerCase() === 'paid' ? 'paid' : 'pending') + '">' + escapeHtml(order.status || 'pending') + '</span><span class="account-order-badge">' + escapeHtml(String(order.source || '').toUpperCase()) + '</span><span class="account-order-badge">' + escapeHtml(fulfillmentMethod === 'pickup' ? 'PICKUP' : 'DELIVERY') + '</span><span class="account-order-total">' + escapeHtml(formatPriceAmount(Number(order.total || 0))) + '</span></div>'
+                    + '</div>'
+                    + '<p>' + escapeHtml(order.customerName || order.customerEmail || 'Customer not provided') + '</p>'
+                    + '<p>' + escapeHtml(String(order.itemCount || 0)) + ' item(s)</p>'
+                    + (shippingAmount > 0 ? '<p><strong>' + escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup charge:' : 'Delivery charge:') + '</strong> ' + escapeHtml(formatPriceAmount(shippingAmount)) + '</p>' : '')
+                    + (shippingLine ? '<p><strong>' + escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup contact:' : 'Deliver to:') + '</strong> ' + escapeHtml(shippingLine) + '</p>' : '')
+                    + (items.length
+                        ? '<div class="admin-order-items"><strong>Items in this order</strong><div class="admin-order-item-grid">' + items.map(function(item, index) {
+                            const detailRows = [
+                                item.shirtSize ? ('Size: ' + item.shirtSize) : '',
+                                (item.shirtColorName || item.shirtColorHex) ? ('Shirt Color: ' + (item.shirtColorName || 'Not listed') + (item.shirtColorHex ? (' (' + item.shirtColorHex + ')') : '')) : '',
+                                item.printLocation ? ('Print Location: ' + item.printLocation) : '',
+                                item.designName ? ('Design: ' + item.designName) : '',
+                                item.designType ? ('Design Type: ' + item.designType) : '',
+                                item.designFrontFile ? ('Front File: ' + item.designFrontFile) : '',
+                                item.designBackFile ? ('Back File: ' + item.designBackFile) : '',
+                                item.catalogDesignSrc ? ('Catalog Source: ' + item.catalogDesignSrc) : ''
+                            ].filter(Boolean);
+                            const previewCandidates = [
+                                item.designFrontPreview || '',
+                                item.designBackPreview || '',
+                                item.designPreview || ''
+                            ].map(function(src) {
+                                const resolved = resolveAdminAssetUrl(src);
+                                return String(resolved || '').trim();
+                            }).filter(Boolean).filter(function(src, idx, arr) {
+                                return arr.indexOf(src) === idx;
+                            }).slice(0, 3);
+                            const previewMarkup = previewCandidates.length
+                                ? '<div class="admin-order-item-media-stack">' + previewCandidates.map(function(previewSrc) {
+                                    return '<div class="admin-order-item-media-wrap"><img class="admin-order-item-media" src="' + escapeHtml(previewSrc) + '" alt="Design preview" onerror="this.style.display=\'none\';if(this.nextElementSibling)this.nextElementSibling.style.display=\'flex\';"><div class="admin-order-item-media" style="display:none;align-items:center;justify-content:center;color:#9fb1d6;font-size:0.72rem;">No image</div></div>';
+                                }).join('') + '</div>'
+                                : '<div class="admin-order-item-media" style="display:flex;align-items:center;justify-content:center;color:#9fb1d6;font-size:0.72rem;">No image</div>';
+                            return '<div class="admin-order-item-card">'
+                                + '<div class="admin-order-item-head"><span>' + escapeHtml(String(index + 1) + '. ' + (item.name || 'Item')) + '</span><span>' + escapeHtml(formatPriceAmount(Number(item.price || 0))) + '</span></div>'
+                                + '<div class="admin-order-item-body">'
+                                + previewMarkup
+                                + '<div class="admin-order-item-meta">' + (detailRows.length ? detailRows.map(function(line) {
+                                    return '<div>' + escapeHtml(line) + '</div>';
+                                }).join('') : '<div>No additional details saved.</div>') + '</div>'
+                                + '</div>'
+                                + '</div>';
+                        }).join('') + '</div></div>'
+                        : '')
+                    + '</div>';
+            }).join('');
+
+            listEl.querySelectorAll('.admin-order-item-media-wrap img.admin-order-item-media').forEach(function(imgEl) {
+                const fallbackEl = imgEl.nextElementSibling;
+                const showFallback = function() {
+                    imgEl.style.display = 'none';
+                    if (fallbackEl) fallbackEl.style.display = 'flex';
+                };
+                if (imgEl.complete && Number(imgEl.naturalWidth || 0) === 0) {
+                    showFallback();
+                    return;
+                }
+                imgEl.addEventListener('error', showFallback, { once: true });
+            });
+        }
+
+        function renderAdminDashboard(data) {
+            adminDashboardState = {
+                inventory: Array.isArray(data && data.inventory) ? data.inventory : [],
+                inventorySummary: (data && data.inventorySummary) || {},
+                sales: (data && data.sales) || {},
+                designSales: Array.isArray(data && data.designSales) ? data.designSales : []
+            };
+            ownerLastSyncAt = new Date().toISOString();
+            renderAdminStats(adminDashboardState.inventorySummary, adminDashboardState.sales);
+            renderMonthlySalesTrend(adminDashboardState.sales);
+            renderAdminHighlights(adminDashboardState.inventorySummary, adminDashboardState.sales, adminDashboardState.inventory);
+            renderSalesChannels(adminDashboardState.sales);
+            renderAdminSalesMini(adminDashboardState.sales);
+            renderAdminInventory(adminDashboardState.inventory);
+            renderAdminSales(adminDashboardState.sales);
+            renderRestockWatch(adminDashboardState.inventory);
+            renderAdminDesignSales(adminDashboardState.designSales);
+            updateAdminUi();
+        }
+
+        async function loadAdminDesignCatalog() {
+            const resp = await fetchWithApiCandidates(DESIGN_CATALOG_ENDPOINT, { cache: 'no-store' });
+            const data = await resp.json().catch(function() { return {}; });
+            if (!resp.ok) throw new Error(data.error || 'Unable to load catalog designs.');
+            adminCatalogFiles = Array.isArray(data.files) ? data.files.slice().sort(function(left, right) {
+                return String(left).localeCompare(String(right), undefined, { sensitivity: 'base' });
+            }) : [];
+            populateAdminDesignSaleOptions();
+        }
+
+        async function loadAdminDashboard() {
+            const statusEl = document.getElementById('admin-status-msg');
+            if (statusEl) {
+                statusEl.textContent = 'Loading dashboard...';
+                statusEl.classList.remove('success');
+            }
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_DASHBOARD_ENDPOINT, {
+                    headers: getAdminAuthHeaders()
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to load the owner dashboard.');
+                await loadAdminDesignCatalog().catch(function() {
+                    adminCatalogFiles = [];
+                });
+                renderAdminDashboard(data);
+                document.getElementById('owner-intro-panel').style.display = 'none';
+                document.getElementById('admin-login-panel').style.display = 'none';
+                document.getElementById('admin-dashboard-panel').style.display = '';
+                if (statusEl) {
+                    statusEl.textContent = 'Dashboard updated.';
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to load the owner dashboard.';
+                    statusEl.classList.remove('success');
+                }
+                if (String(err.message || '').toLowerCase().includes('owner login required')) {
+                    persistAdminSession(null);
+                    document.getElementById('owner-intro-panel').style.display = '';
+                    document.getElementById('admin-login-panel').style.display = 'none';
+                    document.getElementById('admin-dashboard-panel').style.display = 'none';
+                }
+            }
+        }
+
+        async function refreshDashboardOnTrendChange() {
+            if (!adminSession) return;
+            const dashboardPanel = document.getElementById('admin-dashboard-panel');
+            if (!dashboardPanel || dashboardPanel.style.display === 'none') return;
+            const liveTrendKey = getCurrentTrendKey(adminTrendMode);
+            if (!adminRenderedTrendKey || adminRenderedTrendKey === liveTrendKey) return;
+            await loadAdminDashboard();
+        }
+
+        function resetAdminInventoryForm() {
+            document.getElementById('admin-item-id').value = '';
+            document.getElementById('admin-inventory-form').reset();
+            adminColorStockEntries = [];
+            renderAdminColorStockEditor();
+            const statusEl = document.getElementById('admin-inventory-status');
+            if (statusEl) {
+                statusEl.textContent = '';
+                statusEl.classList.remove('success');
+            }
+            const submitBtn = document.getElementById('admin-inventory-submit-btn');
+            if (submitBtn) submitBtn.textContent = 'Save Inventory Item';
+        }
+
+        function rerenderAdminInventoryViews() {
+            renderAdminInventory(adminDashboardState.inventory);
+            renderRestockWatch(adminDashboardState.inventory);
+        }
+
+        function editAdminInventoryItem(itemId) {
+            const item = (adminDashboardState.inventory || []).find(function(entry) { return entry.id === itemId; });
+            if (!item) return;
+            document.getElementById('admin-item-id').value = item.id || '';
+            document.getElementById('admin-item-name').value = item.name || '';
+            document.getElementById('admin-item-sku').value = item.sku || '';
+            document.getElementById('admin-item-category').value = item.category || '';
+            document.getElementById('admin-item-stock').value = Number(item.stock || 0);
+            document.getElementById('admin-item-reorder').value = Number(item.reorderLevel || 0);
+            document.getElementById('admin-item-price').value = Number(item.price || 0);
+            document.getElementById('admin-item-notes').value = item.notes || '';
+            adminColorStockEntries = normalizeAdminColorStockEntries(item.colorStock);
+            renderAdminColorStockEditor();
+            const submitBtn = document.getElementById('admin-inventory-submit-btn');
+            if (submitBtn) submitBtn.textContent = 'Update Inventory Item';
+            document.getElementById('admin-item-name').focus();
+        }
+
+        async function deleteAdminInventoryItem(itemId) {
+            if (!itemId) return;
+            if (!window.confirm('Delete this inventory item?')) return;
+            const statusEl = document.getElementById('admin-inventory-status');
+            if (statusEl) {
+                statusEl.textContent = 'Deleting item...';
+                statusEl.classList.remove('success');
+            }
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId), {
+                    method: 'DELETE',
+                    headers: getAdminAuthHeaders()
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to delete inventory item.');
+                resetAdminInventoryForm();
+                await loadAdminDashboard();
+                if (statusEl) {
+                    statusEl.textContent = 'Inventory item deleted.';
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to delete inventory item.';
+                    statusEl.classList.remove('success');
+                }
+            }
+        }
+
+        async function deleteAdminDesignSale(saleId) {
+            if (!saleId) return;
+            if (!window.confirm('Remove this design sale?')) return;
+            const statusEl = document.getElementById('admin-design-sale-status');
+            if (statusEl) {
+                statusEl.textContent = 'Removing sale...';
+                statusEl.classList.remove('success');
+            }
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_DESIGN_SALES_ENDPOINT + '/' + encodeURIComponent(saleId), {
+                    method: 'DELETE',
+                    headers: getAdminAuthHeaders()
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to remove design sale.');
+                await loadAdminDashboard();
+                if (statusEl) {
+                    statusEl.textContent = 'Design sale removed.';
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to remove design sale.';
+                    statusEl.classList.remove('success');
+                }
+            }
+        }
+
+        async function restoreAdminSession() {
+            let stored = null;
+            try {
+                stored = JSON.parse(localStorage.getItem(ADMIN_AUTH_STORAGE_KEY) || 'null');
+            } catch (_) {
+                stored = null;
+            }
+            if (!stored || !stored.token) {
+                persistAdminSession(null);
+                return;
+            }
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_AUTH_ENDPOINT + '/me', {
+                    headers: {
+                        Authorization: 'Bearer ' + stored.token
+                    }
+                });
+                if (!resp.ok) throw new Error('Session expired');
+                const data = await resp.json();
+                persistAdminSession({ token: stored.token, admin: data.admin });
+                await loadAdminDashboard();
+            } catch (_) {
+                persistAdminSession(null);
+            }
+        }
+
+        function logoutOwner() {
+            persistAdminSession(null);
+            resetAdminInventoryForm();
+            document.getElementById('owner-intro-panel').style.display = '';
+            document.getElementById('admin-login-panel').style.display = 'none';
+            document.getElementById('admin-dashboard-panel').style.display = 'none';
+            document.getElementById('admin-status-msg').textContent = '';
+        }
+
+        document.getElementById('admin-auth-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('admin-login-submit-btn');
+            const statusEl = document.getElementById('admin-login-status-msg');
+            const email = (document.getElementById('admin-email').value || '').trim();
+            const password = document.getElementById('admin-password').value || '';
+            statusEl.textContent = '';
+            statusEl.classList.remove('success');
+            submitBtn.disabled = true;
+
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_AUTH_ENDPOINT + '/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, password: password })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to sign in as owner.');
+                persistAdminSession({ token: data.token, admin: data.admin });
+                statusEl.textContent = 'Owner login successful.';
+                statusEl.classList.add('success');
+                document.getElementById('admin-auth-form').reset();
+                await loadAdminDashboard();
+            } catch (err) {
+                const rawMessage = String((err && err.message) || 'Unable to sign in as owner.');
+                if (rawMessage.toLowerCase().includes('unable to reach api endpoint')) {
+                    const fallbackBase = encodeURIComponent('https://freedom-works.onrender.com');
+                    statusEl.innerHTML = 'Cannot reach owner API from this device. <a href="/owner?api=' + fallbackBase + '">Tap here to open owner login with the correct API.</a>';
+                } else {
+                    statusEl.textContent = rawMessage;
+                }
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('admin-inventory-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('admin-inventory-submit-btn');
+            const statusEl = document.getElementById('admin-inventory-status');
+            const itemId = document.getElementById('admin-item-id').value || '';
+            const payload = {
+                name: (document.getElementById('admin-item-name').value || '').trim(),
+                sku: (document.getElementById('admin-item-sku').value || '').trim(),
+                category: (document.getElementById('admin-item-category').value || '').trim(),
+                stock: Number(document.getElementById('admin-item-stock').value || 0),
+                reorderLevel: Number(document.getElementById('admin-item-reorder').value || 0),
+                price: Number(document.getElementById('admin-item-price').value || 0),
+                notes: (document.getElementById('admin-item-notes').value || '').trim(),
+                colorStock: normalizeAdminColorStockEntries(adminColorStockEntries)
+            };
+
+            statusEl.textContent = '';
+            statusEl.classList.remove('success');
+            submitBtn.disabled = true;
+
+            try {
+                const inventoryEndpoint = itemId ? (ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId)) : ADMIN_INVENTORY_ENDPOINT;
+                const resp = await fetchWithApiCandidates(inventoryEndpoint, {
+                    method: itemId ? 'PUT' : 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to save inventory item.');
+                resetAdminInventoryForm();
+                await loadAdminDashboard();
+                statusEl.textContent = itemId ? 'Inventory item updated.' : 'Inventory item added.';
+                statusEl.classList.add('success');
+            } catch (err) {
+                statusEl.textContent = err.message || 'Unable to save inventory item.';
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('admin-inventory-reset-btn').addEventListener('click', function() {
+            resetAdminInventoryForm();
+        });
+
+        document.getElementById('admin-color-stock-add-btn').addEventListener('click', function() {
+            addAdminColorStockEntryFromInput();
+        });
+
+        document.getElementById('admin-color-stock-name').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                addAdminColorStockEntryFromInput();
+            }
+        });
+
+        document.getElementById('admin-design-sale-form').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const submitBtn = document.getElementById('admin-design-sale-submit-btn');
+            const statusEl = document.getElementById('admin-design-sale-status');
+            const saleDesigns = collectAdminSelectedDesignFiles();
+            const offerType = String(document.getElementById('admin-sale-type').value || 'single');
+            const salePrice = Number(document.getElementById('admin-sale-price').value || 0);
+            const salePercent = Number(document.getElementById('admin-sale-percent').value || 0);
+            const bundleQuantity = Number(document.getElementById('admin-sale-bundle-qty').value || 0);
+            const bundlePrice = Number(document.getElementById('admin-sale-bundle-price').value || 0);
+
+            statusEl.textContent = '';
+            statusEl.classList.remove('success');
+            if (!saleDesigns.length) {
+                statusEl.textContent = 'Select at least one design image before publishing a special offer.';
+                return;
+            }
+            if (offerType === 'percentage' && (!Number.isFinite(salePercent) || salePercent <= 0 || salePercent >= 100)) {
+                statusEl.textContent = 'Enter a percentage greater than 0 and less than 100 before publishing.';
+                return;
+            }
+            submitBtn.disabled = true;
+
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_DESIGN_SALES_ENDPOINT, {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify({
+                        srcs: saleDesigns,
+                        shirtSizes: adminSelectedSaleSizes,
+                        offerType: offerType,
+                        salePrice: salePrice,
+                        salePercent: salePercent,
+                        bundleQuantity: bundleQuantity,
+                        bundlePrice: bundlePrice
+                    })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to save design sale.');
+                await loadAdminDashboard();
+                statusEl.textContent = saleDesigns.length > 1
+                    ? (offerType === 'bundle'
+                        ? 'Clearance bundle published across ' + saleDesigns.length + ' designs.'
+                        : (offerType === 'percentage'
+                            ? 'Percentage-off sale published across ' + saleDesigns.length + ' designs.'
+                            : 'Clearance sale published across ' + saleDesigns.length + ' designs.'))
+                    : (offerType === 'bundle'
+                        ? '24-hour bundle offer saved.'
+                        : (offerType === 'percentage' ? '24-hour percentage-off sale saved.' : '24-hour sale saved.'));
+                statusEl.classList.add('success');
+            } catch (err) {
+                statusEl.textContent = err.message || 'Unable to save design sale.';
+                statusEl.classList.remove('success');
+            } finally {
+                submitBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('admin-sale-type').addEventListener('change', function() {
+            toggleAdminDesignSaleFields();
+        });
+
+        document.querySelectorAll('[data-offer-preset]').forEach(function(button) {
+            button.addEventListener('click', function() {
+                applyAdminOfferPreset(button.getAttribute('data-offer-preset') || '');
+            });
+        });
+
+        ['admin-sale-price', 'admin-sale-percent', 'admin-sale-bundle-qty', 'admin-sale-bundle-price'].forEach(function(id) {
+            document.getElementById(id)?.addEventListener('input', function() {
+                updateAdminOfferPreview();
+            });
+        });
+
+        renderAdminSaleSizePicker();
+        toggleAdminDesignSaleFields();
+
+        document.getElementById('admin-inventory-search').addEventListener('input', function() {
+            rerenderAdminInventoryViews();
+        });
+
+        document.getElementById('admin-inventory-filter').addEventListener('change', function() {
+            rerenderAdminInventoryViews();
+        });
+
+        document.querySelectorAll('[data-trend-mode]').forEach(function(button) {
+            button.addEventListener('click', function() {
+                adminTrendMode = button.getAttribute('data-trend-mode') || 'months';
+                renderMonthlySalesTrend(adminDashboardState.sales);
+            });
+        });
+
+        document.getElementById('owner-refresh-btn').addEventListener('click', function() {
+            loadAdminDashboard();
+        });
+
+        document.getElementById('owner-show-login-btn').addEventListener('click', function() {
+            logoutOwner();
+            showOwnerLogin();
+        });
+
+        document.getElementById('owner-logout-btn').addEventListener('click', function() {
+            logoutOwner();
+        });
+
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                refreshDashboardOnTrendChange();
+            }
+        });
+
+        window.addEventListener('focus', function() {
+            refreshDashboardOnTrendChange();
+        });
+
+        window.setInterval(function() {
+            refreshDashboardOnTrendChange();
+        }, 60000);
+
+        renderAdminColorStockEditor();
+        updateAdminUi();
+        restoreAdminSession();
+    </script>
+</body>
+</html>

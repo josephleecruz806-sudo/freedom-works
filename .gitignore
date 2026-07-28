@@ -1,1 +1,8 @@
-
+node_modules/
+.env
+data/
+index.*.html
+!index.html
+restore-point-*.zip
+website-code.txt
+*.lnk
