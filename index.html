@@ -6365,6 +6365,27 @@
         </div>
     </header>
 
+    <script>
+        /* Apply the header cart/login chip's mobile-home visibility immediately,
+           before the rest of this large page parses, to avoid a visible flash. */
+        (function() {
+            try {
+                var chip = document.getElementById('header-cart-chip');
+                if (!chip) return;
+                var isMobileHome = window.matchMedia('(max-width: 760px)').matches;
+                if (!isMobileHome) return;
+                var hash = String(window.location.hash || '').replace(/^#/, '');
+                var isHomeOrMenu = !hash || hash === 'home' || hash === 'menu';
+                var hasCartItems = false;
+                try {
+                    var stored = JSON.parse(localStorage.getItem('cart') || '[]');
+                    hasCartItems = Array.isArray(stored) && stored.length > 0;
+                } catch (_) {}
+                if (isHomeOrMenu && !hasCartItems) chip.hidden = true;
+            } catch (_) {}
+        })();
+    </script>
+
     <div class="top-mini-nav" id="top-mini-nav" aria-label="Quick navigation">
         <button type="button" class="top-mini-nav-btn menu" id="top-mini-menu-btn" aria-label="Open menu" onclick="toggleTopMiniMenu()">&#9776;</button>
         <button type="button" class="top-mini-nav-btn" onclick="navigateToPage('cart')">Cart <span id="top-mini-cart-count">0</span></button>
