@@ -1,6 +1,7 @@
 node_modules/
 .env
 data/
+.thumb-cache/
 index.*.html
 !index.html
 restore-point-*.zip

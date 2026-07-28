@@ -8969,9 +8969,21 @@
             return candidates;
         }
 
+        function getThumbUrlCandidate(src, width) {
+            const value = String(src || '').trim();
+            if (!value || /^data:/i.test(value) || /^https?:/i.test(value)) return '';
+            const rawFilename = value.split('/').pop() || '';
+            let filename = rawFilename;
+            try { filename = decodeURIComponent(rawFilename); } catch (_) {}
+            if (!filename) return '';
+            return '/thumb/' + encodeURIComponent(filename) + '?w=' + (width || 480);
+        }
+
         function loadImageWithFallback(img, src, onFinalError) {
             if (!img) return;
-            const candidates = getAssetUrlCandidates(src);
+            const thumbCandidate = getThumbUrlCandidate(src);
+            const fullCandidates = getAssetUrlCandidates(src);
+            const candidates = thumbCandidate ? [thumbCandidate, ...fullCandidates] : fullCandidates;
             if (!candidates.length) {
                 bindImageLoadingState(img, onFinalError);
                 img.removeAttribute('src');

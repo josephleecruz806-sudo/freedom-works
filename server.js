@@ -12,6 +12,13 @@ try {
   nodemailer = null;
 }
 
+let sharp = null;
+try {
+  sharp = require('sharp');
+} catch (_) {
+  sharp = null;
+}
+
 dotenv.config();
 
 const app = express();
@@ -1232,6 +1239,64 @@ app.use((req, res, next) => {
     setNoCacheHeaders(res);
   }
   next();
+});
+
+const THUMB_CACHE_DIR = path.join(__dirname, '.thumb-cache');
+try {
+  fs.mkdirSync(THUMB_CACHE_DIR, { recursive: true });
+} catch (_) {
+  // Non-fatal: thumbnails will just be generated on the fly without disk caching.
+}
+
+function resolveSourceImagePath(requestedRaw) {
+  const requested = path.basename(String(requestedRaw || ''));
+  if (!requested) return '';
+  const directPath = path.join(__dirname, requested);
+  if (fs.existsSync(directPath) && fs.statSync(directPath).isFile()) {
+    return directPath;
+  }
+  const match = getImageIndex().get(requested.toLowerCase());
+  return match ? path.join(__dirname, match) : '';
+}
+
+// Serves a resized, web-optimized copy of a design image so browsing/catalog
+// grids don't have to download the full, print-resolution original (some of
+// which are 20MB+). Falls back to the original file if sharp is unavailable
+// or resizing fails for any reason.
+app.get('/thumb/:name', async (req, res) => {
+  const sourcePath = resolveSourceImagePath(req.params.name);
+  if (!sourcePath) {
+    return res.status(404).send('Asset not found');
+  }
+
+  if (!sharp) {
+    setImageCacheHeaders(res);
+    return res.sendFile(sourcePath);
+  }
+
+  const width = Math.min(1200, Math.max(60, parseInt(req.query.w, 10) || 480));
+  const cacheKey = crypto.createHash('md5').update(sourcePath + '|' + width).digest('hex') + '.webp';
+  const cachedPath = path.join(THUMB_CACHE_DIR, cacheKey);
+
+  if (fs.existsSync(cachedPath)) {
+    setImageCacheHeaders(res);
+    res.type('image/webp');
+    return res.sendFile(cachedPath);
+  }
+
+  try {
+    const buffer = await sharp(sourcePath)
+      .resize({ width, withoutEnlargement: true })
+      .webp({ quality: 82 })
+      .toBuffer();
+    fs.writeFile(cachedPath, buffer, () => {});
+    setImageCacheHeaders(res);
+    res.type('image/webp');
+    return res.send(buffer);
+  } catch (_) {
+    setImageCacheHeaders(res);
+    return res.sendFile(sourcePath);
+  }
 });
 
 app.get('/assets/:name', (req, res) => {
