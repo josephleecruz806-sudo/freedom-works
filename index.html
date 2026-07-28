@@ -10643,7 +10643,7 @@
             throw new Error('Trending sales request failed');
         }
 
-        const CUSTOMER_AUTH_ENDPOINT = API_BASE + '/api/customers';
+        const CUSTOMER_AUTH_ENDPOINT = '/api/customers';
         const CUSTOMER_ORDERS_ENDPOINT = CUSTOMER_AUTH_ENDPOINT + '/orders';
         const DESIGN_CATALOG_ENDPOINT = API_BASE + '/api/design-catalog';
         const INVENTORY_STATUS_ENDPOINT = API_BASE + '/api/inventory-status';
@@ -12328,7 +12328,7 @@
                 return;
             }
             try {
-                const resp = await fetch(CUSTOMER_ORDERS_ENDPOINT, {
+                const resp = await fetchWithApiCandidates(CUSTOMER_ORDERS_ENDPOINT, {
                     headers: getCustomerAuthHeaders(),
                 });
                 const data = await resp.json().catch(() => ({}));
@@ -12350,7 +12350,7 @@
         async function refreshCustomerProfile() {
             if (!customerSession?.customer || customerSession?.localOnly || !customerSession?.token) return;
             try {
-                const resp = await fetch(CUSTOMER_AUTH_ENDPOINT + '/me', {
+                const resp = await fetchWithApiCandidates(CUSTOMER_AUTH_ENDPOINT + '/me', {
                     headers: getCustomerAuthHeaders(),
                 });
                 const data = await resp.json().catch(() => ({}));
@@ -12579,7 +12579,7 @@
                 return;
             }
             try {
-                const resp = await fetch(CUSTOMER_AUTH_ENDPOINT + '/me', {
+                const resp = await fetchWithApiCandidates(CUSTOMER_AUTH_ENDPOINT + '/me', {
                     headers: {
                         ...getCustomerAuthHeaders.call({ customerSession: stored }),
                         Authorization: 'Bearer ' + stored.token,
@@ -18497,15 +18497,10 @@
                     if (!email || !password) throw new Error('Email and password are required.');
                 }
 
-                const tryLogin = async (endpoint, payload) => fetch(endpoint, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify(payload),
-                });
                 const customerPayload = isRegisterMode ? { name, email, password } : { email, password };
-                let resp = await tryLogin(
+                let resp = await fetchWithApiCandidates(
                     CUSTOMER_AUTH_ENDPOINT + (isRegisterMode ? '/register' : '/login'),
-                    customerPayload
+                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(customerPayload) }
                 );
                 let data = await parseApiResponseJson(resp);
 
