@@ -18923,16 +18923,16 @@
                 var encoded = encodeURIComponent(raw).replace(/%2F/g, '/');
                 var origin = window.location.origin || '';
                 var manual = [
-                    origin + '/assets/' + encoded,
                     origin + '/' + encoded,
-                    '/assets/' + encoded,
                     '/' + encoded,
                     './' + encoded,
-                    origin + '/assets/' + raw,
                     origin + '/' + raw,
-                    '/assets/' + raw,
                     '/' + raw,
                     './' + raw,
+                    origin + '/assets/' + encoded,
+                    '/assets/' + encoded,
+                    origin + '/assets/' + raw,
+                    '/assets/' + raw,
                     raw
                 ].filter(Boolean);
                 return manual.filter(function(url, index, arr) {
@@ -19072,8 +19072,11 @@
             function removeBg(canvas, sx, sy, sw, sh) {
                 var fallbackImg = document.getElementById('dove-logo-fallback');
                 if (fallbackImg) {
-                    // Use explicit candidate probing so mobile browsers resolve path/casing differences reliably.
-                    showFallbackImage(fallbackImg, logoSrc || '/freedom-works-logo-transparent.png');
+                    var alreadyLoaded = fallbackImg.complete && fallbackImg.naturalWidth > 0;
+                    if (!alreadyLoaded) {
+                        // Use explicit candidate probing so mobile browsers resolve path/casing differences reliably.
+                        showFallbackImage(fallbackImg, logoSrc || '/freedom-works-logo-transparent.png');
+                    }
                 }
                 canvas.classList.remove('is-ready');
                 canvas.style.display = 'none';
