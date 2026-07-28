@@ -745,68 +745,6 @@
             box-shadow: 0 12px 28px rgba(0,0,0,0.3), 0 0 26px var(--theme-surface-shadow);
             white-space: nowrap;
         }
-        .top-mini-nav {
-            position: fixed;
-            top: 58px;
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 48;
-            width: min(360px, calc(100vw - 20px));
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 8px;
-            padding: 8px;
-            border-radius: 999px;
-            border: 1px solid rgba(255,255,255,0.18);
-            background: linear-gradient(135deg, color-mix(in srgb, var(--theme-surface-a) 90%, black 10%), color-mix(in srgb, var(--theme-surface-b) 84%, black 16%));
-            box-shadow: 0 10px 24px rgba(0,0,0,0.28);
-            backdrop-filter: blur(8px);
-            transition: opacity 0.22s ease, transform 0.22s ease;
-        }
-        .top-mini-nav.is-scrolling {
-            opacity: 0;
-            transform: translateX(-50%) translateY(-8px);
-        }
-        .top-mini-nav-btn {
-            border: 1px solid rgba(255,255,255,0.18);
-            background: rgba(255,255,255,0.1);
-            color: #eef6ff;
-            border-radius: 999px;
-            min-height: 34px;
-            padding: 6px 12px;
-            font-size: 0.84rem;
-            font-weight: 800;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .top-mini-nav-btn:hover {
-            background: rgba(255,255,255,0.18);
-        }
-        .top-mini-nav-btn.menu {
-            min-width: 44px;
-            padding: 6px 0;
-            font-size: 1rem;
-            line-height: 1;
-        }
-        .top-mini-nav-btn.account {
-            flex: 1;
-            text-align: center;
-        }
-        #top-mini-cart-count {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 20px;
-            height: 20px;
-            margin-left: 6px;
-            padding: 0 5px;
-            border-radius: 999px;
-            background: #ffffff;
-            color: #16325c;
-            font-size: 0.74rem;
-            font-weight: 900;
-        }
         .header-account-display {
             display: flex;
             flex-direction: column;
@@ -1107,10 +1045,6 @@
             }
             .header-cart-actions {
                 grid-template-columns: 1fr;
-            }
-            .top-mini-nav {
-                width: min(430px, calc(100vw - 20px));
-                top: 56px;
             }
             #header-cart-total {
                 font-size: 1rem;
@@ -6385,12 +6319,6 @@
             } catch (_) {}
         })();
     </script>
-
-    <div class="top-mini-nav" id="top-mini-nav" aria-label="Quick navigation">
-        <button type="button" class="top-mini-nav-btn menu" id="top-mini-menu-btn" aria-label="Open menu" onclick="toggleTopMiniMenu()">&#9776;</button>
-        <button type="button" class="top-mini-nav-btn" onclick="navigateToPage('cart')">Cart <span id="top-mini-cart-count">0</span></button>
-        <button type="button" class="top-mini-nav-btn account" id="top-mini-login-btn" onclick="openAuthModal('login')">Login</button>
-    </div>
 
     <nav class="side-quick-menu" aria-label="Page menu">
         <p class="side-menu-title">Browse</p>
@@ -11838,7 +11766,6 @@
             const actionBtn = document.getElementById('header-account-action');
             const inlineActionBtn = document.getElementById('header-account-inline-action');
             const logoutBtn = document.getElementById('header-account-logout');
-            const miniLoginBtn = document.getElementById('top-mini-login-btn');
             const customerName = customerSession?.customer?.name || '';
             if (labelEl) labelEl.textContent = 'Account';
             if (nameEl) nameEl.textContent = customerName || 'Guest';
@@ -11849,10 +11776,6 @@
             if (actionBtn) {
                 actionBtn.textContent = customerSession ? 'My Account' : 'Login';
                 actionBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
-            }
-            if (miniLoginBtn) {
-                miniLoginBtn.textContent = customerSession ? 'Account' : 'Login';
-                miniLoginBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
             }
             if (logoutBtn) logoutBtn.style.display = customerSession ? '' : 'none';
             const accountName = document.getElementById('account-modal-name');
@@ -12064,8 +11987,6 @@
             const logoWrap = document.getElementById('site-logo-wrap');
             const logoTagline = document.getElementById('site-logo-tagline');
             const headerCartChip = document.getElementById('header-cart-chip');
-            const topMiniNav = document.getElementById('top-mini-nav');
-            const miniMenuBtn = document.getElementById('top-mini-menu-btn');
             const sideQuickMenu = document.querySelector('.side-quick-menu');
             const footerEl = document.querySelector('footer');
             const quickPicksLinks = document.querySelectorAll('[data-store-page-link="quick-picks"]');
@@ -12080,16 +12001,7 @@
             quickPicksLinks.forEach((link) => {
                 link.hidden = isHomePage;
             });
-            if (topMiniNav) {
-                const hideTopMiniNav = true;
-                topMiniNav.hidden = hideTopMiniNav;
-                if (hideTopMiniNav) topMiniNav.classList.remove('is-scrolling');
-                if (hideTopMiniNav) {
-                    document.body.classList.remove('top-mini-menu-open');
-                    if (miniMenuBtn) miniMenuBtn.setAttribute('aria-expanded', 'false');
-                }
-            }
-            if (miniMenuBtn) miniMenuBtn.hidden = false;
+            document.body.classList.remove('top-mini-menu-open');
             if (sideQuickMenu) sideQuickMenu.hidden = isHomePage;
             if (footerEl) footerEl.hidden = useMobileHomeLanding || isHomePage;
             if (hideHomeExtras) {
@@ -12181,8 +12093,6 @@
 
         function navigateMenuToPage(page) {
             document.body.classList.remove('top-mini-menu-open');
-            const miniMenuBtn = document.getElementById('top-mini-menu-btn');
-            if (miniMenuBtn) miniMenuBtn.setAttribute('aria-expanded', 'false');
             const selector = MENU_PAGE_TARGETS[page] || '';
             if (selector) {
                 scrollToPageSection(page, selector);
@@ -12218,44 +12128,6 @@
                     applyDefaultAndScroll();
                     window._quickPickGridPrintOnlyDefaultTimer = window.setInterval(applyDefaultAndScroll, 100);
                 });
-            });
-        }
-
-        function toggleTopMiniMenu() {
-            const menu = document.querySelector('.side-quick-menu');
-            const toggleBtn = document.getElementById('top-mini-menu-btn');
-            if (!menu) return;
-            const nowOpen = document.body.classList.toggle('top-mini-menu-open');
-            menu.hidden = false;
-            if (toggleBtn) {
-                toggleBtn.setAttribute('aria-expanded', String(nowOpen));
-            }
-        }
-
-        let topMiniNavScrollTimer = null;
-
-        function handleTopMiniNavScrollActivity() {
-            const topMiniNav = document.getElementById('top-mini-nav');
-            if (!topMiniNav) return;
-            topMiniNav.classList.remove('is-scrolling');
-            if (topMiniNavScrollTimer) {
-                clearTimeout(topMiniNavScrollTimer);
-                topMiniNavScrollTimer = null;
-            }
-        }
-
-        function initTopMiniNavAutoHide() {
-            handleTopMiniNavScrollActivity();
-        }
-
-        function initTopMiniMenuButton() {
-            const menuBtn = document.getElementById('top-mini-menu-btn');
-            if (!menuBtn || menuBtn.dataset.menuBound === 'true') return;
-            menuBtn.dataset.menuBound = 'true';
-            menuBtn.removeAttribute('onclick');
-            menuBtn.addEventListener('click', (event) => {
-                event.preventDefault();
-                toggleTopMiniMenu();
             });
         }
 
@@ -18444,14 +18316,12 @@
             const headerCartCount = document.getElementById('header-cart-count');
             const headerCartTotal = document.getElementById('header-cart-total');
             const headerCartThumbs = document.getElementById('header-cart-thumbs');
-            const miniCartCount = document.getElementById('top-mini-cart-count');
             if (headerCartCount) headerCartCount.textContent = String(cart.length);
             if (headerCartTotal) {
                 const nextTotalText = `$${getCheckoutTotal().toFixed(2)}`;
                 headerCartTotal.textContent = nextTotalText;
                 headerCartTotal.classList.add('cart-total-flash-green');
             }
-            if (miniCartCount) miniCartCount.textContent = String(cart.length);
             if (headerCartThumbs) {
                 headerCartThumbs.innerHTML = '';
                 // Show up to 3 most recent thumbnails from the in-memory thumbs array
@@ -18825,8 +18695,6 @@
             initCatalogImageZoom();
             initQuickPicks();
             initCatalogSaleCountdowns();
-            initTopMiniMenuButton();
-            initTopMiniNavAutoHide();
             startLiveInventoryPolling();
             await restoreCustomerSession();
             restoreAdminSession();
