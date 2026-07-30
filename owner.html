@@ -1274,6 +1274,24 @@
                         </div>
                     </section>
                 </div>
+
+                <section class="admin-panel" style="margin-top:16px;">
+                    <div class="admin-panel-head">
+                        <div>
+                            <h3 class="admin-section-title">Customer Accounts</h3>
+                            <p>Everyone who has created an account on the website, newest first.</p>
+                        </div>
+                    </div>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar-group">
+                            <input id="admin-customers-search" class="admin-search" type="search" placeholder="Search name or email">
+                        </div>
+                        <div class="admin-toolbar-group">
+                            <span class="admin-toolbar-note" id="admin-customers-count">0 accounts</span>
+                        </div>
+                    </div>
+                    <div class="admin-table-wrap" id="admin-customers-list"></div>
+                </section>
             </div>
         </main>
     </div>
@@ -1421,7 +1439,7 @@
         ];
 
         let adminSession = null;
-        let adminDashboardState = { inventory: [], inventorySummary: {}, sales: {}, designSales: [] };
+        let adminDashboardState = { inventory: [], inventorySummary: {}, sales: {}, designSales: [], customers: [] };
         let adminCatalogFiles = [];
         let adminSelectedDesignFiles = [];
         let adminSelectedSaleSizes = [];
@@ -2490,12 +2508,55 @@
             });
         }
 
+        function getFilteredCustomers(customers) {
+            const records = Array.isArray(customers) ? customers : [];
+            const searchValue = String(document.getElementById('admin-customers-search')?.value || '').trim().toLowerCase();
+            if (!searchValue) return records;
+            return records.filter(function(customer) {
+                const name = String(customer?.name || '').toLowerCase();
+                const email = String(customer?.email || '').toLowerCase();
+                return name.includes(searchValue) || email.includes(searchValue);
+            });
+        }
+
+        function renderAdminCustomers(customers) {
+            const listEl = document.getElementById('admin-customers-list');
+            const countEl = document.getElementById('admin-customers-count');
+            if (!listEl) return;
+            const all = Array.isArray(customers) ? customers : [];
+            const records = getFilteredCustomers(all);
+            if (countEl) countEl.textContent = all.length + ' account' + (all.length === 1 ? '' : 's');
+
+            if (!records.length) {
+                listEl.innerHTML = '<div class="admin-empty">No customer accounts match the current search.</div>';
+                return;
+            }
+
+            listEl.innerHTML = '<table class="admin-table"><thead><tr>'
+                + '<th>Name</th><th>Email</th><th>Joined</th><th>Orders</th><th>Total Spent</th><th>Reward Points</th>'
+                + '</tr></thead><tbody>'
+                + records.map(function(customer) {
+                    const joined = customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '\u2014';
+                    const totalSpent = Number(customer.totalSpent || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                    return '<tr>'
+                        + '<td>' + escapeHtml(customer.name || 'N/A') + '</td>'
+                        + '<td>' + escapeHtml(customer.email || '') + '</td>'
+                        + '<td>' + escapeHtml(joined) + '</td>'
+                        + '<td>' + escapeHtml(String(Number(customer.orderCount || 0))) + '</td>'
+                        + '<td>' + escapeHtml(totalSpent) + '</td>'
+                        + '<td>' + escapeHtml(String(Number(customer.rewardPoints || 0))) + '</td>'
+                        + '</tr>';
+                }).join('')
+                + '</tbody></table>';
+        }
+
         function renderAdminDashboard(data) {
             adminDashboardState = {
                 inventory: Array.isArray(data && data.inventory) ? data.inventory : [],
                 inventorySummary: (data && data.inventorySummary) || {},
                 sales: (data && data.sales) || {},
-                designSales: Array.isArray(data && data.designSales) ? data.designSales : []
+                designSales: Array.isArray(data && data.designSales) ? data.designSales : [],
+                customers: Array.isArray(data && data.customers) ? data.customers : []
             };
             ownerLastSyncAt = new Date().toISOString();
             renderAdminStats(adminDashboardState.inventorySummary, adminDashboardState.sales);
@@ -2507,6 +2568,7 @@
             renderAdminSales(adminDashboardState.sales);
             renderRestockWatch(adminDashboardState.inventory);
             renderAdminDesignSales(adminDashboardState.designSales);
+            renderAdminCustomers(adminDashboardState.customers);
             updateAdminUi();
         }
 
@@ -2869,6 +2931,10 @@
 
         document.getElementById('admin-inventory-filter').addEventListener('change', function() {
             rerenderAdminInventoryViews();
+        });
+
+        document.getElementById('admin-customers-search').addEventListener('input', function() {
+            renderAdminCustomers(adminDashboardState.customers);
         });
 
         document.querySelectorAll('[data-trend-mode]').forEach(function(button) {

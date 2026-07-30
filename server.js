@@ -1192,6 +1192,52 @@ function getSalesSummary() {
   };
 }
 
+function getCustomerAccountsSummary() {
+  const customers = readCustomers();
+  const orders = readOrders();
+
+  const ordersByCustomer = new Map();
+  for (const order of orders) {
+    const orderCustomer = order?.customer || {};
+    const key = String(orderCustomer.id || '').trim() || normalizeEmail(orderCustomer.email);
+    if (!key) continue;
+    if (!ordersByCustomer.has(key)) ordersByCustomer.set(key, []);
+    ordersByCustomer.get(key).push(order);
+  }
+
+  const accounts = customers.map((customer) => {
+    const key = String(customer.id || '').trim() || normalizeEmail(customer.email);
+    const customerOrders = ordersByCustomer.get(key) || [];
+    const paidOrders = customerOrders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
+    const totalSpent = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+    const lastOrderAt = customerOrders.reduce((latest, order) => {
+      const createdAt = order.createdAt || order.updatedAt || order.date || null;
+      if (!createdAt) return latest;
+      if (!latest || new Date(createdAt).getTime() > new Date(latest).getTime()) return createdAt;
+      return latest;
+    }, null);
+
+    return {
+      id: customer.id,
+      name: customer.name || '',
+      email: customer.email,
+      createdAt: customer.createdAt,
+      rewardPoints: Math.max(0, Math.floor(Number(customer.rewardPoints || 0))),
+      orderCount: customerOrders.length,
+      totalSpent: Number(totalSpent.toFixed(2)),
+      lastOrderAt,
+    };
+  });
+
+  accounts.sort((a, b) => new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime());
+
+  return accounts;
+}
+
+app.get('/api/admin/customers', requireAdmin, (_req, res) => {
+  res.json({ ok: true, customers: getCustomerAccountsSummary() });
+});
+
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
   if (!stripe || !STRIPE_WEBHOOK_SECRET) {
     return res.status(400).send('Stripe webhook not configured');
@@ -1442,6 +1488,7 @@ app.get('/api/admin/dashboard', requireAdmin, (_req, res) => {
     inventorySummary: getInventorySummary(inventory),
     sales: getSalesSummary(),
     designSales: getSanitizedDesignSales(),
+    customers: getCustomerAccountsSummary(),
   });
 });
 
