@@ -37,6 +37,8 @@ const SMTP_USER = String(process.env.SMTP_USER || '').trim();
 const SMTP_PASS = String(process.env.SMTP_PASS || '').trim();
 const SMTP_FROM = String(process.env.SMTP_FROM || SMTP_USER || OWNER_NOTIFY_EMAIL).trim();
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
+const UPSTASH_REDIS_REST_URL = String(process.env.UPSTASH_REDIS_REST_URL || '').trim().replace(/\/+$/, '');
+const UPSTASH_REDIS_REST_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || '').trim();
 
 const dataDir = path.join(__dirname, 'data');
 const ordersPath = path.join(dataDir, 'orders.json');
@@ -113,6 +115,75 @@ function ensureDataFiles() {
   if (!fs.existsSync(designSalesPath)) fs.writeFileSync(designSalesPath, '[]', 'utf8');
 }
 
+// --- Upstash Redis-backed durability layer ------------------------------
+// Render's free web-service disk is ephemeral (wiped on every deploy/restart),
+// so data/*.json (customers, orders, inventory, design-sales) cannot be the
+// permanent source of truth in production. When UPSTASH_REDIS_REST_URL /
+// UPSTASH_REDIS_REST_TOKEN are configured, we mirror every write to a matching
+// Redis key (whole array stored as one JSON string), and hydrate the local
+// JSON files from Redis once at server startup (before accepting requests).
+// If those env vars are not set (e.g. local development), everything behaves
+// exactly as before: pure local-file storage, no network calls. Upstash's
+// free tier (upstash.com) is $0/month forever with no credit card required.
+const REDIS_KEY_BY_PATH = new Map([
+  [ordersPath, 'freedom_works:orders'],
+  [customersPath, 'freedom_works:customers'],
+  [inventoryPath, 'freedom_works:inventory'],
+  [designSalesPath, 'freedom_works:design_sales'],
+]);
+
+function isRedisConfigured() {
+  return Boolean(UPSTASH_REDIS_REST_URL && UPSTASH_REDIS_REST_TOKEN);
+}
+
+async function redisCommand(commandArray) {
+  if (!isRedisConfigured()) return null;
+  const res = await fetch(UPSTASH_REDIS_REST_URL, {
+    method: 'POST',
+    headers: {
+      Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(commandArray),
+  });
+  if (!res.ok) {
+    throw new Error(`Upstash request failed: ${res.status} ${res.statusText}`);
+  }
+  const data = await res.json();
+  return data.result;
+}
+
+async function pullAllCollectionsToDisk() {
+  if (!isRedisConfigured()) return;
+  for (const [filePath, key] of REDIS_KEY_BY_PATH) {
+    try {
+      const raw = await redisCommand(['GET', key]);
+      if (typeof raw === 'string' && raw.length) {
+        const parsed = JSON.parse(raw);
+        if (Array.isArray(parsed) && parsed.length) {
+          fs.writeFileSync(filePath, JSON.stringify(parsed, null, 2), 'utf8');
+        }
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Upstash hydrate failed for ${key}:`, err.message || err);
+    }
+  }
+}
+
+async function pushRecordsToRedis(filePath, records) {
+  if (!isRedisConfigured()) return;
+  const key = REDIS_KEY_BY_PATH.get(filePath);
+  if (!key) return;
+  try {
+    await redisCommand(['SET', key, JSON.stringify(records || [])]);
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error(`Upstash sync failed for ${key}:`, err.message || err);
+  }
+}
+// -------------------------------------------------------------------------
+
 function readArrayFile(filePath) {
   ensureDataFiles();
   const raw = fs.readFileSync(filePath, 'utf8');
@@ -127,6 +198,10 @@ function readArrayFile(filePath) {
 function writeArrayFile(filePath, records) {
   ensureDataFiles();
   fs.writeFileSync(filePath, JSON.stringify(records, null, 2), 'utf8');
+  pushRecordsToRedis(filePath, records).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Upstash background sync error:', err.message || err);
+  });
 }
 
 function readOrders() {
@@ -1876,7 +1951,16 @@ app.post('/api/orders', (req, res) => {
   res.status(201).json({ ok: true, orderId: order.id });
 });
 
-app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
-  console.log(`Server running at http://localhost:${PORT}`);
-});
+async function startServer() {
+  await pullAllCollectionsToDisk().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Upstash startup hydrate error:', err.message || err);
+  });
+
+  app.listen(PORT, () => {
+    // eslint-disable-next-line no-console
+    console.log(`Server running at http://localhost:${PORT}`);
+  });
+}
+
+startServer();
