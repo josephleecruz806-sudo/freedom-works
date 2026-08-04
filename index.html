@@ -6373,7 +6373,8 @@
                     <h3>Welcome Back<span id="home-loggedin-name"></span></h3>
                     <p>You're logged in to your Freedom Works account.</p>
                     <div class="home-login-actions">
-                        <button type="button" class="home-main-btn" onclick="openAccountModal()">My Account</button>
+                        <button type="button" class="home-main-btn" onclick="enterStoreAsCustomer()">Start Shopping</button>
+                        <button type="button" class="home-secondary-btn" onclick="openAccountModal()">My Account</button>
                         <button type="button" class="home-secondary-btn" onclick="logoutCustomer()">Logout</button>
                     </div>
                     <div class="home-payment-strip" aria-label="Available payments">
@@ -11753,6 +11754,19 @@
                 : (getStorePageFromHash() === 'home' ? 'quick-picks' : getStorePageFromHash()));
             navigateToPage(targetPage);
             if (targetPage === 'quick-picks' && !options?.skipGuide) {
+                maybeStartCustomerGuide();
+            }
+        }
+
+        function enterStoreAsCustomer(targetPageOverride) {
+            closeLoginSalePopup();
+            closeAuthModal();
+            const requestedTarget = STORE_PAGES.includes(targetPageOverride) ? targetPageOverride : '';
+            const targetPage = requestedTarget || (shouldUseMobileHomeLanding()
+                ? 'menu'
+                : (getStorePageFromHash() === 'home' ? 'quick-picks' : getStorePageFromHash()));
+            navigateToPage(targetPage);
+            if (targetPage === 'quick-picks') {
                 maybeStartCustomerGuide();
             }
         }
