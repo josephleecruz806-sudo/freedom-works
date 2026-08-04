@@ -1477,7 +1477,7 @@ app.get('/owner', (_req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true });
+  res.json({ ok: true, redisConfigured: isRedisConfigured() });
 });
 
 app.get('/api/assets-status', (_req, res) => {
