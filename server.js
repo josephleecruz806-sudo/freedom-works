@@ -2009,6 +2009,13 @@ app.post('/api/orders', async (req, res) => {
 });
 
 async function startServer() {
+  // data/ is git-ignored (ephemeral on Render), so on a fresh deploy this
+  // directory doesn't exist yet. It must exist before we try to hydrate from
+  // Redis below, otherwise those writes throw ENOENT, get silently swallowed,
+  // and the very next request's ensureDataFiles() call locks in empty files
+  // - permanently hiding real data that's still sitting safely in Redis.
+  ensureDataFiles();
+
   await pullAllCollectionsToDisk().catch((err) => {
     // eslint-disable-next-line no-console
     console.error('Upstash startup hydrate error:', err.message || err);
