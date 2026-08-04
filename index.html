@@ -11386,13 +11386,17 @@
         ];
 
         function readStoredCustomerSession() {
+            // Customer sessions must survive closing the tab/browser (sessionStorage does not -
+            // it's wiped on tab close, which was making accounts look "disappeared" after a
+            // customer registered, closed the tab, and came back). localStorage is the source of
+            // truth; sessionStorage is only checked as a legacy fallback for old open tabs.
             try {
-                const sessionRaw = sessionStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
-                if (sessionRaw) return JSON.parse(sessionRaw);
+                const localRaw = localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
+                if (localRaw) return JSON.parse(localRaw);
             } catch (_) {}
             try {
-                const legacyRaw = localStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
-                return legacyRaw ? JSON.parse(legacyRaw) : null;
+                const legacySessionRaw = sessionStorage.getItem(CUSTOMER_AUTH_STORAGE_KEY);
+                return legacySessionRaw ? JSON.parse(legacySessionRaw) : null;
             } catch (_) {
                 return null;
             }
@@ -11401,16 +11405,16 @@
         function writeStoredCustomerSession(session) {
             try {
                 if (session) {
-                    sessionStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
-                    localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
-                } else {
+                    localStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
                     sessionStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                } else {
                     localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                    sessionStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
                 }
             } catch (_) {
                 try {
-                    if (session) localStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
-                    else localStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
+                    if (session) sessionStorage.setItem(CUSTOMER_AUTH_STORAGE_KEY, JSON.stringify(session));
+                    else sessionStorage.removeItem(CUSTOMER_AUTH_STORAGE_KEY);
                 } catch (__ ) {}
             }
         }
@@ -12483,6 +12487,11 @@
                 persistCustomerSession(stored);
                 return;
             }
+            // Show the saved session immediately so the account doesn't appear to
+            // "vanish" while we verify it, then only clear it on a genuine 401
+            // (invalid/expired token) — not on a transient network error or a
+            // Render cold-start 502/503, which used to log customers out for no reason.
+            persistCustomerSession(stored);
             try {
                 const resp = await fetchWithApiCandidates(CUSTOMER_AUTH_ENDPOINT + '/me', {
                     headers: {
@@ -12490,11 +12499,15 @@
                         Authorization: 'Bearer ' + stored.token,
                     },
                 });
-                if (!resp.ok) throw new Error('Session expired');
+                if (resp.status === 401) {
+                    persistCustomerSession(null);
+                    return;
+                }
+                if (!resp.ok) return;
                 const data = await resp.json();
                 persistCustomerSession({ token: stored.token, customer: data.customer });
             } catch (_) {
-                persistCustomerSession(null);
+                // Network/server unreachable - keep the existing session instead of logging out.
             }
         }
 
@@ -18379,6 +18392,31 @@
             }
         }
 
+        async function postAuthWithRetry(pathSuffix, payload, statusEl) {
+            // Render's free tier spins the server down after inactivity, so the first
+            // request after a while can briefly 502/503 while it cold-boots. Retry a
+            // few times before treating the account as unreachable, so a real account
+            // isn't silently swapped for a device-only local fallback (see
+            // upsertLocalCustomerRecord) just because the server was still waking up.
+            const retryDelaysMs = [0, 4000, 8000, 15000];
+            let resp = null;
+            for (let attempt = 0; attempt < retryDelaysMs.length; attempt++) {
+                if (retryDelaysMs[attempt]) {
+                    if (statusEl) statusEl.textContent = 'Connecting to the server… this can take up to a minute if it was asleep.';
+                    await new Promise((resolve) => setTimeout(resolve, retryDelaysMs[attempt]));
+                }
+                resp = await fetchWithApiCandidates(pathSuffix, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload),
+                });
+                if (resp.ok || (resp.status >= 400 && resp.status < 500 && resp.status !== 404)) {
+                    return resp;
+                }
+            }
+            return resp;
+        }
+
         document.getElementById('auth-form').addEventListener('submit', async function(e) {
             e.preventDefault();
             const submitBtn = document.getElementById('auth-submit-btn');
@@ -18401,9 +18439,10 @@
                 }
 
                 const customerPayload = isRegisterMode ? { name, email, password } : { email, password };
-                let resp = await fetchWithApiCandidates(
+                let resp = await postAuthWithRetry(
                     CUSTOMER_AUTH_ENDPOINT + (isRegisterMode ? '/register' : '/login'),
-                    { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(customerPayload) }
+                    customerPayload,
+                    statusEl
                 );
                 let data = await parseApiResponseJson(resp);
 
