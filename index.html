@@ -6330,7 +6330,6 @@
             <a href="#print-files" onclick="openPrintsOnlyMenu(); return false;">Prints Only</a>
             <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder'); return false;">Company T-Shirt Builder</a>
             <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
-            <button type="button" onclick="openRewardsInfoPopup()">Points</button>
             <button type="button" onclick="openMenuAccount()">Account</button>
         </div>
         <p class="side-menu-note">Each menu item opens its own page view.</p>
@@ -6353,13 +6352,29 @@
     <div class="container">
         <section class="home-landing" id="home-page" data-store-page="home">
             <div class="home-landing-top login-only">
-                <div class="home-login-card login-only">
+                <div class="home-login-card login-only" id="home-login-card">
                     <h3>Welcome To Freedom Works</h3>
                     <p>Create a customer account or skip for now to enter the website.</p>
                     <div class="home-login-actions">
                         <button type="button" class="home-main-btn" onclick="openAuthModal('register')">Create Account</button>
                         <button type="button" id="header-account-action" class="home-secondary-btn" onclick="openAuthModal('login')">Login</button>
                         <button type="button" class="home-secondary-btn" onclick="enterStoreAsGuest()">Skip For Now</button>
+                    </div>
+                    <div class="home-payment-strip" aria-label="Available payments">
+                        <p class="home-payment-label">Available Payments</p>
+                        <div class="home-payment-logos" aria-hidden="true">
+                            <span class="home-payment-logo card">Card</span>
+                            <span class="home-payment-logo cashapp">Cash App</span>
+                        </div>
+                        <p class="home-legal-note">&copy; 2026 Freedom Works. All rights reserved.</p>
+                    </div>
+                </div>
+                <div class="home-login-card login-only" id="home-loggedin-card" hidden>
+                    <h3>Welcome Back<span id="home-loggedin-name"></span></h3>
+                    <p>You're logged in to your Freedom Works account.</p>
+                    <div class="home-login-actions">
+                        <button type="button" class="home-main-btn" onclick="openAccountModal()">My Account</button>
+                        <button type="button" class="home-secondary-btn" onclick="logoutCustomer()">Logout</button>
                     </div>
                     <div class="home-payment-strip" aria-label="Available payments">
                         <p class="home-payment-label">Available Payments</p>
@@ -11771,17 +11786,24 @@
             const inlineActionBtn = document.getElementById('header-account-inline-action');
             const logoutBtn = document.getElementById('header-account-logout');
             const customerName = customerSession?.customer?.name || '';
+            const isLoggedIn = !!customerSession?.customer;
             if (labelEl) labelEl.textContent = 'Account';
             if (nameEl) nameEl.textContent = customerName || 'Guest';
             if (inlineActionBtn) {
-                inlineActionBtn.textContent = customerSession ? 'My Account' : 'Login';
-                inlineActionBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
+                inlineActionBtn.textContent = isLoggedIn ? 'My Account' : 'Login';
+                inlineActionBtn.onclick = function() { isLoggedIn ? openAccountModal() : openAuthModal('login'); };
             }
             if (actionBtn) {
-                actionBtn.textContent = customerSession ? 'My Account' : 'Login';
-                actionBtn.onclick = function() { customerSession ? openAccountModal() : openAuthModal('login'); };
+                actionBtn.textContent = isLoggedIn ? 'My Account' : 'Login';
+                actionBtn.onclick = function() { isLoggedIn ? openAccountModal() : openAuthModal('login'); };
             }
-            if (logoutBtn) logoutBtn.style.display = customerSession ? '' : 'none';
+            if (logoutBtn) logoutBtn.style.display = isLoggedIn ? '' : 'none';
+            const homeLoginCard = document.getElementById('home-login-card');
+            const homeLoggedInCard = document.getElementById('home-loggedin-card');
+            const homeLoggedInName = document.getElementById('home-loggedin-name');
+            if (homeLoginCard) homeLoginCard.hidden = isLoggedIn;
+            if (homeLoggedInCard) homeLoggedInCard.hidden = !isLoggedIn;
+            if (homeLoggedInName) homeLoggedInName.textContent = customerName ? ', ' + customerName : '';
             const accountName = document.getElementById('account-modal-name');
             const accountEmail = document.getElementById('account-modal-email');
             if (accountName) accountName.textContent = customerName || 'Guest';
