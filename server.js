@@ -22,6 +22,7 @@ try {
 dotenv.config();
 
 const app = express();
+const BOOT_ID = crypto.randomBytes(4).toString('hex');
 const PORT = Number(process.env.PORT || 3000);
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY || '';
 const STRIPE_PUBLISHABLE_KEY = String(process.env.STRIPE_PUBLISHABLE_KEY || '').trim();
@@ -1503,7 +1504,13 @@ app.get('/owner', (_req, res) => {
 });
 
 app.get('/api/health', (_req, res) => {
-  res.json({ ok: true, redisConfigured: isRedisConfigured() });
+  res.json({
+    ok: true,
+    redisConfigured: isRedisConfigured(),
+    bootId: BOOT_ID,
+    uptimeSeconds: Math.round(process.uptime()),
+    customerCount: readCustomers().length,
+  });
 });
 
 app.get('/api/assets-status', (_req, res) => {
