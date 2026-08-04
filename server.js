@@ -195,27 +195,33 @@ function readArrayFile(filePath) {
   }
 }
 
-function writeArrayFile(filePath, records) {
+async function writeArrayFile(filePath, records) {
   ensureDataFiles();
   fs.writeFileSync(filePath, JSON.stringify(records, null, 2), 'utf8');
-  pushRecordsToRedis(filePath, records).catch((err) => {
+  // Awaited (not fire-and-forget) so the Redis copy is durable before the
+  // HTTP response goes out - otherwise a redeploy that kills this process
+  // moments later can lose the write entirely (disk is wiped, Redis never
+  // got it), silently dropping the record that was just created.
+  try {
+    await pushRecordsToRedis(filePath, records);
+  } catch (err) {
     // eslint-disable-next-line no-console
-    console.error('Upstash background sync error:', err.message || err);
-  });
+    console.error('Upstash sync error:', err.message || err);
+  }
 }
 
 function readOrders() {
   return readArrayFile(ordersPath);
 }
 
-function writeOrders(orders) {
-  writeArrayFile(ordersPath, orders);
+async function writeOrders(orders) {
+  await writeArrayFile(ordersPath, orders);
 }
 
-function appendOrder(order) {
+async function appendOrder(order) {
   const orders = readOrders();
   orders.unshift(order);
-  writeOrders(orders);
+  await writeOrders(orders);
 }
 
 function getEmailTransport() {
@@ -239,24 +245,24 @@ function readCustomers() {
   return readArrayFile(customersPath);
 }
 
-function writeCustomers(customers) {
-  writeArrayFile(customersPath, customers);
+async function writeCustomers(customers) {
+  await writeArrayFile(customersPath, customers);
 }
 
 function readInventory() {
   return readArrayFile(inventoryPath);
 }
 
-function writeInventory(records) {
-  writeArrayFile(inventoryPath, records);
+async function writeInventory(records) {
+  await writeArrayFile(inventoryPath, records);
 }
 
 function readDesignSales() {
   return readArrayFile(designSalesPath);
 }
 
-function writeDesignSales(records) {
-  writeArrayFile(designSalesPath, records);
+async function writeDesignSales(records) {
+  await writeArrayFile(designSalesPath, records);
 }
 
 function normalizeDesignFileName(value) {
@@ -977,13 +983,18 @@ function applyRewardsForOrder(order) {
     rewardLifetimePoints: nextLifetimePoints,
     updatedAt: new Date().toISOString(),
   };
-  writeCustomers(customers);
+  return { customers, customerIndex, nextPoints, nextLifetimePoints, pointsEarned };
+}
 
+async function finalizeRewardsForOrder(order) {
+  const result = applyRewardsForOrder(order);
+  if (!result || !result.customers) return { ok: result?.ok ?? false, pointsEarned: result?.pointsEarned || 0 };
+  await writeCustomers(result.customers);
   return {
     ok: true,
-    pointsEarned,
-    rewardPoints: nextPoints,
-    rewardLifetimePoints: nextLifetimePoints,
+    pointsEarned: result.pointsEarned,
+    rewardPoints: result.nextPoints,
+    rewardLifetimePoints: result.nextLifetimePoints,
   };
 }
 
@@ -1313,7 +1324,7 @@ app.get('/api/admin/customers', requireAdmin, (_req, res) => {
   res.json({ ok: true, customers: getCustomerAccountsSummary() });
 });
 
-app.post('/stripe-webhook', express.raw({ type: 'application/json' }), (req, res) => {
+app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   if (!stripe || !STRIPE_WEBHOOK_SECRET) {
     return res.status(400).send('Stripe webhook not configured');
   }
@@ -1336,7 +1347,7 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), (req, res
         status: 'paid',
         updatedAt: new Date().toISOString(),
       };
-      writeOrders(existing);
+      await writeOrders(existing);
     }
   }
 
@@ -1574,7 +1585,7 @@ app.get('/api/admin/design-sales', requireAdmin, (_req, res) => {
   });
 });
 
-app.post('/api/admin/design-sales', requireAdmin, (req, res) => {
+app.post('/api/admin/design-sales', requireAdmin, async (req, res) => {
   const requestedSources = Array.isArray(req.body?.srcs)
     ? req.body.srcs
     : (req.body?.src ? [req.body.src] : []);
@@ -1638,7 +1649,7 @@ app.post('/api/admin/design-sales', requireAdmin, (req, res) => {
     return sanitizeDesignSale(nextRecord);
   });
 
-  writeDesignSales(current);
+  await writeDesignSales(current);
   res.status(hadExistingRecords ? 200 : 201).json({
     ok: true,
     designSales: savedRecords,
@@ -1646,18 +1657,18 @@ app.post('/api/admin/design-sales', requireAdmin, (req, res) => {
   });
 });
 
-app.delete('/api/admin/design-sales/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/design-sales/:id', requireAdmin, async (req, res) => {
   const current = getActiveDesignSales();
   const next = current.filter((record) => String(record.id || '') !== String(req.params.id || ''));
   if (next.length === current.length) {
     return res.status(404).json({ error: 'Design sale not found.' });
   }
 
-  writeDesignSales(next);
+  await writeDesignSales(next);
   res.json({ ok: true });
 });
 
-app.post('/api/admin/inventory', requireAdmin, (req, res) => {
+app.post('/api/admin/inventory', requireAdmin, async (req, res) => {
   const name = String(req.body?.name || '').trim();
   const sku = String(req.body?.sku || '').trim();
   const category = String(req.body?.category || '').trim();
@@ -1698,11 +1709,11 @@ app.post('/api/admin/inventory', requireAdmin, (req, res) => {
   };
 
   inventory.unshift(item);
-  writeInventory(inventory);
+  await writeInventory(inventory);
   res.status(201).json({ ok: true, item: sanitizeInventoryItem(item) });
 });
 
-app.put('/api/admin/inventory/:id', requireAdmin, (req, res) => {
+app.put('/api/admin/inventory/:id', requireAdmin, async (req, res) => {
   const inventory = readInventory();
   const idx = inventory.findIndex((item) => item.id === req.params.id);
   if (idx < 0) {
@@ -1740,22 +1751,22 @@ app.put('/api/admin/inventory/:id', requireAdmin, (req, res) => {
   }
 
   inventory[idx] = next;
-  writeInventory(inventory);
+  await writeInventory(inventory);
   res.json({ ok: true, item: sanitizeInventoryItem(next) });
 });
 
-app.delete('/api/admin/inventory/:id', requireAdmin, (req, res) => {
+app.delete('/api/admin/inventory/:id', requireAdmin, async (req, res) => {
   const inventory = readInventory();
   const nextInventory = inventory.filter((item) => item.id !== req.params.id);
   if (nextInventory.length === inventory.length) {
     return res.status(404).json({ error: 'Inventory item not found.' });
   }
 
-  writeInventory(nextInventory);
+  await writeInventory(nextInventory);
   res.json({ ok: true });
 });
 
-app.post('/api/customers/register', (req, res) => {
+app.post('/api/customers/register', async (req, res) => {
   const name = String(req.body?.name || '').trim();
   const email = normalizeEmail(req.body?.email);
   const password = String(req.body?.password || '');
@@ -1786,7 +1797,10 @@ app.post('/api/customers/register', (req, res) => {
     createdAt: new Date().toISOString(),
   };
   customers.unshift(customer);
-  writeCustomers(customers);
+  // Awaited so the new account is durably in Redis before we respond - a
+  // fire-and-forget write here can be lost if a deploy kills this process
+  // moments later (fresh container hydrates from Redis and this record is gone).
+  await writeCustomers(customers);
 
   res.status(201).json({
     ok: true,
@@ -1876,7 +1890,7 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
-app.post('/api/orders', (req, res) => {
+app.post('/api/orders', async (req, res) => {
   const payload = req.body || {};
   const items = Array.isArray(payload.items) ? payload.items.map(sanitizeOrderItem) : [];
   const total = Number(payload.total || 0);
@@ -1934,12 +1948,12 @@ app.post('/api/orders', (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  const rewards = authenticatedCustomer ? applyRewardsForOrder(order) : { ok: false, pointsEarned: 0 };
+  const rewards = authenticatedCustomer ? await finalizeRewardsForOrder(order) : { ok: false, pointsEarned: 0 };
   if (rewards.ok) {
     order.rewardPointsEarned = Number(rewards.pointsEarned || 0);
   }
 
-  appendOrder(order);
+  await appendOrder(order);
   notifyOwnerOfNewOrder(order).catch((err) => {
     // eslint-disable-next-line no-console
     console.error('Failed to send order notification:', err.message || err);
