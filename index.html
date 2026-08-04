@@ -6326,7 +6326,7 @@
             <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
             <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
             <a href="#custom-builder" data-store-page-link="custom-builder" onclick="navigateMenuToPage('custom-builder'); return false;">Custom Builder</a>
-            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Quick Picks</a>
+            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Free Designs</a>
             <a href="#print-files" onclick="openPrintsOnlyMenu(); return false;">Prints Only</a>
             <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder'); return false;">Company T-Shirt Builder</a>
             <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
@@ -6389,11 +6389,11 @@
             </div>
         </section>
 
-        <h2 data-store-page="quick-picks" hidden style="text-align:center;color:#fff;margin:30px 0 0;font-size:1.6rem;letter-spacing:1px;">&#x1F3B2; Quick Pick Designs</h2>
-        <p data-store-page="quick-picks" hidden style="text-align:center;color:#aaa;margin:6px 0 12px;font-size:1rem;">Filter by category, then hit <strong style="color:#4a90e2;">&#x1F3B2; Quick Pick</strong> to roll a random design &amp; load it into the builder!</p>
+        <h2 data-store-page="quick-picks" hidden style="text-align:center;color:#fff;margin:30px 0 0;font-size:1.6rem;letter-spacing:1px;">&#x1F3B2; Free Designs</h2>
+        <p data-store-page="quick-picks" hidden style="text-align:center;color:#aaa;margin:6px 0 12px;font-size:1rem;">Filter by category, then hit <strong style="color:#4a90e2;">&#x1F3B2; Roll Dice</strong> on any box to see a different free design &mdash; keep rolling until you find one you love!</p>
 
         <div class="quick-pick-colors" id="quick-pick-colors-section" data-store-page="quick-picks" hidden>
-            <p>Pick your shirt color here before choosing a Quick Pick design.</p>
+            <p>Browse and load any free design first &mdash; just remember to pick your shirt color before adding it to the cart.</p>
             <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:12px;" data-store-page="quick-picks" hidden>
                 <label for="quick-pick-shirt-size" style="color:#dce9ff;font-weight:700;white-space:nowrap;">T-Shirt Size:</label>
                 <select id="quick-pick-shirt-size" onchange="handleQuickPickLandingSizeChange(this)" style="background:#1e1e3a;color:#fff;border:1.5px solid rgba(255,255,255,0.18);border-radius:8px;padding:7px 14px;font-size:0.97rem;cursor:pointer;min-width:180px;">
@@ -6423,7 +6423,7 @@
             <div class="product quick-pick-box" id="qp-box-0">
                 <div class="qp-img-wrap">
                     <div class="qp-loading-shell" data-loading="false">
-                        <img class="qp-thumb" src="" alt="Quick Pick Design">
+                        <img class="qp-thumb" src="" alt="Free Design">
                         <span class="qp-loading-label">Loading design...</span>
                     </div>
                     <span class="qp-badge">&#x1F3B2; Pick #1</span>
@@ -6431,14 +6431,14 @@
                 <h3 class="qp-name"></h3>
                 <p class="qp-price"></p>
                 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-                    <button class="qp-roll-btn" onclick="rollQuickPick(0)">&#x1F3B2; Quick Pick</button>
+                    <button class="qp-roll-btn" onclick="rollQuickPick(0)">&#x1F3B2; Roll Dice</button>
                     <button onclick="loadQuickPickDesign(0)">&#x1F455; Use This Design</button>
                 </div>
             </div>
             <div class="product quick-pick-box" id="qp-box-1">
                 <div class="qp-img-wrap">
                     <div class="qp-loading-shell" data-loading="false">
-                        <img class="qp-thumb" src="" alt="Quick Pick Design">
+                        <img class="qp-thumb" src="" alt="Free Design">
                         <span class="qp-loading-label">Loading design...</span>
                     </div>
                     <span class="qp-badge">&#x1F3B2; Pick #2</span>
@@ -6446,14 +6446,14 @@
                 <h3 class="qp-name"></h3>
                 <p class="qp-price"></p>
                 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-                    <button class="qp-roll-btn" onclick="rollQuickPick(1)">&#x1F3B2; Quick Pick</button>
+                    <button class="qp-roll-btn" onclick="rollQuickPick(1)">&#x1F3B2; Roll Dice</button>
                     <button onclick="loadQuickPickDesign(1)">&#x1F455; Use This Design</button>
                 </div>
             </div>
             <div class="product quick-pick-box" id="qp-box-2">
                 <div class="qp-img-wrap">
                     <div class="qp-loading-shell" data-loading="false">
-                        <img class="qp-thumb" src="" alt="Quick Pick Design">
+                        <img class="qp-thumb" src="" alt="Free Design">
                         <span class="qp-loading-label">Loading design...</span>
                     </div>
                     <span class="qp-badge">&#x1F3B2; Pick #3</span>
@@ -6461,7 +6461,7 @@
                 <h3 class="qp-name"></h3>
                 <p class="qp-price"></p>
                 <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;">
-                    <button class="qp-roll-btn" onclick="rollQuickPick(2)">&#x1F3B2; Quick Pick</button>
+                    <button class="qp-roll-btn" onclick="rollQuickPick(2)">&#x1F3B2; Roll Dice</button>
                     <button onclick="loadQuickPickDesign(2)">&#x1F455; Use This Design</button>
                 </div>
             </div>
@@ -6764,8 +6764,8 @@
         </section>
 
         <section class="front-back-mockup quick-pick-grid-builder" id="quick-pick-grid-section" data-store-page="quick-pick-builder prints-only" hidden>
-            <h2 id="qp-grid-page-title">Quick Pick Builder</h2>
-            <p id="qp-grid-page-copy" style="color:#bbb; margin:0 0 12px;">Use your Quick Pick design or upload your own print image, adjust print size, and add to cart.</p>
+            <h2 id="qp-grid-page-title">Free Design Builder</h2>
+            <p id="qp-grid-page-copy" style="color:#bbb; margin:0 0 12px;">Use your free design or upload your own print image, pick a shirt color, adjust print size, and add to cart.</p>
 
             <div style="display:flex;align-items:center;gap:12px;margin:0 0 16px;">
                 <label for="qp-grid-shirt-size" style="color:#dce9ff;font-weight:700;white-space:nowrap;">T-Shirt Size:</label>
@@ -6823,10 +6823,10 @@
                 </div>
             </div>
 
-            <p id="qp-grid-size-gate-note" style="color:#ffe08a; margin:0 0 16px; font-weight:700;">Choose a T-shirt size first to show the Quick Pick grid preview.</p>
+            <p id="qp-grid-size-gate-note" style="color:#ffe08a; margin:0 0 16px; font-weight:700;">Choose a T-shirt size first to show the Free Design grid preview.</p>
 
             <details class="size-chart-panel">
-                <summary>Quick Pick Print Size Chart (Front)</summary>
+                <summary>Free Design Print Size Chart (Front)</summary>
                 <p class="size-chart-note">Recommended front print sizes in inches for each shirt size.</p>
                 <table class="size-chart-table">
                     <thead>
@@ -6886,7 +6886,7 @@
                         <div class="mockup-ruler-top" id="qp-grid-ruler-top"></div>
                         <div class="mockup-ruler-left" id="qp-grid-ruler-left"></div>
                         <div class="mockup-shirt mockup-square" id="qp-grid-shirt">
-                            <div id="qp-grid-print" class="mockup-print" role="img" aria-label="Quick Pick grid print preview" style="width:180px;height:180px;background-image:none;"></div>
+                            <div id="qp-grid-print" class="mockup-print" role="img" aria-label="Free Design grid print preview" style="width:180px;height:180px;background-image:none;"></div>
                         </div>
                     </div>
                 </div>
@@ -9513,7 +9513,7 @@
             loadCatalogDesignIntoQuickPickGrid(item.assetSrc || item.src, { preserveEmptySize: true });
             scrollToPageSection('quick-pick-builder', '#quick-pick-grid-section');
             if (typeof window._mascotWarn === 'function') {
-                window._mascotWarn(`"${item.name}" is loaded on its Quick Pick grid page. Pick a size there, adjust the print, and then add it to cart.`);
+                window._mascotWarn(`"${item.name}" is loaded on its Free Design grid page. Pick a size and color there, adjust the print, and then add it to cart.`);
             }
         }
 
@@ -10113,7 +10113,7 @@
                 resetQuickPickGridPrintSizeToDefault(sizeSelect?.value || 'Adult M');
                 updateQuickPickGridVisuals();
                 updateQuickPickGridPriceDisplay();
-                showUploadNotice('Design loaded in the Quick Pick grid preview.');
+                showUploadNotice('Design loaded in the Free Design grid preview.');
             };
 
             imageProbe.onerror = function() {
@@ -10143,6 +10143,13 @@
                 alert('Please load a design before adding this shirt to the cart.');
                 return;
             }
+            if (!printOnlyMode && !quickPickGridColorPicked) {
+                alert('Please pick a T-shirt color before adding this shirt to the cart.');
+                if (typeof window._mascotWarn === 'function') {
+                    window._mascotWarn('Pick a T-shirt color first, then add it to the cart.');
+                }
+                return;
+            }
 
             const activeSwatch = document.querySelector('#qp-grid-color-swatches .color-swatch.active');
             const colorName = activeSwatch?.title || 'Selected color';
@@ -10163,7 +10170,7 @@
                 : price;
             const lineItemName = printOnlyMode
                 ? ((catalogItem?.name || 'Print Only Transfer') + ' (Print Only, Size: ' + gridSize + ')')
-                : ((catalogItem?.name || 'Quick Pick Grid T-Shirt') + ' (Size: ' + gridSize + ')');
+                : ((catalogItem?.name || 'Free Design Grid T-Shirt') + ' (Size: ' + gridSize + ')');
 
             cart.push({
                 name: lineItemName,
@@ -10177,7 +10184,7 @@
                 laborIncluded: false,
                 laborCost: 0,
                 designType: 'catalog',
-                designName: catalogItem?.name || 'Quick Pick loaded design',
+                designName: catalogItem?.name || 'Free Design loaded design',
                 designFrontFile: uploadName,
                 designBackFile: '',
                 designPreview: preview,
@@ -10317,13 +10324,6 @@
                 alert('Please choose a T-shirt size first.');
                 if (typeof window._mascotWarn === 'function') {
                     window._mascotWarn('Pick a T-shirt size first, then choose your design.');
-                }
-                return;
-            }
-            if (!shirtColorPicked) {
-                alert('Please pick a T-shirt color before choosing this design.');
-                if (typeof window._mascotWarn === 'function') {
-                    window._mascotWarn('Pick a shirt color first, then use this design from Quick Picks.');
                 }
                 return;
             }
@@ -11372,7 +11372,7 @@
             {
                 page: 'quick-picks',
                 selector: '#qp-box-0 .qp-roll-btn',
-                title: 'Spin A Quick Pick',
+                title: 'Spin A Free Design',
                 text: 'This button rolls a ready-made design for customers who want something fast.'
             },
             {
@@ -12086,7 +12086,7 @@
                 quickPickGridSourcePage = 'prints-only';
             }
             document.title = nextPage === 'quick-pick-builder'
-                ? 'Quick Pick Builder'
+                ? 'Free Design Builder'
                 : (nextPage === 'prints-only' ? 'Prints Only' : 'Freedom Works');
             document.body.classList.remove(...STORE_PAGES.map((entry) => 'store-page-' + entry));
             document.body.classList.add('store-page-' + nextPage);
@@ -12117,12 +12117,12 @@
             const copyEl = document.getElementById('qp-grid-page-copy');
             const isPrintsOnlyPage = page === 'prints-only';
             if (titleEl) {
-                titleEl.textContent = isPrintsOnlyPage ? 'Prints Only' : 'Quick Pick Builder';
+                titleEl.textContent = isPrintsOnlyPage ? 'Prints Only' : 'Free Design Builder';
             }
             if (copyEl) {
                 copyEl.textContent = isPrintsOnlyPage
                     ? 'Upload your print image, adjust the print size, and add your print-only order to cart.'
-                    : 'Use your Quick Pick design or upload your own print image, adjust print size, and add to cart.';
+                    : 'Use your free design or upload your own print image, pick a shirt color, adjust print size, and add to cart.';
             }
         }
 
@@ -13038,7 +13038,7 @@
                 "Upload it, resize it, center it, and you're set.",
                 "If text looks tiny now, it will be tiny in real life.",
                 "Dark shirt plus light design is a safe choice.",
-                "Quick Picks are handy when you're not sure where to start.",
+                "Free Designs are handy when you're not sure where to start.",
                 "Front print if you want bold. Left chest if you want subtle.",
                 "Transparent PNG is the easiest quality upgrade.",
                 "Try two shirt colours before you commit.",
@@ -13068,7 +13068,7 @@
                 "Use contrast. Light on dark or dark on light.",
                 "Use one bold thing, not five tiny things.",
                 "If the image has a white box, use a transparent PNG.",
-                "Use a Quick Pick if you're stuck.",
+                "Use a Free Design if you're stuck.",
                 "Step back and check if it reads in one second.",
                 "Add to cart when it feels clean, not crowded.",
                 "Swap colours and test a few.",
@@ -13086,7 +13086,7 @@
                 "Pink with black text is such a nice combo.",
                 "Navy and white is always a safe win.",
                 "Red works well when you want it to stand out.",
-                "Start with Quick Pick, then make it yours.",
+                "Start with a Free Design, then make it yours.",
                 "Don't overfill the front, give it room.",
                 "Center chest for bold, left chest for simple.",
                 "You're one good colour choice away from a really nice result.",
@@ -13921,7 +13921,7 @@
                 if (!cat || busy) return;
                 if (!hasGreetedGuy) return;
                 const reactions = {
-                    'All':         { who: 'guy',  msgs: ['All categories are open now. Take a look around.', 'Everything is open now. Try a Quick Pick and see what you get.'], expr: guyExpressions[1], act: 'mascot-jump' },
+                    'All':         { who: 'guy',  msgs: ['All categories are open now. Take a look around.', 'Everything is open now. Roll the dice on a Free Design and see what you get.'], expr: guyExpressions[1], act: 'mascot-jump' },
                     'Horror':      { who: 'guy',  msgs: ['Horror selected. Dark, sharp style.', 'Good pick. Horror graphics stand out.'], expr: guyExpressions[6], act: 'mascot-shake' },
                     'Faith':       { who: 'girl', msgs: ['Faith has some really lovely personal designs.', 'Great choice. Faith designs make thoughtful gifts.'], expr: girlExpressions[0], act: 'mascot-wave' },
                     'Pop Culture': { who: 'girl', msgs: ['Pop culture has lots of fun options.', 'Nice pick. This category is always fun to browse.'], expr: girlExpressions[1], act: 'mascot-jump' },
@@ -14237,8 +14237,8 @@
                     { who: 'girl', msg: "Your custom shirt marks your moment. Priceless to the right person.", expr: girlExpressions[0] },
                 ],
                 [
-                    { who: 'girl', msg: "Quick Picks at the top left. Three ready-made designs you can load straight onto the shirt.", expr: girlExpressions[1] },
-                    { who: 'guy',  msg: "Hit Use This Design on any of them and it loads instantly into the preview.", expr: guyExpressions[0] },
+                    { who: 'girl', msg: "Free Designs at the top left. Three ready-made designs you can load straight onto the shirt.", expr: girlExpressions[1] },
+                    { who: 'guy',  msg: "Don't love one? Hit the dice to roll a new one, then Use This Design to load it into the preview.", expr: guyExpressions[0] },
                     { who: 'girl', msg: "Fastest way to see what a finished shirt looks like before you upload anything yourself.", expr: girlExpressions[0] },
                     { who: 'guy',  msg: "One click. Basically done. Give it a try before you go.", expr: guyExpressions[3] },
                 ],
@@ -14570,7 +14570,7 @@
                       highlight: '#color-swatches' },
                                         { who: 'guy',  msg: "Next ? upload your design. Use Front Design Image (and Back Design Image if needed). PNG with transparent background works best.", expr: guyExpressions[3],
                       highlight: '#design-upload-front' },
-                    { who: 'girl', msg: "Already have one of our Quick Pick designs? Just scroll up, hit 'Use This Design' on any of the boxes and it loads straight onto the shirt!", expr: girlExpressions[0],
+                    { who: 'girl', msg: "Already have one of our Free Designs? Just scroll up, roll the dice to find one you like, then hit 'Use This Design' and it loads straight onto the shirt!", expr: girlExpressions[0],
                       highlight: '#quick-pick-section' },
                     { who: 'guy',  msg: "Once your design is on the shirt, use the Width and Height buttons to size it up or down until it fills the chest just right.", expr: guyExpressions[0],
                       highlight: '.size-controls' },
@@ -14760,8 +14760,8 @@
                         girl: "And I promise it is way easier than it sounds! Most customers are done in under five minutes. You have got this!"
                     },
                     {
-                        keywords: ['quick pick','quickpick','ready','template','premade','pre-made','designs'],
-                        guy:  "The Quick Picks on the left are ready-made designs. Tap Use This Design and it loads straight onto the shirt.",
+                        keywords: ['quick pick','quickpick','free design','free designs','ready','template','premade','pre-made','designs'],
+                        guy:  "The Free Designs on the left are ready-made designs. Tap Use This Design and it loads straight onto the shirt.",
                         girl: "There are loads of categories too ? anime, sports, holidays, pop culture. Just roll the dice and find something you love!"
                     },
                     {
@@ -15052,7 +15052,7 @@
                 idleTimer = setTimeout(() => {
                     const idleHelp = [
                         "Still deciding? Pick a size first, then colour. Everything gets easier after that.",
-                        "Stuck on design? Grab a Quick Pick and edit from there.",
+                        "Stuck on design? Grab a Free Design and edit from there.",,
                         "Try your design on two shirt colours before you commit.",
                         "You can upload photos, logos, art, pretty much anything.",
                         "No minimum order, so even one shirt is totally fine.",
@@ -15061,7 +15061,7 @@
                         "If text is your main design, go bold and keep it short.",
                         "Left chest for subtle, full front for statement.",
                         "One clean graphic almost always beats a busy layout.",
-                        "Quick Picks are on the left if you want a head start.",
+                        "Free Designs are on the left if you want a head start.",,
                     ];
                     if (canAutoMascotSpeak()) {
                         triggerMascotWithMsg(idleHelp[Math.floor(Math.random() * idleHelp.length)], expressions[4], 'mascot-wave');
