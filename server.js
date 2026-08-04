@@ -1503,13 +1503,26 @@ app.get('/owner', (_req, res) => {
   res.sendFile(path.join(__dirname, 'owner.html'));
 });
 
-app.get('/api/health', (_req, res) => {
+app.get('/api/health', async (_req, res) => {
+  let redisCustomerCount = null;
+  let redisError = null;
+  if (isRedisConfigured()) {
+    try {
+      const raw = await redisCommand(['GET', 'freedom_works:customers']);
+      const parsed = typeof raw === 'string' && raw.length ? JSON.parse(raw) : [];
+      redisCustomerCount = Array.isArray(parsed) ? parsed.length : null;
+    } catch (err) {
+      redisError = err.message || String(err);
+    }
+  }
   res.json({
     ok: true,
     redisConfigured: isRedisConfigured(),
     bootId: BOOT_ID,
     uptimeSeconds: Math.round(process.uptime()),
     customerCount: readCustomers().length,
+    redisCustomerCount,
+    redisError,
   });
 });
 
