@@ -138,19 +138,28 @@ function isRedisConfigured() {
 
 async function redisCommand(commandArray) {
   if (!isRedisConfigured()) return null;
-  const res = await fetch(UPSTASH_REDIS_REST_URL, {
-    method: 'POST',
-    headers: {
-      Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify(commandArray),
-  });
-  if (!res.ok) {
-    throw new Error(`Upstash request failed: ${res.status} ${res.statusText}`);
+  // Bound each call so a stalled Upstash connection can't hang the request
+  // forever - callers need a timely yes/no to decide whether to retry.
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 6000);
+  try {
+    const res = await fetch(UPSTASH_REDIS_REST_URL, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${UPSTASH_REDIS_REST_TOKEN}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(commandArray),
+      signal: controller.signal,
+    });
+    if (!res.ok) {
+      throw new Error(`Upstash request failed: ${res.status} ${res.statusText}`);
+    }
+    const data = await res.json();
+    return data.result;
+  } finally {
+    clearTimeout(timeout);
   }
-  const data = await res.json();
-  return data.result;
 }
 
 async function pullAllCollectionsToDisk() {
@@ -172,15 +181,25 @@ async function pullAllCollectionsToDisk() {
 }
 
 async function pushRecordsToRedis(filePath, records) {
-  if (!isRedisConfigured()) return;
+  // No Redis configured (e.g. local dev) means the local file IS the source
+  // of truth, so there is nothing to fail - report success.
+  if (!isRedisConfigured()) return true;
   const key = REDIS_KEY_BY_PATH.get(filePath);
-  if (!key) return;
-  try {
-    await redisCommand(['SET', key, JSON.stringify(records || [])]);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error(`Upstash sync failed for ${key}:`, err.message || err);
+  if (!key) return true;
+  const maxAttempts = 3;
+  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
+    try {
+      await redisCommand(['SET', key, JSON.stringify(records || [])]);
+      return true;
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Upstash sync failed for ${key} (attempt ${attempt}/${maxAttempts}):`, err.message || err);
+      if (attempt < maxAttempts) {
+        await new Promise((resolve) => setTimeout(resolve, attempt * 400));
+      }
+    }
   }
+  return false;
 }
 // -------------------------------------------------------------------------
 
@@ -201,13 +220,9 @@ async function writeArrayFile(filePath, records) {
   // Awaited (not fire-and-forget) so the Redis copy is durable before the
   // HTTP response goes out - otherwise a redeploy that kills this process
   // moments later can lose the write entirely (disk is wiped, Redis never
-  // got it), silently dropping the record that was just created.
-  try {
-    await pushRecordsToRedis(filePath, records);
-  } catch (err) {
-    // eslint-disable-next-line no-console
-    console.error('Upstash sync error:', err.message || err);
-  }
+  // got it), silently dropping the record that was just created. Returns
+  // whether the Redis copy actually succeeded so callers can react.
+  return pushRecordsToRedis(filePath, records);
 }
 
 function readOrders() {
@@ -215,13 +230,13 @@ function readOrders() {
 }
 
 async function writeOrders(orders) {
-  await writeArrayFile(ordersPath, orders);
+  return writeArrayFile(ordersPath, orders);
 }
 
 async function appendOrder(order) {
   const orders = readOrders();
   orders.unshift(order);
-  await writeOrders(orders);
+  return writeOrders(orders);
 }
 
 function getEmailTransport() {
@@ -246,7 +261,7 @@ function readCustomers() {
 }
 
 async function writeCustomers(customers) {
-  await writeArrayFile(customersPath, customers);
+  return writeArrayFile(customersPath, customers);
 }
 
 function readInventory() {
@@ -254,7 +269,7 @@ function readInventory() {
 }
 
 async function writeInventory(records) {
-  await writeArrayFile(inventoryPath, records);
+  return writeArrayFile(inventoryPath, records);
 }
 
 function readDesignSales() {
@@ -262,7 +277,7 @@ function readDesignSales() {
 }
 
 async function writeDesignSales(records) {
-  await writeArrayFile(designSalesPath, records);
+  return writeArrayFile(designSalesPath, records);
 }
 
 function normalizeDesignFileName(value) {
@@ -1797,10 +1812,18 @@ app.post('/api/customers/register', async (req, res) => {
     createdAt: new Date().toISOString(),
   };
   customers.unshift(customer);
-  // Awaited so the new account is durably in Redis before we respond - a
-  // fire-and-forget write here can be lost if a deploy kills this process
-  // moments later (fresh container hydrates from Redis and this record is gone).
-  await writeCustomers(customers);
+  // Awaited (with retries inside pushRecordsToRedis) so the new account is
+  // durably in Redis before we respond - a fire-and-forget write here can be
+  // lost if a deploy kills this process moments later (fresh container
+  // hydrates from Redis and this record is gone). If Redis is genuinely
+  // unreachable, roll back the local copy and tell the customer to retry
+  // instead of silently reporting success for an account that won't survive
+  // the next restart/deploy.
+  const persisted = await writeCustomers(customers);
+  if (!persisted) {
+    await writeArrayFile(customersPath, customers.filter((entry) => entry.id !== customer.id));
+    return res.status(503).json({ error: 'We could not save your account right now. Please try again in a minute.' });
+  }
 
   res.status(201).json({
     ok: true,
