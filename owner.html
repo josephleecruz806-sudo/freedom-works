@@ -1464,7 +1464,9 @@
             if (/^https?:/i.test(raw)) return raw;
 
             function extractFileName(value) {
-                const cleaned = String(value || '').split('?')[0].split('#')[0];
+                // Only strip a real query string, not "#": some design filenames
+                // (e.g. "#44.png") legitimately start with a hash character.
+                const cleaned = String(value || '').split('?')[0];
                 const leaf = cleaned.split('/').pop() || '';
                 try {
                     return decodeURIComponent(leaf).trim();
