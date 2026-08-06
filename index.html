@@ -8237,9 +8237,9 @@
             { src: '#44.png', name: '#44', price: 24.99, cat: 'Print Files' },
             { src: '#444.png', name: '#444', price: 24.99, cat: 'Print Files' },
             { src: '#9.png', name: '#9', price: 24.99, cat: 'Print Files' },
-            { src: '100D_M_CT127_PNG.png', name: '100D M CT127 PNG', price: 24.99, cat: 'Holidays' },
-            { src: '100D_M_CT35_PNG.png', name: '100D M CT35 PNG', price: 24.99, cat: 'Holidays' },
-            { src: '100D_M_CT46_PNG_1.png', name: '100D M CT46 PNG 1', price: 24.99, cat: 'Holidays' },
+            { src: '100D_M_CT127_PNG.png', name: '100D M CT127 PNG', price: 24.99, cat: '100 Days of School' },
+            { src: '100D_M_CT35_PNG.png', name: '100D M CT35 PNG', price: 24.99, cat: '100 Days of School' },
+            { src: '100D_M_CT46_PNG_1.png', name: '100D M CT46 PNG 1', price: 24.99, cat: '100 Days of School' },
             { src: '14.png', name: '14', price: 24.99, cat: 'Print Files' },
             { src: '4 (1) copy.png', name: '4 (1) copy', price: 24.99, cat: 'Print Files' },
             { src: '40circle.png', name: '40circle', price: 24.99, cat: 'Print Files' },
@@ -18836,7 +18836,10 @@
     <script>
         (function() {
             function setupRevealFx() {
-                const targets = document.querySelectorAll('.product, .custom-design, .cart, footer, #qp-all-gallery');
+                // #qp-all-gallery is excluded: it grows far taller than the viewport once
+                // populated, so the 0.14 intersection threshold below could never be met
+                // and the whole gallery would stay stuck at opacity:0 forever.
+                const targets = document.querySelectorAll('.product, .custom-design, .cart, footer');
                 targets.forEach((el, index) => {
                     el.classList.add('fx-reveal');
                     el.style.transitionDelay = Math.min(index * 0.06, 0.32).toFixed(2) + 's';
