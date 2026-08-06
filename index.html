@@ -9908,14 +9908,17 @@
             setQuickPickGridPrintSize(axis, current + (Number(delta) || 0));
         }
 
-        function setQuickPickGridColor(color, el) {
+        function setQuickPickGridColor(color, el, options) {
             const selectedSize = (document.getElementById('qp-grid-shirt-size')?.value || '').trim();
             const swatchColorName = String(el?.getAttribute?.('title') || document.querySelector('#qp-grid-color-swatches .color-swatch[data-color="' + color + '"]')?.getAttribute('title') || '').trim();
             if (!ensureInventoryAvailableForSelection(selectedSize, swatchColorName)) {
                 return;
             }
             activeQuickPickGridColor = color || '#ffffff';
-            quickPickGridColorPicked = true;
+            // Auto-defaulted colors (design load / upload) only preview a color; they don't count as the customer's pick.
+            if (!options || options.markPicked !== false) {
+                quickPickGridColorPicked = true;
+            }
             document.querySelectorAll('#qp-grid-color-swatches .color-swatch').forEach(function(swatch) {
                 swatch.classList.remove('active');
             });
@@ -10024,7 +10027,7 @@
             // Keep the same pricing flow used by Quick Pick grid by using the same print element and fee helpers.
             applyQuickPickSaleSizeOptions(null);
             if (!quickPickGridColorPicked) {
-                setQuickPickGridColor(activeQuickPickGridColor || '#ffffff');
+                setQuickPickGridColor(activeQuickPickGridColor || '#ffffff', null, { markPicked: false });
             }
 
             const reader = new FileReader();
@@ -10092,7 +10095,7 @@
             }
 
             const colorToUse = String(activeShirtColor || '#ffffff').trim() || '#ffffff';
-            setQuickPickGridColor(colorToUse);
+            setQuickPickGridColor(colorToUse, null, { markPicked: false });
 
             const candidates = getAssetUrlCandidates(src);
             let candidateIndex = 0;
