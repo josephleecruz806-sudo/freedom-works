@@ -1488,6 +1488,56 @@ function resolveSourceImagePath(requestedRaw) {
   return match ? path.join(__dirname, match) : '';
 }
 
+function getThumbCachePath(sourcePath, width) {
+  const cacheKey = crypto.createHash('md5').update(sourcePath + '|' + width).digest('hex') + '.webp';
+  return path.join(THUMB_CACHE_DIR, cacheKey);
+}
+
+async function generateThumbBuffer(sourcePath, width) {
+  return sharp(sourcePath)
+    .resize({ width, withoutEnlargement: true })
+    .webp({ quality: 82 })
+    .toBuffer();
+}
+
+// Some original design files are 20MB+ print-resolution PNGs, so decoding
+// them with sharp on a customer's first request is slow - and Render's free
+// plan wipes .thumb-cache/ on every deploy/restart, so that slow first-decode
+// happens again after every deploy. To fix this, pre-generate (and disk
+// cache) a thumbnail for every catalog design in the background right after
+// boot, with limited concurrency so it doesn't spike memory/CPU, instead of
+// waiting for real visitors to trigger the slow path.
+const THUMB_WARM_WIDTH = 480;
+const THUMB_WARM_CONCURRENCY = 3;
+
+async function warmThumbCache() {
+  if (!sharp) return;
+  const files = getDesignCatalogFiles();
+  let nextIndex = 0;
+
+  async function worker() {
+    while (nextIndex < files.length) {
+      const file = files[nextIndex];
+      nextIndex += 1;
+      const sourcePath = path.join(__dirname, file);
+      const cachedPath = getThumbCachePath(sourcePath, THUMB_WARM_WIDTH);
+      if (fs.existsSync(cachedPath)) continue;
+      try {
+        const buffer = await generateThumbBuffer(sourcePath, THUMB_WARM_WIDTH);
+        await fs.promises.writeFile(cachedPath, buffer);
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.error(`Thumbnail warmup failed for ${file}:`, err.message || err);
+      }
+    }
+  }
+
+  const workers = Array.from({ length: THUMB_WARM_CONCURRENCY }, () => worker());
+  await Promise.all(workers);
+  // eslint-disable-next-line no-console
+  console.log(`Thumbnail cache warmup complete (${files.length} designs checked).`);
+}
+
 // Serves a resized, web-optimized copy of a design image so browsing/catalog
 // grids don't have to download the full, print-resolution original (some of
 // which are 20MB+). Falls back to the original file if sharp is unavailable
@@ -1504,8 +1554,7 @@ app.get('/thumb/:name', async (req, res) => {
   }
 
   const width = Math.min(1200, Math.max(60, parseInt(req.query.w, 10) || 480));
-  const cacheKey = crypto.createHash('md5').update(sourcePath + '|' + width).digest('hex') + '.webp';
-  const cachedPath = path.join(THUMB_CACHE_DIR, cacheKey);
+  const cachedPath = getThumbCachePath(sourcePath, width);
 
   if (fs.existsSync(cachedPath)) {
     setImageCacheHeaders(res);
@@ -1514,10 +1563,7 @@ app.get('/thumb/:name', async (req, res) => {
   }
 
   try {
-    const buffer = await sharp(sourcePath)
-      .resize({ width, withoutEnlargement: true })
-      .webp({ quality: 82 })
-      .toBuffer();
+    const buffer = await generateThumbBuffer(sourcePath, width);
     fs.writeFile(cachedPath, buffer, () => {});
     setImageCacheHeaders(res);
     res.type('image/webp');
@@ -2194,6 +2240,13 @@ async function startServer() {
   app.listen(PORT, () => {
     // eslint-disable-next-line no-console
     console.log(`Server running at http://localhost:${PORT}`);
+  });
+
+  // Fire-and-forget: don't block server startup/requests on this, it just
+  // fills in the thumbnail cache in the background over the next moments.
+  warmThumbCache().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Thumbnail warmup error:', err.message || err);
   });
 }
 
