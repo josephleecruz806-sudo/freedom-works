@@ -15,6 +15,12 @@ try {
 let sharp = null;
 try {
   sharp = require('sharp');
+  // Render's free plan only has 512MB RAM. Decoding a single 20MB+ print PNG
+  // can briefly use hundreds of MB, so cap libvips to one operation at a time
+  // and shrink its internal cache instead of letting it run wide-open and
+  // risk an out-of-memory crash of the whole process.
+  sharp.concurrency(1);
+  sharp.cache({ memory: 32, files: 0, items: 50 });
 } catch (_) {
   sharp = null;
 }
@@ -1508,32 +1514,33 @@ async function generateThumbBuffer(sourcePath, width) {
 // boot, with limited concurrency so it doesn't spike memory/CPU, instead of
 // waiting for real visitors to trigger the slow path.
 const THUMB_WARM_WIDTH = 480;
-const THUMB_WARM_CONCURRENCY = 3;
+const THUMB_WARM_DELAY_MS = 300;
 
+function wait(ms) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+// Processed strictly one design at a time (no concurrency) with a short
+// pause in between - a previous version decoded several 20MB+ originals in
+// parallel and pushed Render's free 512MB instance out of memory, crashing
+// the whole server. Slower to fully warm, but it can never take the site down.
 async function warmThumbCache() {
   if (!sharp) return;
   const files = getDesignCatalogFiles();
-  let nextIndex = 0;
 
-  async function worker() {
-    while (nextIndex < files.length) {
-      const file = files[nextIndex];
-      nextIndex += 1;
-      const sourcePath = path.join(__dirname, file);
-      const cachedPath = getThumbCachePath(sourcePath, THUMB_WARM_WIDTH);
-      if (fs.existsSync(cachedPath)) continue;
-      try {
-        const buffer = await generateThumbBuffer(sourcePath, THUMB_WARM_WIDTH);
-        await fs.promises.writeFile(cachedPath, buffer);
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.error(`Thumbnail warmup failed for ${file}:`, err.message || err);
-      }
+  for (const file of files) {
+    const sourcePath = path.join(__dirname, file);
+    const cachedPath = getThumbCachePath(sourcePath, THUMB_WARM_WIDTH);
+    if (fs.existsSync(cachedPath)) continue;
+    try {
+      const buffer = await generateThumbBuffer(sourcePath, THUMB_WARM_WIDTH);
+      await fs.promises.writeFile(cachedPath, buffer);
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error(`Thumbnail warmup failed for ${file}:`, err.message || err);
     }
+    await wait(THUMB_WARM_DELAY_MS);
   }
-
-  const workers = Array.from({ length: THUMB_WARM_CONCURRENCY }, () => worker());
-  await Promise.all(workers);
   // eslint-disable-next-line no-console
   console.log(`Thumbnail cache warmup complete (${files.length} designs checked).`);
 }
