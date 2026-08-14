@@ -1161,12 +1161,13 @@
                                     <input id="admin-item-notes" type="text" placeholder="Main adult black shirt stock">
                                 </div>
                                 <div class="stripe-field" style="grid-column:1 / -1;">
-                                    <label>Color Stock</label>
+                                    <label>Color &amp; Size Stock</label>
                                     <p class="admin-design-picker-note" id="admin-color-stock-summary">No colors added yet.</p>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
-                                        <select id="admin-color-stock-name" style="max-width:220px;"></select>
+                                        <select id="admin-color-stock-name" style="max-width:200px;"></select>
+                                        <select id="admin-color-stock-size" style="max-width:160px;"></select>
                                         <input id="admin-color-stock-count" type="number" min="0" step="1" placeholder="Stock #" style="max-width:120px;">
-                                        <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add Color</button>
+                                        <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add Color + Size</button>
                                     </div>
                                     <div id="admin-color-stock-list"></div>
                                 </div>
@@ -1632,7 +1633,9 @@
             source.forEach(function(entry) {
                 const color = String(entry && entry.color || '').trim();
                 if (!color) return;
-                const key = color.toLowerCase();
+                const size = String(entry && entry.size || '').trim();
+                const normalizedSize = ADMIN_INVENTORY_SIZE_OPTIONS.includes(size) ? size : '';
+                const key = color.toLowerCase() + '|' + normalizedSize.toLowerCase();
                 const outOfStock = entry && entry.outOfStock === true;
                 const stock = Math.max(0, Math.round(Number(entry && entry.stock || 0)) || 0);
                 const prior = seen.get(key);
@@ -1640,7 +1643,7 @@
                     prior.outOfStock = prior.outOfStock || outOfStock;
                     prior.stock += stock;
                 } else {
-                    seen.set(key, { color: color, stock: stock, outOfStock: outOfStock });
+                    seen.set(key, { color: color, size: normalizedSize, stock: stock, outOfStock: outOfStock });
                 }
             });
             return Array.from(seen.values());
@@ -1655,17 +1658,13 @@
 
         function populateAdminColorStockSelect() {
             const selectEl = document.getElementById('admin-color-stock-name');
-            if (!selectEl) return;
-            const usedColors = new Set(adminColorStockEntries.map(function(entry) { return String(entry.color || '').toLowerCase(); }));
-            const available = ADMIN_WEBSITE_COLORS.filter(function(entry) { return !usedColors.has(entry.name.toLowerCase()); });
-            if (!available.length) {
-                selectEl.innerHTML = '<option value="">All website colors added</option>';
-                selectEl.disabled = true;
-                return;
-            }
-            selectEl.disabled = false;
-            selectEl.innerHTML = available.map(function(entry) {
+            const sizeSelectEl = document.getElementById('admin-color-stock-size');
+            if (!selectEl || !sizeSelectEl) return;
+            selectEl.innerHTML = ADMIN_WEBSITE_COLORS.map(function(entry) {
                 return '<option value="' + escapeHtml(entry.name) + '">' + escapeHtml(entry.name) + '</option>';
+            }).join('');
+            sizeSelectEl.innerHTML = ADMIN_INVENTORY_SIZE_OPTIONS.map(function(size) {
+                return '<option value="' + escapeHtml(size) + '">' + escapeHtml(getAdminSizeLabel(size)) + '</option>';
             }).join('');
         }
 
@@ -1677,18 +1676,19 @@
             populateAdminColorStockSelect();
 
             if (!adminColorStockEntries.length) {
-                listEl.innerHTML = '<div class="admin-empty">Add a website color and how many are in stock.</div>';
+                listEl.innerHTML = '<div class="admin-empty">Add a website color, size, and how many are in stock.</div>';
                 summaryEl.textContent = 'No colors added yet.';
                 return;
             }
 
             const totalUnits = adminColorStockEntries.reduce(function(sum, entry) { return sum + entry.stock; }, 0);
-            summaryEl.textContent = adminColorStockEntries.length + ' color' + (adminColorStockEntries.length === 1 ? '' : 's') + ' tracked, ' + totalUnits + ' total shirts in stock.';
+            summaryEl.textContent = adminColorStockEntries.length + ' color/size combo' + (adminColorStockEntries.length === 1 ? '' : 's') + ' tracked, ' + totalUnits + ' total shirts in stock.';
             listEl.innerHTML = adminColorStockEntries.map(function(entry, index) {
                 const isOut = entry.outOfStock || entry.stock <= 0;
                 return '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;margin-bottom:8px;">'
                     + '<span style="display:inline-block;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);background:' + escapeHtml(getAdminWebsiteColorHex(entry.color)) + ';flex:none;"></span>'
                     + '<strong style="min-width:110px;">' + escapeHtml(entry.color) + '</strong>'
+                    + '<span class="admin-stock-pill" style="background:rgba(255,255,255,0.08);">' + escapeHtml(entry.size ? getAdminSizeLabel(entry.size) : 'All sizes') + '</span>'
                     + '<label style="display:flex;align-items:center;gap:6px;">Stock: <input type="number" min="0" step="1" value="' + entry.stock + '" data-color-stock-index="' + index + '" style="max-width:90px;"></label>'
                     + '<label style="display:flex;align-items:center;gap:6px;"><input type="checkbox" data-color-out-index="' + index + '"' + (entry.outOfStock ? ' checked' : '') + '> Out of stock</label>'
                     + (isOut ? '<span class="admin-stock-pill out">Out of stock</span>' : '')
@@ -1726,15 +1726,21 @@
 
         function addAdminColorStockEntryFromInput() {
             const selectEl = document.getElementById('admin-color-stock-name');
+            const sizeSelectEl = document.getElementById('admin-color-stock-size');
             const countEl = document.getElementById('admin-color-stock-count');
             const colorName = String(selectEl && selectEl.value || '').trim();
-            if (!colorName) return;
+            const size = String(sizeSelectEl && sizeSelectEl.value || '').trim();
+            if (!colorName || !size) return;
             const stock = Math.max(0, Math.round(Number(countEl && countEl.value || 0)) || 0);
             const alreadyExists = adminColorStockEntries.some(function(entry) {
-                return String(entry.color || '').trim().toLowerCase() === colorName.toLowerCase();
+                return String(entry.color || '').trim().toLowerCase() === colorName.toLowerCase()
+                    && String(entry.size || '').trim().toLowerCase() === size.toLowerCase();
             });
             if (!alreadyExists) {
-                adminColorStockEntries = adminColorStockEntries.concat({ color: colorName, stock: stock, outOfStock: false });
+                adminColorStockEntries = adminColorStockEntries.concat({ color: colorName, size: size, stock: stock, outOfStock: false });
+            } else {
+                const statusEl = document.getElementById('admin-inventory-status');
+                if (statusEl) statusEl.textContent = 'That color and size combo is already added - edit its stock number below instead.';
             }
             if (countEl) countEl.value = '';
             renderAdminColorStockEditor();
@@ -1745,7 +1751,8 @@
             if (!entries.length) return 'No colors tracked';
             return entries.map(function(entry) {
                 const isOut = entry.outOfStock || entry.stock <= 0;
-                return entry.color + ': ' + (isOut ? 'Out of stock' : (entry.stock + ' in stock'));
+                const sizeLabel = entry.size ? ' (' + getAdminSizeLabel(entry.size) + ')' : '';
+                return entry.color + sizeLabel + ': ' + (isOut ? 'Out of stock' : (entry.stock + ' in stock'));
             }).join(' | ');
         }
 

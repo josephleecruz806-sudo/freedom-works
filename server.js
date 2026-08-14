@@ -1108,17 +1108,22 @@ function normalizeInventoryColorStockEntries(values) {
   for (const value of values) {
     const color = String(value?.color || '').trim();
     if (!color) continue;
-    const key = color.toLowerCase();
+    const rawSize = String(value?.size || '').trim();
+    const size = INVENTORY_SIZES.has(rawSize) ? rawSize : '';
+    const key = color.toLowerCase() + '|' + size.toLowerCase();
     if (seen.has(key)) continue;
     seen.add(key);
+    // Legacy entries (added before per-size tracking existed) may still
+    // carry a list of sizes manually flagged out of stock for that color.
     const outOfStockSizes = Array.isArray(value?.outOfStockSizes)
       ? Array.from(new Set(value.outOfStockSizes
-          .map((size) => String(size || '').trim())
-          .filter((size) => INVENTORY_SIZES.has(size))))
+          .map((s) => String(s || '').trim())
+          .filter((s) => INVENTORY_SIZES.has(s))))
       : [];
     const stock = Math.max(0, Math.round(Number(value?.stock || 0)) || 0);
     entries.push({
       color,
+      size,
       stock,
       outOfStock: value?.outOfStock === true,
       outOfStockSizes,
@@ -1180,25 +1185,50 @@ function getPublicInventoryStatus() {
       const color = String(entry?.color || '').trim();
       if (!color) return;
       const key = color.toLowerCase();
-      const existing = colorMap.get(key) || { color, stock: 0, outOfStock: false, outOfStockSizes: [] };
-      const entrySizes = Array.isArray(entry?.outOfStockSizes)
-        ? entry.outOfStockSizes
-            .map((size) => String(size || '').trim())
-            .filter((size) => INVENTORY_SIZES.has(size))
-        : [];
-      existing.stock += Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
-      existing.outOfStock = existing.outOfStock || entry?.outOfStock === true;
-      existing.outOfStockSizes = Array.from(new Set(existing.outOfStockSizes.concat(entrySizes)));
+      const existing = colorMap.get(key) || { color, stock: 0, outOfStock: false, sizeMap: new Map() };
+      const size = String(entry?.size || '').trim();
+      const entryStock = Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
+
+      if (size) {
+        existing.stock += entryStock;
+        const sizeEntry = existing.sizeMap.get(size) || { stock: 0, outOfStock: false };
+        sizeEntry.stock += entryStock;
+        sizeEntry.outOfStock = sizeEntry.outOfStock || entry?.outOfStock === true;
+        existing.sizeMap.set(size, sizeEntry);
+      } else {
+        // Legacy whole-color entry (no size attached) - keeps working the way
+        // it always has, applying its flags across the whole color.
+        existing.outOfStock = existing.outOfStock || entry?.outOfStock === true;
+        existing.stock += entryStock;
+        const legacySizes = Array.isArray(entry?.outOfStockSizes) ? entry.outOfStockSizes : [];
+        legacySizes.forEach((legacySize) => {
+          const sizeEntry = existing.sizeMap.get(legacySize) || { stock: 0, outOfStock: false };
+          sizeEntry.outOfStock = true;
+          existing.sizeMap.set(legacySize, sizeEntry);
+        });
+      }
+
       colorMap.set(key, existing);
     });
   });
 
-  const colors = Array.from(colorMap.values()).map((entry) => ({
-    ...entry,
-    // A color reads as out of stock either because the owner manually
-    // flagged it, or because the running numeric count has hit zero.
-    outOfStock: entry.outOfStock || entry.stock <= 0,
-  }));
+  const colors = Array.from(colorMap.values()).map((entry) => {
+    const sizes = Array.from(entry.sizeMap.entries()).map(([size, sizeData]) => ({
+      size,
+      stock: sizeData.stock,
+      // A size reads as out of stock either because the owner manually
+      // flagged it, or because its own running numeric count hit zero.
+      outOfStock: sizeData.outOfStock || sizeData.stock <= 0,
+    }));
+    const outOfStockSizes = sizes.filter((sizeEntry) => sizeEntry.outOfStock).map((sizeEntry) => sizeEntry.size);
+    return {
+      color: entry.color,
+      stock: entry.stock,
+      outOfStock: entry.outOfStock || (sizes.length > 0 && entry.stock <= 0),
+      outOfStockSizes,
+      sizes,
+    };
+  });
 
   return {
     updatedAt: latestUpdatedAt,
@@ -1207,8 +1237,8 @@ function getPublicInventoryStatus() {
 }
 
 // Called after every order is placed so stock keeps pace with sales without
-// the owner having to manually subtract anything - selling 2 pink shirts
-// takes 2 off the Safety Pink color count automatically.
+// the owner having to manually subtract anything - selling 2 pink shirts in
+// size Adult M takes 2 off the Safety Pink / Adult M count automatically.
 async function decrementInventoryForOrder(order) {
   const items = Array.isArray(order?.items) ? order.items : [];
   if (!items.length) return;
@@ -1217,8 +1247,9 @@ async function decrementInventoryForOrder(order) {
   items.forEach((item) => {
     const colorName = String(item?.shirtColorName || '').trim();
     if (!colorName) return;
-    const key = colorName.toLowerCase();
+    const size = String(item?.shirtSize || '').trim();
     const quantity = Math.max(1, Math.round(Number(item?.quantity || item?.qty || 1)) || 1);
+    const key = colorName.toLowerCase() + '|' + size.toLowerCase();
     tally.set(key, (tally.get(key) || 0) + quantity);
   });
   if (!tally.size) return;
@@ -1228,7 +1259,9 @@ async function decrementInventoryForOrder(order) {
   inventory.forEach((invItem) => {
     const entries = Array.isArray(invItem?.colorStock) ? invItem.colorStock : [];
     entries.forEach((entry) => {
-      const key = String(entry?.color || '').trim().toLowerCase();
+      const color = String(entry?.color || '').trim().toLowerCase();
+      const size = String(entry?.size || '').trim().toLowerCase();
+      const key = color + '|' + size;
       const orderedQty = tally.get(key);
       if (!orderedQty) return;
       const currentStock = Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
