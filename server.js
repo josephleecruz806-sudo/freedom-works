@@ -471,6 +471,60 @@ function getSanitizedDesignSales() {
   return getActiveDesignSales().map(sanitizeDesignSale);
 }
 
+// --- Automatic daily random sale ------------------------------------------
+// Every 24 hours, put 10 random designs on sale for the owner with zero
+// manual effort. A batch stays active until its 24-hour window expires
+// (tracked via each record's own endsAt, same as owner-created sales), at
+// which point the next periodic check below generates a fresh batch.
+const AUTO_SALE_SOURCE = 'auto-random';
+const AUTO_SALE_BATCH_SIZE = 10;
+const AUTO_SALE_PERCENT = 20;
+const AUTO_SALE_DURATION_MS = 24 * 60 * 60 * 1000;
+const AUTO_SALE_CHECK_INTERVAL_MS = 15 * 60 * 1000;
+
+function pickRandomDesigns(files, count) {
+  const pool = files.slice();
+  const picked = [];
+  while (pool.length && picked.length < count) {
+    const idx = Math.floor(Math.random() * pool.length);
+    picked.push(pool.splice(idx, 1)[0]);
+  }
+  return picked;
+}
+
+async function ensureRandomDailySaleBatch() {
+  const current = getActiveDesignSales();
+  if (current.some((record) => record?.source === AUTO_SALE_SOURCE)) return;
+
+  const catalogFiles = getDesignCatalogFiles();
+  if (!catalogFiles.length) return;
+
+  const activeSaleSrcs = new Set(current.map((record) => normalizeDesignFileName(record?.src || '')));
+  const availableFiles = catalogFiles.filter((file) => !activeSaleSrcs.has(normalizeDesignFileName(file)));
+  const sourcePool = availableFiles.length >= AUTO_SALE_BATCH_SIZE ? availableFiles : catalogFiles;
+  const chosen = pickRandomDesigns(sourcePool, AUTO_SALE_BATCH_SIZE);
+  if (!chosen.length) return;
+
+  const now = new Date();
+  const endsAt = new Date(now.getTime() + AUTO_SALE_DURATION_MS);
+  const newBatch = chosen.map((src, index) => ({
+    id: `auto_sale_${now.getTime()}_${index}`,
+    src,
+    source: AUTO_SALE_SOURCE,
+    offerType: 'percentage',
+    salePercent: AUTO_SALE_PERCENT,
+    shirtSizes: [],
+    startsAt: now.toISOString(),
+    endsAt: endsAt.toISOString(),
+    createdAt: now.toISOString(),
+    updatedAt: now.toISOString(),
+  }));
+
+  await writeDesignSales([...newBatch, ...current]);
+  // eslint-disable-next-line no-console
+  console.log(`Auto random sale: put ${newBatch.length} designs on sale until ${endsAt.toISOString()}.`);
+}
+
 function normalizeEmail(value) {
   return String(value || '').trim().toLowerCase();
 }
@@ -2125,6 +2179,17 @@ async function startServer() {
     // eslint-disable-next-line no-console
     console.error('Upstash startup hydrate error:', err.message || err);
   });
+
+  await ensureRandomDailySaleBatch().catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Auto random sale generation error:', err.message || err);
+  });
+  setInterval(() => {
+    ensureRandomDailySaleBatch().catch((err) => {
+      // eslint-disable-next-line no-console
+      console.error('Auto random sale generation error:', err.message || err);
+    });
+  }, AUTO_SALE_CHECK_INTERVAL_MS);
 
   app.listen(PORT, () => {
     // eslint-disable-next-line no-console
