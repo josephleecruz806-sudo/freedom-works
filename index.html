@@ -8386,8 +8386,9 @@
             }, new Map());
         }
 
-        function mergeCatalogFiles(files) {
+        function mergeCatalogFiles(files, names) {
             const overrideMap = buildCatalogOverrideMap();
+            const nameMap = names && typeof names === 'object' ? names : {};
             const availableKeys = Array.isArray(files)
                 ? new Set(files.map((file) => getCatalogAssetKey(file)))
                 : null;
@@ -8399,7 +8400,8 @@
                 if (!key || seen.has(key)) return;
                 if (qpExcludedCatalogFiles.has(key)) return;
                 if (availableKeys && !availableKeys.has(key)) return;
-                merged.push({ ...item });
+                const customName = String(nameMap[key] || '').trim();
+                merged.push(customName ? { ...item, name: customName, customName } : { ...item });
                 seen.add(key);
             });
 
@@ -8409,14 +8411,16 @@
                 const key = getCatalogAssetKey(file);
                 if (!key || seen.has(key) || !shouldAutoIncludeCatalogFile(file)) return;
                 const override = overrideMap.get(key);
+                const customName = String(nameMap[key] || '').trim();
                 if (override) {
-                    merged.push({ ...override });
+                    merged.push(customName ? { ...override, name: customName, customName } : { ...override });
                 } else {
                     merged.push({
                         src: file,
-                        name: formatAutoCatalogName(file),
+                        name: customName || formatAutoCatalogName(file),
                         price: 24.99,
-                        cat: inferCatalogCategory(file)
+                        cat: inferCatalogCategory(file),
+                        ...(customName ? { customName } : {})
                     });
                 }
                 seen.add(key);
@@ -8987,7 +8991,7 @@
         async function initializeQuickPickCatalog() {
             try {
                 const payload = await loadDesignCatalogPayload();
-                qpGallery = applyCatalogSales(mergeCatalogFiles(payload?.files), payload?.sales);
+                qpGallery = applyCatalogSales(mergeCatalogFiles(payload?.files, payload?.names), payload?.sales);
             } catch (_) {
                 qpGallery = applyCatalogSales(mergeCatalogFiles(null), null);
             }
@@ -9011,6 +9015,8 @@
         }
 
         function getCatalogDisplayLabel(item, mode) {
+            const customName = String(item?.customName || '').trim();
+            if (customName) return customName;
             const category = String(item?.cat || 'Featured');
             const miscNumber = getCategoryItemNumber(item);
             if (miscNumber !== null) {

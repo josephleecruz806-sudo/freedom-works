@@ -1181,6 +1181,48 @@
                         <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
                             <div class="admin-panel-head">
                                 <div>
+                                    <h3 class="admin-section-title">Add New Designs</h3>
+                                    <p>Upload design images straight from your computer to add them to the storefront gallery. No code needed.</p>
+                                </div>
+                            </div>
+                            <div class="stripe-field">
+                                <label for="admin-design-upload-input">Design Image(s)</label>
+                                <input id="admin-design-upload-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif,image/svg+xml,image/avif" multiple>
+                            </div>
+                            <div class="admin-form-actions">
+                                <button id="admin-design-upload-btn" class="owner-primary-btn" type="button">Upload To Gallery</button>
+                            </div>
+                            <div id="admin-design-upload-status" role="alert"></div>
+
+                            <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+                                <div class="admin-panel-head">
+                                    <div>
+                                        <h3 class="admin-section-title">Name A Design</h3>
+                                        <p>Pick a design and give it the name customers will see on the storefront gallery.</p>
+                                    </div>
+                                </div>
+                                <div class="admin-form-grid">
+                                    <div class="stripe-field">
+                                        <label for="admin-design-rename-select">Design</label>
+                                        <select id="admin-design-rename-select">
+                                            <option value="">Loading designs...</option>
+                                        </select>
+                                    </div>
+                                    <div class="stripe-field">
+                                        <label for="admin-design-rename-input">Display Name</label>
+                                        <input id="admin-design-rename-input" type="text" maxlength="80" placeholder="Ex: Neon Skull Tee">
+                                    </div>
+                                </div>
+                                <div class="admin-form-actions">
+                                    <button id="admin-design-rename-btn" class="owner-primary-btn" type="button">Save Name</button>
+                                </div>
+                                <div id="admin-design-rename-status" role="alert"></div>
+                            </div>
+                        </div>
+
+                        <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
+                            <div class="admin-panel-head">
+                                <div>
                                     <h3 class="admin-section-title">Special Offers</h3>
                                     <p>Build cleaner promotions for the storefront with fixed-price, percentage, or bundle-style offers.</p>
                                 </div>
@@ -1302,6 +1344,8 @@
         const ADMIN_DASHBOARD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/dashboard';
         const ADMIN_INVENTORY_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/inventory';
         const ADMIN_DESIGN_SALES_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/design-sales';
+        const ADMIN_DESIGN_UPLOAD_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/design-catalog/upload';
+        const ADMIN_DESIGN_NAME_ENDPOINT = ADMIN_AUTH_ENDPOINT + '/design-catalog/name';
         const DESIGN_CATALOG_ENDPOINT = '/api/design-catalog';
         const API_BASE_STORAGE_KEYS = ['fwApiBase', 'fw_api_base'];
         const API_BASE_FALLBACKS = ['https://freedom-works.onrender.com'];
@@ -1441,6 +1485,7 @@
         let adminSession = null;
         let adminDashboardState = { inventory: [], inventorySummary: {}, sales: {}, designSales: [], customers: [] };
         let adminCatalogFiles = [];
+        let adminDesignNames = {};
         let adminSelectedDesignFiles = [];
         let adminSelectedSaleSizes = [];
         let adminColorStockEntries = [];
@@ -2581,7 +2626,29 @@
             adminCatalogFiles = Array.isArray(data.files) ? data.files.slice().sort(function(left, right) {
                 return String(left).localeCompare(String(right), undefined, { sensitivity: 'base' });
             }) : [];
+            adminDesignNames = (data.names && typeof data.names === 'object') ? data.names : {};
             populateAdminDesignSaleOptions();
+            populateAdminDesignRenameOptions();
+        }
+
+        function populateAdminDesignRenameOptions() {
+            const selectEl = document.getElementById('admin-design-rename-select');
+            const inputEl = document.getElementById('admin-design-rename-input');
+            const saveBtn = document.getElementById('admin-design-rename-btn');
+            if (!selectEl || !inputEl) return;
+            const previousValue = selectEl.value;
+            if (!Array.isArray(adminCatalogFiles) || !adminCatalogFiles.length) {
+                selectEl.innerHTML = '<option value="">No catalog designs available</option>';
+                inputEl.value = '';
+                if (saveBtn) saveBtn.disabled = true;
+                return;
+            }
+            if (saveBtn) saveBtn.disabled = false;
+            selectEl.innerHTML = '<option value="">Choose a design</option>' + adminCatalogFiles.map(function(file) {
+                return '<option value="' + escapeHtml(file) + '">' + escapeHtml(formatAdminDesignLabel(file)) + '</option>';
+            }).join('');
+            selectEl.value = adminCatalogFiles.includes(previousValue) ? previousValue : '';
+            inputEl.value = selectEl.value ? String(adminDesignNames[selectEl.value.toLowerCase()] || '') : '';
         }
 
         async function loadAdminDashboard() {
@@ -2847,6 +2914,98 @@
             if (event.key === 'Enter') {
                 event.preventDefault();
                 addAdminColorStockEntryFromInput();
+            }
+        });
+
+        function readFileAsDataUrl(file) {
+            return new Promise(function(resolve, reject) {
+                const reader = new FileReader();
+                reader.onload = function() { resolve(String(reader.result || '')); };
+                reader.onerror = function() { reject(new Error('Could not read ' + (file.name || 'file') + '.')); };
+                reader.readAsDataURL(file);
+            });
+        }
+
+        document.getElementById('admin-design-upload-btn').addEventListener('click', async function() {
+            const inputEl = document.getElementById('admin-design-upload-input');
+            const statusEl = document.getElementById('admin-design-upload-status');
+            const uploadBtn = document.getElementById('admin-design-upload-btn');
+            const files = Array.from((inputEl && inputEl.files) || []);
+            statusEl.textContent = '';
+            statusEl.classList.remove('success');
+            if (!files.length) {
+                statusEl.textContent = 'Choose at least one image to upload.';
+                return;
+            }
+            uploadBtn.disabled = true;
+            statusEl.textContent = 'Uploading ' + files.length + ' design' + (files.length > 1 ? 's' : '') + '...';
+            try {
+                const payloadFiles = await Promise.all(files.map(async function(file) {
+                    return { name: file.name, dataUrl: await readFileAsDataUrl(file) };
+                }));
+                const resp = await fetchWithApiCandidates(ADMIN_DESIGN_UPLOAD_ENDPOINT, {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify({ files: payloadFiles })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || (Array.isArray(data.errors) && data.errors[0]) || 'Unable to upload designs.');
+                await loadAdminDesignCatalog();
+                inputEl.value = '';
+                const savedCount = Array.isArray(data.saved) ? data.saved.length : 0;
+                statusEl.textContent = savedCount
+                    ? (savedCount + ' design' + (savedCount > 1 ? 's' : '') + ' added to the gallery.' + (Array.isArray(data.errors) && data.errors.length ? ' (' + data.errors.length + ' skipped)' : ''))
+                    : 'No designs were uploaded.';
+                if (savedCount) statusEl.classList.add('success');
+            } catch (err) {
+                statusEl.textContent = err.message || 'Unable to upload designs.';
+                statusEl.classList.remove('success');
+            } finally {
+                uploadBtn.disabled = false;
+            }
+        });
+
+        document.getElementById('admin-design-rename-select').addEventListener('change', function() {
+            const inputEl = document.getElementById('admin-design-rename-input');
+            const selectedFile = this.value || '';
+            inputEl.value = selectedFile ? String(adminDesignNames[selectedFile.toLowerCase()] || '') : '';
+        });
+
+        document.getElementById('admin-design-rename-btn').addEventListener('click', async function() {
+            const selectEl = document.getElementById('admin-design-rename-select');
+            const inputEl = document.getElementById('admin-design-rename-input');
+            const statusEl = document.getElementById('admin-design-rename-status');
+            const saveBtn = document.getElementById('admin-design-rename-btn');
+            const src = selectEl.value || '';
+            const name = String(inputEl.value || '').trim();
+            statusEl.textContent = '';
+            statusEl.classList.remove('success');
+            if (!src) {
+                statusEl.textContent = 'Choose a design first.';
+                return;
+            }
+            if (!name) {
+                statusEl.textContent = 'Enter a display name.';
+                return;
+            }
+            saveBtn.disabled = true;
+            try {
+                const resp = await fetchWithApiCandidates(ADMIN_DESIGN_NAME_ENDPOINT, {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify({ src: src, name: name })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to save design name.');
+                await loadAdminDesignCatalog();
+                selectEl.value = src;
+                statusEl.textContent = 'Design name saved.';
+                statusEl.classList.add('success');
+            } catch (err) {
+                statusEl.textContent = err.message || 'Unable to save design name.';
+                statusEl.classList.remove('success');
+            } finally {
+                saveBtn.disabled = false;
             }
         });
 

@@ -46,6 +46,7 @@ const ordersPath = path.join(dataDir, 'orders.json');
 const customersPath = path.join(dataDir, 'customers.json');
 const inventoryPath = path.join(dataDir, 'inventory.json');
 const designSalesPath = path.join(dataDir, 'design-sales.json');
+const designNamesPath = path.join(dataDir, 'design-names.json');
 let emailTransport = null;
 const BASE_DESIGN_PRICE = 24.99;
 const DESIGN_SALE_SIZES = new Set([
@@ -114,6 +115,7 @@ function ensureDataFiles() {
   if (!fs.existsSync(customersPath)) fs.writeFileSync(customersPath, '[]', 'utf8');
   if (!fs.existsSync(inventoryPath)) fs.writeFileSync(inventoryPath, '[]', 'utf8');
   if (!fs.existsSync(designSalesPath)) fs.writeFileSync(designSalesPath, '[]', 'utf8');
+  if (!fs.existsSync(designNamesPath)) fs.writeFileSync(designNamesPath, '[]', 'utf8');
 }
 
 // --- Upstash Redis-backed durability layer ------------------------------
@@ -131,6 +133,7 @@ const REDIS_KEY_BY_PATH = new Map([
   [customersPath, 'freedom_works:customers'],
   [inventoryPath, 'freedom_works:inventory'],
   [designSalesPath, 'freedom_works:design_sales'],
+  [designNamesPath, 'freedom_works:design_names'],
 ]);
 
 function isRedisConfigured() {
@@ -279,6 +282,29 @@ function readDesignSales() {
 
 async function writeDesignSales(records) {
   return writeArrayFile(designSalesPath, records);
+}
+
+function readDesignNames() {
+  return readArrayFile(designNamesPath);
+}
+
+async function writeDesignNames(records) {
+  return writeArrayFile(designNamesPath, records);
+}
+
+function getDesignNameMap() {
+  const map = new Map();
+  readDesignNames().forEach((record) => {
+    const key = normalizeDesignFileName(record?.src || '').toLowerCase();
+    const name = normalizeTextField(record?.name || '', 80);
+    if (key && name) map.set(key, name);
+  });
+  return map;
+}
+
+function getSanitizedDesignNames() {
+  const map = getDesignNameMap();
+  return Object.fromEntries(map.entries());
 }
 
 function normalizeDesignFileName(value) {
@@ -566,17 +592,18 @@ function getDataUrlParts(dataUrl) {
   return { mimeType, base64Data };
 }
 
+const MIME_TYPE_TO_EXTENSION = {
+  'image/jpeg': 'jpg',
+  'image/jpg': 'jpg',
+  'image/png': 'png',
+  'image/webp': 'webp',
+  'image/gif': 'gif',
+  'image/svg+xml': 'svg',
+  'image/avif': 'avif',
+};
+
 function getExtensionForMimeType(mimeType) {
-  const map = {
-    'image/jpeg': 'jpg',
-    'image/jpg': 'jpg',
-    'image/png': 'png',
-    'image/webp': 'webp',
-    'image/gif': 'gif',
-    'image/svg+xml': 'svg',
-    'image/avif': 'avif',
-  };
-  return map[String(mimeType || '').toLowerCase()] || 'png';
+  return MIME_TYPE_TO_EXTENSION[String(mimeType || '').toLowerCase()] || 'png';
 }
 
 function sanitizeAttachmentBaseName(name, fallback) {
@@ -1542,6 +1569,7 @@ app.get('/api/design-catalog', (_req, res) => {
     imageCount: files.length,
     files,
     sales: getSanitizedDesignSales(),
+    names: getSanitizedDesignNames(),
   });
 });
 
@@ -1701,6 +1729,83 @@ app.delete('/api/admin/design-sales/:id', requireAdmin, async (req, res) => {
 
   await writeDesignSales(next);
   res.json({ ok: true });
+});
+
+// Lets the owner add new designs to the storefront gallery straight from the
+// dashboard: the browser reads the chosen image file(s) as base64 data URLs
+// and posts them here, we decode + save them as regular files in the app's
+// root folder, and they show up automatically since getDesignCatalogFiles()
+// just scans that folder for image files. No code changes needed per design.
+app.post('/api/admin/design-catalog/upload', requireAdmin, (req, res) => {
+  const uploads = Array.isArray(req.body?.files) ? req.body.files : [];
+  if (!uploads.length) {
+    return res.status(400).json({ error: 'Choose at least one image to upload.' });
+  }
+  if (uploads.length > 25) {
+    return res.status(400).json({ error: 'Upload up to 25 images at a time.' });
+  }
+
+  const existingNames = new Set(getImageIndex().keys());
+  const saved = [];
+  const errors = [];
+
+  for (const upload of uploads) {
+    const parts = getDataUrlParts(upload?.dataUrl);
+    if (!parts || !MIME_TYPE_TO_EXTENSION[parts.mimeType]) {
+      errors.push(`${upload?.name || 'file'}: unsupported or invalid image file.`);
+      continue;
+    }
+    const ext = getExtensionForMimeType(parts.mimeType);
+    const baseName = sanitizeAttachmentBaseName(upload?.name, `design-${Date.now()}`);
+    let fileName = `${baseName}.${ext}`;
+    let suffix = 1;
+    while (existingNames.has(fileName.toLowerCase())) {
+      fileName = `${baseName}-${suffix}.${ext}`;
+      suffix += 1;
+    }
+    try {
+      fs.writeFileSync(path.join(__dirname, fileName), Buffer.from(parts.base64Data, 'base64'));
+      existingNames.add(fileName.toLowerCase());
+      saved.push(fileName);
+    } catch (err) {
+      errors.push(`${upload?.name || 'file'}: could not save (${err.message || 'unknown error'}).`);
+    }
+  }
+
+  if (saved.length) getImageIndex();
+
+  res.status(saved.length ? 201 : 400).json({
+    ok: saved.length > 0,
+    saved,
+    errors,
+    files: getDesignCatalogFiles(),
+  });
+});
+
+// Lets the owner give a design a custom display name (shown on the storefront
+// gallery/cart instead of the raw uploaded filename) without touching any code.
+app.post('/api/admin/design-catalog/name', requireAdmin, async (req, res) => {
+  const src = normalizeDesignFileName(req.body?.src || '');
+  const name = normalizeTextField(req.body?.name || '', 80);
+
+  if (!src || !getImageIndex().has(src.toLowerCase())) {
+    return res.status(400).json({ error: 'Select a valid design image.' });
+  }
+  if (!name) {
+    return res.status(400).json({ error: 'Enter a display name for this design.' });
+  }
+
+  const current = readDesignNames();
+  const existingIdx = current.findIndex((record) => normalizeDesignFileName(record?.src || '') === src);
+  const nextRecord = { src, name, updatedAt: new Date().toISOString() };
+  if (existingIdx >= 0) {
+    current[existingIdx] = nextRecord;
+  } else {
+    current.push(nextRecord);
+  }
+
+  await writeDesignNames(current);
+  res.json({ ok: true, names: getSanitizedDesignNames() });
 });
 
 app.post('/api/admin/inventory', requireAdmin, async (req, res) => {
