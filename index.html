@@ -2442,6 +2442,9 @@
             color: #222;
             text-shadow: none;
         }
+        .color-swatch.out-of-stock {
+            font-size: 0.52rem;
+        }
         .color-swatch:hover, .color-swatch.active {
             transform: scale(1.12);
             border-color: #4a90e2;
@@ -11280,6 +11283,9 @@
                 if (!swatch.dataset.baseTitle) {
                     swatch.dataset.baseTitle = titleText.replace(/\s+\(Out of stock for selected size\)$/i, '').trim();
                 }
+                if (!swatch.dataset.baseLabel) {
+                    swatch.dataset.baseLabel = swatch.innerHTML;
+                }
                 const colorName = String(swatch.dataset.baseTitle || titleText).trim();
                 const outOfStock = isColorSizeOutOfStock(colorName, size);
                 if (outOfStock) {
@@ -11288,12 +11294,16 @@
                     swatch.style.pointerEvents = 'none';
                     swatch.setAttribute('aria-disabled', 'true');
                     swatch.title = swatch.dataset.baseTitle + ' (Out of stock for selected size)';
+                    swatch.classList.add('out-of-stock');
+                    swatch.textContent = 'Out of Stock';
                 } else {
                     swatch.style.opacity = '';
                     swatch.style.filter = '';
                     swatch.style.pointerEvents = '';
                     swatch.removeAttribute('aria-disabled');
                     swatch.title = swatch.dataset.baseTitle;
+                    swatch.classList.remove('out-of-stock');
+                    swatch.innerHTML = swatch.dataset.baseLabel;
                 }
             });
         }

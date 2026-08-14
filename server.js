@@ -1116,8 +1116,10 @@ function normalizeInventoryColorStockEntries(values) {
           .map((size) => String(size || '').trim())
           .filter((size) => INVENTORY_SIZES.has(size))))
       : [];
+    const stock = Math.max(0, Math.round(Number(value?.stock || 0)) || 0);
     entries.push({
       color,
+      stock,
       outOfStock: value?.outOfStock === true,
       outOfStockSizes,
     });
@@ -1178,22 +1180,66 @@ function getPublicInventoryStatus() {
       const color = String(entry?.color || '').trim();
       if (!color) return;
       const key = color.toLowerCase();
-      const existing = colorMap.get(key) || { color, outOfStock: false, outOfStockSizes: [] };
+      const existing = colorMap.get(key) || { color, stock: 0, outOfStock: false, outOfStockSizes: [] };
       const entrySizes = Array.isArray(entry?.outOfStockSizes)
         ? entry.outOfStockSizes
             .map((size) => String(size || '').trim())
             .filter((size) => INVENTORY_SIZES.has(size))
         : [];
+      existing.stock += Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
       existing.outOfStock = existing.outOfStock || entry?.outOfStock === true;
       existing.outOfStockSizes = Array.from(new Set(existing.outOfStockSizes.concat(entrySizes)));
       colorMap.set(key, existing);
     });
   });
 
+  const colors = Array.from(colorMap.values()).map((entry) => ({
+    ...entry,
+    // A color reads as out of stock either because the owner manually
+    // flagged it, or because the running numeric count has hit zero.
+    outOfStock: entry.outOfStock || entry.stock <= 0,
+  }));
+
   return {
     updatedAt: latestUpdatedAt,
-    colors: Array.from(colorMap.values()).sort((a, b) => a.color.localeCompare(b.color, undefined, { sensitivity: 'base' })),
+    colors: colors.sort((a, b) => a.color.localeCompare(b.color, undefined, { sensitivity: 'base' })),
   };
+}
+
+// Called after every order is placed so stock keeps pace with sales without
+// the owner having to manually subtract anything - selling 2 pink shirts
+// takes 2 off the Safety Pink color count automatically.
+async function decrementInventoryForOrder(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (!items.length) return;
+
+  const tally = new Map();
+  items.forEach((item) => {
+    const colorName = String(item?.shirtColorName || '').trim();
+    if (!colorName) return;
+    const key = colorName.toLowerCase();
+    const quantity = Math.max(1, Math.round(Number(item?.quantity || item?.qty || 1)) || 1);
+    tally.set(key, (tally.get(key) || 0) + quantity);
+  });
+  if (!tally.size) return;
+
+  const inventory = readInventory();
+  let changed = false;
+  inventory.forEach((invItem) => {
+    const entries = Array.isArray(invItem?.colorStock) ? invItem.colorStock : [];
+    entries.forEach((entry) => {
+      const key = String(entry?.color || '').trim().toLowerCase();
+      const orderedQty = tally.get(key);
+      if (!orderedQty) return;
+      const currentStock = Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
+      entry.stock = Math.max(0, currentStock - orderedQty);
+      changed = true;
+    });
+  });
+
+  if (changed) {
+    await writeInventory(inventory);
+  }
 }
 
 function getTrendingSales(options) {
@@ -2209,6 +2255,10 @@ app.post('/api/orders', async (req, res) => {
   }
 
   await appendOrder(order);
+  decrementInventoryForOrder(order).catch((err) => {
+    // eslint-disable-next-line no-console
+    console.error('Failed to update color inventory for order:', err.message || err);
+  });
   notifyOwnerOfNewOrder(order).catch((err) => {
     // eslint-disable-next-line no-console
     console.error('Failed to send order notification:', err.message || err);
