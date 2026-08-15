@@ -1145,14 +1145,6 @@
                                     <input id="admin-item-category" type="text" placeholder="Blank shirts">
                                 </div>
                                 <div class="stripe-field">
-                                    <label for="admin-item-stock">In Stock</label>
-                                    <input id="admin-item-stock" type="number" min="0" step="1" placeholder="24">
-                                </div>
-                                <div class="stripe-field">
-                                    <label for="admin-item-reorder">Reorder Level</label>
-                                    <input id="admin-item-reorder" type="number" min="0" step="1" placeholder="8">
-                                </div>
-                                <div class="stripe-field">
                                     <label for="admin-item-price">Unit Price</label>
                                     <input id="admin-item-price" type="number" min="0" step="0.01" placeholder="6.50">
                                 </div>
@@ -2749,8 +2741,6 @@
             document.getElementById('admin-item-name').value = item.name || '';
             document.getElementById('admin-item-sku').value = item.sku || '';
             document.getElementById('admin-item-category').value = item.category || '';
-            document.getElementById('admin-item-stock').value = Number(item.stock || 0);
-            document.getElementById('admin-item-reorder').value = Number(item.reorderLevel || 0);
             document.getElementById('admin-item-price').value = Number(item.price || 0);
             document.getElementById('admin-item-notes').value = item.notes || '';
             adminColorStockEntries = normalizeAdminColorStockEntries(item.colorStock);
@@ -2897,8 +2887,6 @@
                 name: (document.getElementById('admin-item-name').value || '').trim(),
                 sku: (document.getElementById('admin-item-sku').value || '').trim(),
                 category: (document.getElementById('admin-item-category').value || '').trim(),
-                stock: Number(document.getElementById('admin-item-stock').value || 0),
-                reorderLevel: Number(document.getElementById('admin-item-reorder').value || 0),
                 price: Number(document.getElementById('admin-item-price').value || 0),
                 notes: (document.getElementById('admin-item-notes').value || '').trim(),
                 colorStock: normalizeAdminColorStockEntries(adminColorStockEntries)
