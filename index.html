@@ -9146,9 +9146,15 @@
             const activeCat = qpActiveCat || 'All';
             const searchTerm = normalizeQuickPickSearchTerm(searchInput ? searchInput.value : '');
 
-            if (activeCat === 'All') {
+            if (searchTerm) {
+                section.hidden = true;
+                section.style.display = 'none';
+            } else {
                 section.hidden = false;
                 section.style.display = '';
+            }
+
+            if (activeCat === 'All') {
                 allGalleryWrap.classList.add('visible');
                 allGallery.innerHTML = '';
                 allGallery.classList.add('visible');
