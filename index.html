@@ -9146,12 +9146,9 @@
             const activeCat = qpActiveCat || 'All';
             const searchTerm = normalizeQuickPickSearchTerm(searchInput ? searchInput.value : '');
 
-            if (searchTerm) {
-                section.hidden = true;
-                section.style.display = 'none';
-            } else {
-                section.hidden = false;
-                section.style.display = '';
+            if (section) {
+                section.hidden = Boolean(searchTerm);
+                section.style.display = searchTerm ? 'none' : '';
             }
 
             if (activeCat === 'All') {
@@ -9197,6 +9194,12 @@
         function handleQuickPickSearchInput() {
             const searchInput = document.getElementById('qp-graphic-search');
             const value = searchInput ? searchInput.value : '';
+            const section = document.getElementById('quick-pick-section');
+            const searchTerm = normalizeQuickPickSearchTerm(value);
+            if (section) {
+                section.hidden = Boolean(searchTerm);
+                section.style.display = searchTerm ? 'none' : '';
+            }
             updateQuickPickResultsSummary(qpActiveCat || 'All', value);
             renderQuickPickGalleryFromState();
         }
