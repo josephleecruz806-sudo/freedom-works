@@ -793,8 +793,8 @@ function buildOwnerNotificationHtml(order, previewByIndex, downloadByIndex) {
     <p style="margin:0 0 8px;"><strong>Order ID:</strong> ${escapeHtml(order?.id || 'Unknown')}</p>
     <p style="margin:0 0 8px;"><strong>Status:</strong> ${escapeHtml(order?.status || 'pending')}</p>
     <p style="margin:0 0 8px;"><strong>Total:</strong> $${Number(order?.total || 0).toFixed(2)}</p>
-    <p style="margin:0 0 8px;"><strong>Fulfillment:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup' : 'Delivery')}</p>
-    <p style="margin:0 0 8px;"><strong>${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup Charge' : 'Delivery Charge')}:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Free' : `$${shippingAmount.toFixed(2)}`)}</p>
+    <p style="margin:0 0 8px;"><strong>Fulfillment:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping')}</p>
+    <p style="margin:0 0 8px;"><strong>${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup Charge' : 'Shipping Charge')}:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Free' : `$${shippingAmount.toFixed(2)}`)}</p>
     <p style="margin:0 0 8px;"><strong>Customer:</strong> ${escapeHtml(order?.customer?.name || 'Not provided')}</p>
     <p style="margin:0 0 8px;"><strong>Email:</strong> ${escapeHtml(order?.customer?.email || 'Not provided')}</p>
     <p style="margin:0 0 8px;"><strong>${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Deliver To')}:</strong> ${escapeHtml(shippingSummary || 'Not provided')}</p>
@@ -835,11 +835,11 @@ function buildOwnerNotificationText(order) {
     `Order ID: ${order?.id || 'Unknown'}`,
     `Status: ${order?.status || 'pending'}`,
     `Total: $${Number(order?.total || 0).toFixed(2)}`,
-    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Delivery'}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Delivery Charge: $${shippingAmount.toFixed(2)}`}`,
+    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping'}`,
+    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Shipping Charge: $${shippingAmount.toFixed(2)}`}`,
     `Customer: ${customerName}`,
     `Email: ${customerEmail}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Deliver To'}: ${shippingSummary || 'Not provided'}`,
+    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Ship To'}: ${shippingSummary || 'Not provided'}`,
     `Placed: ${order?.createdAt || new Date().toISOString()}`,
     '',
     'Items:',
@@ -867,10 +867,10 @@ function buildCustomerReceiptText(order) {
     `Order ID: ${order?.id || 'Unknown'}`,
     `Status: ${order?.status || 'pending'}`,
     `Payment Method: ${String(order?.source || 'stripe').toUpperCase()}`,
-    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Delivery'}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Delivery Charge: $${shippingAmount.toFixed(2)}`}`,
+    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping'}`,
+    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Shipping Charge: $${shippingAmount.toFixed(2)}`}`,
     `Total: $${Number(order?.total || 0).toFixed(2)}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Deliver To'}: ${fulfillmentSummary || 'Not provided'}`,
+    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Ship To'}: ${fulfillmentSummary || 'Not provided'}`,
     `Placed: ${order?.createdAt || new Date().toISOString()}`,
     '',
     'Items:',

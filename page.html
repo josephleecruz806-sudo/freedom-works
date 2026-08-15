@@ -7160,7 +7160,7 @@
                             <div class="stripe-choice-group">
                                 <label class="stripe-choice" for="fulfillment-delivery">
                                     <input id="fulfillment-delivery" type="radio" name="checkout-fulfillment-method" value="delivery" required onchange="toggleCheckoutFulfillmentFields()">
-                                    Delivery
+                                    Shipping
                                 </label>
                                 <label class="stripe-choice" for="fulfillment-pickup">
                                     <input id="fulfillment-pickup" type="radio" name="checkout-fulfillment-method" value="pickup" required onchange="toggleCheckoutFulfillmentFields()">
@@ -12622,8 +12622,8 @@
                 'shipping-postal-code'
             ];
             if (addressWrap) addressWrap.style.display = (!hasSelection || isPickup) ? 'none' : '';
-            if (nameLabel) nameLabel.textContent = !hasSelection ? 'Contact Full Name *' : (isPickup ? 'Pickup Full Name *' : 'Delivery Full Name *');
-            if (emailLabel) emailLabel.textContent = !hasSelection ? 'Contact Email *' : (isPickup ? 'Pickup Email *' : 'Delivery Email *');
+            if (nameLabel) nameLabel.textContent = !hasSelection ? 'Contact Full Name *' : (isPickup ? 'Pickup Full Name *' : 'Shipping Full Name *');
+            if (emailLabel) emailLabel.textContent = !hasSelection ? 'Contact Email *' : (isPickup ? 'Pickup Email *' : 'Shipping Email *');
             addressIds.forEach((id) => {
                 const input = document.getElementById(id);
                 if (!input) return;
@@ -12661,7 +12661,7 @@
             if (!fulfillmentMethod) {
                 const methodRow = document.createElement('div');
                 methodRow.className = 'summary-row';
-                methodRow.innerHTML = '<span>Order Method</span><span>Select Pickup or Delivery</span>';
+                methodRow.innerHTML = '<span>Order Method</span><span>Select Pickup or Shipping</span>';
                 summaryEl.appendChild(methodRow);
             } else if (fulfillmentMethod === 'pickup') {
                 const pickupRow = document.createElement('div');
@@ -12671,7 +12671,7 @@
             } else if (shippingTotal > 0) {
                 const shippingRow = document.createElement('div');
                 shippingRow.className = 'summary-row';
-                shippingRow.innerHTML = `<span>Delivery (${getCheckoutShirtCount()} shirt${getCheckoutShirtCount() === 1 ? '' : 's'})</span><span>$${shippingTotal.toFixed(2)}</span>`;
+                shippingRow.innerHTML = `<span>Shipping (${getCheckoutShirtCount()} shirt${getCheckoutShirtCount() === 1 ? '' : 's'})</span><span>$${shippingTotal.toFixed(2)}</span>`;
                 summaryEl.appendChild(shippingRow);
             }
             const total = getCheckoutTotal();
@@ -12702,7 +12702,7 @@
             const details = shipping || getCheckoutShippingDetails();
             const method = String(details.fulfillmentMethod || '').toLowerCase();
             if (method !== 'pickup' && method !== 'delivery') {
-                if (statusEl) statusEl.textContent = 'Please choose Pickup or Delivery before checkout.';
+                if (statusEl) statusEl.textContent = 'Please choose Pickup or Shipping before checkout.';
                 return false;
             }
             const methodLabel = method;
