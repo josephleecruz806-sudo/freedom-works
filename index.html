@@ -10011,6 +10011,21 @@
             const printCharge = hasPrint ? getQuickPickGridPrintFee() : 0;
             const laborCharge = 0;
             const price = applyTargetMargin(shirtCharge + printCharge);
+
+            const catalogItem = findCatalogItemBySrc(printEl?.dataset?.uploadName || '');
+            const saleOfferType = String(catalogItem?.saleOfferType || '');
+            const saleActive = !!(catalogItem && catalogItem.onSale && saleOfferType && saleOfferType !== 'bundle');
+            if (saleActive) {
+                const originalPrice = getCatalogOriginalPriceForSize(catalogItem, selectedSize);
+                const salePrice = getCatalogSaleUnitPrice(catalogItem, selectedSize);
+                if (salePrice < originalPrice) {
+                    const savings = Math.round((originalPrice - salePrice) * 100) / 100;
+                    totalEl.textContent = 'Total: $' + salePrice.toFixed(2);
+                    breakdownEl.style.display = '';
+                    breakdownEl.textContent = 'On sale: Regular $' + originalPrice.toFixed(2) + ' \u2014 You save $' + savings.toFixed(2);
+                    return;
+                }
+            }
             totalEl.textContent = 'Total: $' + price.toFixed(2);
             setBreakdownText(breakdownEl, shirtCharge, printCharge, laborCharge);
         }
