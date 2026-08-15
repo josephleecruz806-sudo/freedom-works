@@ -11293,16 +11293,12 @@
                 const colorName = String(swatch.dataset.baseTitle || titleText).trim();
                 const outOfStock = isColorSizeOutOfStock(colorName, size);
                 if (outOfStock) {
-                    swatch.style.opacity = '0.35';
-                    swatch.style.filter = 'grayscale(0.85)';
                     swatch.style.pointerEvents = 'none';
                     swatch.setAttribute('aria-disabled', 'true');
                     swatch.title = swatch.dataset.baseTitle + ' (Out of stock for selected size)';
                     swatch.classList.add('out-of-stock');
                     swatch.textContent = 'Out of Stock';
                 } else {
-                    swatch.style.opacity = '';
-                    swatch.style.filter = '';
                     swatch.style.pointerEvents = '';
                     swatch.removeAttribute('aria-disabled');
                     swatch.title = swatch.dataset.baseTitle;
