@@ -1532,6 +1532,34 @@
         function formatPriceAmount(amount) {
             return '$' + (Math.round((amount || 0) * 100) / 100).toFixed(2);
         }
+
+        function isOwnerDashboardTestOrder(order) {
+            const normalize = function(value) {
+                return String(value || '').trim().toLowerCase();
+            };
+            const combined = [
+                order && order.id,
+                order && order.source,
+                order && order.status,
+                order && order.customer && order.customer.email,
+                order && order.customer && order.customer.name,
+                order && order.shipping && order.shipping.email,
+                order && order.shipping && order.shipping.fullName,
+                Array.isArray(order && order.items) ? order.items.map(function(item) {
+                    return [
+                        item && item.name,
+                        item && item.designName,
+                        item && item.shirtColorName,
+                        item && item.catalogDesignSrc,
+                        item && item.designFrontFile,
+                        item && item.designBackFile,
+                        item && item.sku
+                    ].join(' ');
+                }).join(' ') : ''
+            ].map(normalize).join(' ');
+            return /(?:^|[^a-z])(test|demo|sample|mock)(?:$|[^a-z])/i.test(combined)
+                || ['test', 'demo', 'sample', 'mock'].includes(normalize(order && order.source));
+        }
         
         function getAdminCatalogBasePriceForSize(size) {
             // Must mirror index.html's real charging formula exactly (shirt
@@ -2446,7 +2474,9 @@
         function renderAdminSales(sales) {
             const listEl = document.getElementById('admin-sales-list');
             if (!listEl) return;
-            const orders = Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : [];
+            const orders = Array.isArray(sales && sales.recentOrders)
+                ? sales.recentOrders.filter(function(order) { return !isOwnerDashboardTestOrder(order); })
+                : [];
             if (!orders.length) {
                 listEl.innerHTML = '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>';
                 return;

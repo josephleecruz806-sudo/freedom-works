@@ -1357,8 +1357,35 @@ function formatDesignNameFromFile(value) {
     .trim();
 }
 
+function isOwnerDashboardTestOrder(order) {
+  const normalise = (value) => String(value || '').trim().toLowerCase();
+  const combined = [
+    order?.id,
+    order?.source,
+    order?.status,
+    order?.paymentIntentId,
+    order?.customer?.id,
+    order?.customer?.name,
+    order?.customer?.email,
+    order?.shipping?.fullName,
+    order?.shipping?.email,
+    ...(Array.isArray(order?.items) ? order.items.flatMap((item) => [
+      item?.name,
+      item?.designName,
+      item?.shirtColorName,
+      item?.catalogDesignSrc,
+      item?.designFrontFile,
+      item?.designBackFile,
+      item?.sku,
+    ]) : []),
+  ].map(normalise).join(' ');
+
+  return /(?:^|[^a-z])(test|demo|sample|mock)(?:$|[^a-z])/i.test(combined)
+    || ['test', 'demo', 'sample', 'mock'].includes(normalise(order?.source));
+}
+
 function getSalesSummary() {
-  const orders = readOrders();
+  const orders = readOrders().filter((order) => !isOwnerDashboardTestOrder(order));
   const paidOrders = orders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
   const pendingOrders = orders.filter((order) => String(order.status || '').toLowerCase() !== 'paid');
   const revenue = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
