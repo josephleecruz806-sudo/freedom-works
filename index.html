@@ -8778,6 +8778,13 @@
             const originalPrice = getCatalogOriginalPriceForSize(item, size);
             const offerType = String(item?.saleOfferType || '');
             if (!item?.onSale || !offerType) return originalPrice;
+            const saleSizes = Array.isArray(item?.saleSizes)
+                ? item.saleSizes.map(function(s) { return String(s || '').trim(); }).filter(Boolean)
+                : [];
+            const normalizedSize = String(size || '').trim();
+            // An empty saleSizes list means the sale applies to every size;
+            // otherwise a size not on that list must stay at full price.
+            if (saleSizes.length && (!normalizedSize || !saleSizes.includes(normalizedSize))) return originalPrice;
             if (offerType === 'bundle') return originalPrice;
             if (offerType === 'percentage') {
                 const salePercent = Number(item?.salePercent || 0);
