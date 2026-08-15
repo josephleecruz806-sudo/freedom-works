@@ -3538,8 +3538,9 @@
         .login-sale-popup-media img {
             width: 100%;
             height: 100%;
-            object-fit: cover;
+            object-fit: contain;
             display: block;
+            background: rgba(255,255,255,0.04);
         }
         .login-sale-popup-copy {
             display: flex;
@@ -3656,6 +3657,14 @@
             overflow: hidden;
             border: 1px solid rgba(255,255,255,0.1);
             background: rgba(255,255,255,0.06);
+            opacity: 0.75;
+            transition: transform 0.2s ease, border-color 0.2s ease, opacity 0.2s ease;
+        }
+        .login-sale-popup-thumb.active {
+            border-color: rgba(255, 209, 94, 0.9);
+            box-shadow: 0 0 0 2px rgba(255, 209, 94, 0.18);
+            opacity: 1;
+            transform: translateY(-1px);
         }
         .login-sale-popup-thumb img {
             width: 100%;
@@ -7278,7 +7287,7 @@
                 </div>
                 <div class="login-sale-popup-thumbs" id="login-sale-popup-thumbs"></div>
                 <div class="login-sale-popup-actions">
-                    <button type="button" class="login-sale-popup-primary" onclick="openLoginSalePage()">Shop The Sale</button>
+                    <button type="button" class="login-sale-popup-primary" onclick="openLoginSalePage()">START SAVING</button>
                     <button type="button" class="login-sale-popup-secondary" onclick="openAuthModal('login')">Login First</button>
                     <button type="button" class="login-sale-popup-tertiary" onclick="closeLoginSalePopup()">Maybe Later</button>
                 </div>
@@ -8642,9 +8651,16 @@
             return 'A fresh limited-time deal is waiting for you. Preview the savings here, then enter the store to save more before the 24-hour window closes.';
         }
 
-        function renderLoginSalePopup(item, items) {
-            const overlay = document.getElementById('login-sale-popup-overlay');
-            if (!overlay || !item) return;
+        function stopLoginSalePopupSlideshow() {
+            if (loginSalePopupRotationTimer) {
+                window.clearInterval(loginSalePopupRotationTimer);
+                loginSalePopupRotationTimer = null;
+            }
+        }
+
+        function applyLoginSalePopupEntry(item, items, slideIndex) {
+            const saleItems = Array.isArray(items) ? items : [];
+            const currentItem = item || saleItems[0] || null;
             const titleEl = document.getElementById('login-sale-popup-title');
             const textEl = document.getElementById('login-sale-popup-text');
             const priceEl = document.getElementById('login-sale-popup-price');
@@ -8652,24 +8668,54 @@
             const sizesEl = document.getElementById('login-sale-popup-sizes');
             const imageEl = document.getElementById('login-sale-popup-image');
             const thumbsEl = document.getElementById('login-sale-popup-thumbs');
-            const saleItems = Array.isArray(items) ? items : [];
-            const offerSizes = getCatalogOfferSizes(item).map(function(size) {
-                return size === '2X' ? '2XL' : (size === '3X' ? '3XL' : size);
+            const normalizedIndex = Number.isInteger(slideIndex) ? slideIndex : saleItems.findIndex(function(entry) {
+                return (entry?.assetSrc || entry?.src || '') === (currentItem?.assetSrc || currentItem?.src || '');
             });
-            if (titleEl) titleEl.textContent = getLoginSalePopupHeadline(item, saleItems.length);
-            if (textEl) textEl.textContent = getLoginSalePopupBody(item, saleItems.length);
-            if (priceEl) priceEl.innerHTML = getCatalogPriceMarkup(item);
+            const activeSlideIndex = normalizedIndex >= 0 ? normalizedIndex : 0;
+            loginSalePopupSlideIndex = activeSlideIndex;
+            const offerSizes = currentItem ? getCatalogOfferSizes(currentItem).map(function(size) {
+                return size === '2X' ? '2XL' : (size === '3X' ? '3XL' : size);
+            }) : [];
+            if (titleEl) titleEl.textContent = getLoginSalePopupHeadline(currentItem, saleItems.length);
+            if (textEl) textEl.textContent = getLoginSalePopupBody(currentItem, saleItems.length);
+            if (priceEl) priceEl.innerHTML = currentItem ? getCatalogPriceMarkup(currentItem) : '';
             if (countEl) countEl.textContent = saleItems.length > 1 ? (saleItems.length + ' sale designs live') : '1 sale design live';
             if (sizesEl) sizesEl.textContent = offerSizes.length ? ('Sizes: ' + offerSizes.join(', ')) : 'Sizes vary by design';
             if (thumbsEl) {
-                thumbsEl.innerHTML = saleItems.slice(0, 4).map(function(entry) {
-                    return '<span class="login-sale-popup-thumb"><img alt="Sale preview" src="' + escapeHtml(resolveAssetUrl(entry?.assetSrc || entry?.src || '')) + '"></span>';
+                thumbsEl.innerHTML = saleItems.slice(0, 4).map(function(entry, idx) {
+                    const isActive = idx === activeSlideIndex;
+                    return '<span class="login-sale-popup-thumb' + (isActive ? ' active' : '') + '"><img alt="Sale preview" src="' + escapeHtml(resolveAssetUrl(entry?.assetSrc || entry?.src || '')) + '"></span>';
                 }).join('');
             }
             if (imageEl) {
                 imageEl.removeAttribute('src');
-                loadImageWithFallback(imageEl, item.assetSrc || item.src || '');
+                imageEl.style.objectFit = 'contain';
+                loadImageWithFallback(imageEl, currentItem?.assetSrc || currentItem?.src || '');
             }
+        }
+
+        function startLoginSalePopupSlideshow(items) {
+            stopLoginSalePopupSlideshow();
+            const saleItems = Array.isArray(items) ? items.filter(Boolean) : [];
+            if (!saleItems.length || saleItems.length < 2) return;
+            loginSalePopupSlideIndex = Math.max(0, Number(loginSalePopupSlideIndex) || 0) % saleItems.length;
+            loginSalePopupRotationTimer = window.setInterval(function() {
+                loginSalePopupSlideIndex = (loginSalePopupSlideIndex + 1) % saleItems.length;
+                applyLoginSalePopupEntry(saleItems[loginSalePopupSlideIndex], saleItems, loginSalePopupSlideIndex);
+            }, 2600);
+        }
+
+        function renderLoginSalePopup(item, items) {
+            const overlay = document.getElementById('login-sale-popup-overlay');
+            if (!overlay || !item) return;
+            const saleItems = Array.isArray(items) ? items : [];
+            if (!saleItems.length) return;
+            const activeIndex = saleItems.findIndex(function(entry) {
+                return (entry?.assetSrc || entry?.src || '') === (item?.assetSrc || item?.src || '');
+            });
+            loginSalePopupSlideIndex = activeIndex >= 0 ? activeIndex : 0;
+            applyLoginSalePopupEntry(item, saleItems, loginSalePopupSlideIndex);
+            startLoginSalePopupSlideshow(saleItems);
         }
 
         function openLoginSalePopup() {
@@ -8730,6 +8776,7 @@
             const settings = options || {};
             const overlay = document.getElementById('login-sale-popup-overlay');
             if (!overlay) return;
+            stopLoginSalePopupSlideshow();
             overlay.classList.remove('open');
             loginSalePopupOpen = false;
             updateModalBodyLock();
@@ -10701,6 +10748,8 @@
         let customerGuideStepIndex = 0;
         let loginSalePopupOpen = false;
         let loginSalePopupShownThisLoad = false;
+        let loginSalePopupRotationTimer = null;
+        let loginSalePopupSlideIndex = 0;
         let rewardsInfoPopupOpen = false;
         let rewardsInfoPopupShownThisLoad = false;
         let liveInventoryStatus = { updatedAt: '', colors: [] };
