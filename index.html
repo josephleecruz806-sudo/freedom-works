@@ -8763,16 +8763,24 @@
         }
 
         function getCatalogBasePriceForSize(size) {
+            // Must match the exact same math the custom builder, quick-pick
+            // grid, and mockup builder use (shirt charge + area-based print
+            // charge + target margin) - otherwise this size's "regular"
+            // price disagrees with what the site actually charges, which
+            // throws off sale percentage-off math too.
             const profile = getPrintProfileForSize(size);
             const shirtCharge = getShirtChargeForSize(size);
-            const printCharge = Math.round(Number((profile?.widthIn || profile?.maxWIn || 0) * 0.75) * 100) / 100;
-            return Math.round((shirtCharge + printCharge) * 100) / 100;
+            const widthIn = Number(profile?.widthIn || profile?.maxWIn || 0);
+            const heightIn = Number(profile?.heightIn || profile?.maxHIn || 0);
+            const printCharge = Math.round((widthIn * heightIn) * PRINT_PRICE_PER_INCH * 100) / 100;
+            return applyTargetMargin(shirtCharge + printCharge);
         }
 
         function getCatalogOriginalPriceForSize(item, size) {
             const normalizedSize = String(size || '').trim() || 'Adult M';
             return getCatalogBasePriceForSize(normalizedSize);
         }
+
 
         function getCatalogSaleUnitPrice(item, size) {
             const originalPrice = getCatalogOriginalPriceForSize(item, size);
