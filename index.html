@@ -3819,6 +3819,19 @@
             color: #ffffff;
         }
         @media (max-width: 760px) {
+            #login-sale-popup-overlay,
+            #rewards-popup-overlay,
+            #auth-modal-overlay {
+                align-items: flex-start;
+                padding-top: max(18px, env(safe-area-inset-top));
+                padding-bottom: 18px;
+            }
+            .login-sale-popup,
+            #auth-modal,
+            .rewards-popup {
+                max-height: calc(100dvh - 32px);
+                overflow-y: auto;
+            }
             .login-sale-popup {
                 grid-template-columns: 1fr;
                 padding: 18px;
