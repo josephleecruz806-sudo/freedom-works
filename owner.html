@@ -1111,55 +1111,20 @@
                     <section class="admin-panel">
                         <div class="admin-panel-head">
                             <div>
-                                <h3 class="admin-section-title">Inventory</h3>
-                                <p>Add products, update stock counts, and mark low-stock items before they run out.</p>
-                            </div>
-                        </div>
-                        <div class="admin-toolbar">
-                            <div class="admin-toolbar-group">
-                                <input id="admin-inventory-search" class="admin-search" type="search" placeholder="Search item name, SKU, category, or notes">
-                                <select id="admin-inventory-filter" class="admin-filter-select" aria-label="Inventory status filter">
-                                    <option value="all">All inventory</option>
-                                    <option value="low">Low stock</option>
-                                    <option value="out">Out of stock</option>
-                                    <option value="healthy">Healthy stock</option>
-                                </select>
-                            </div>
-                            <div class="admin-toolbar-group">
-                                <span class="admin-toolbar-note" id="admin-inventory-count">0 items</span>
+                                <h3 class="admin-section-title">Color &amp; Size Stock</h3>
+                                <p>Track how many shirts you have in stock for each website color and size.</p>
                             </div>
                         </div>
                         <form id="admin-inventory-form" novalidate>
                             <input type="hidden" id="admin-item-id">
                             <div class="admin-form-grid">
-                                <div class="stripe-field">
-                                    <label for="admin-item-name">Item Name</label>
-                                    <input id="admin-item-name" type="text" placeholder="Adult Black Tee">
-                                </div>
-                                <div class="stripe-field">
-                                    <label for="admin-item-sku">SKU</label>
-                                    <input id="admin-item-sku" type="text" placeholder="TEE-BLK-AD-M">
-                                </div>
-                                <div class="stripe-field">
-                                    <label for="admin-item-category">Category</label>
-                                    <input id="admin-item-category" type="text" placeholder="Blank shirts">
-                                </div>
-                                <div class="stripe-field">
-                                    <label for="admin-item-price">Unit Price</label>
-                                    <input id="admin-item-price" type="number" min="0" step="0.01" placeholder="6.50">
-                                </div>
-                                <div class="stripe-field">
-                                    <label for="admin-item-notes">Notes</label>
-                                    <input id="admin-item-notes" type="text" placeholder="Main adult black shirt stock">
-                                </div>
                                 <div class="stripe-field" style="grid-column:1 / -1;">
-                                    <label>Color &amp; Size Stock</label>
                                     <p class="admin-design-picker-note" id="admin-color-stock-summary">No colors added yet.</p>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
                                         <select id="admin-color-stock-name" style="max-width:200px;"></select>
                                         <select id="admin-color-stock-size" style="max-width:160px;"></select>
                                         <input id="admin-color-stock-count" type="number" min="0" step="1" placeholder="Stock #" style="max-width:120px;">
-                                        <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add Color + Size</button>
+                                        <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add to Inventory</button>
                                     </div>
                                     <div id="admin-color-stock-list"></div>
                                 </div>
@@ -1170,7 +1135,6 @@
                             </div>
                             <div id="admin-inventory-status" role="alert"></div>
                         </form>
-                        <div class="admin-table-wrap" id="admin-inventory-list"></div>
 
                         <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
                             <div class="admin-panel-head">
@@ -2626,7 +2590,24 @@
             renderRestockWatch(adminDashboardState.inventory);
             renderAdminDesignSales(adminDashboardState.designSales);
             renderAdminCustomers(adminDashboardState.customers);
+            loadAdminColorStockRecordOnce();
             updateAdminUi();
+        }
+
+        // The Color & Size Stock form now always edits the single existing
+        // inventory record (rather than showing a list of items to pick from),
+        // so load it into the form once per session instead of starting blank.
+        let adminColorStockRecordLoaded = false;
+        function loadAdminColorStockRecordOnce() {
+            if (adminColorStockRecordLoaded) return;
+            const existing = (adminDashboardState.inventory || [])[0];
+            if (!existing) return;
+            adminColorStockRecordLoaded = true;
+            document.getElementById('admin-item-id').value = existing.id || '';
+            adminColorStockEntries = normalizeAdminColorStockEntries(existing.colorStock);
+            renderAdminColorStockEditor();
+            const submitBtn = document.getElementById('admin-inventory-submit-btn');
+            if (submitBtn) submitBtn.textContent = 'Update Inventory Item';
         }
 
         async function loadAdminDesignCatalog() {
@@ -2730,16 +2711,10 @@
             const item = (adminDashboardState.inventory || []).find(function(entry) { return entry.id === itemId; });
             if (!item) return;
             document.getElementById('admin-item-id').value = item.id || '';
-            document.getElementById('admin-item-name').value = item.name || '';
-            document.getElementById('admin-item-sku').value = item.sku || '';
-            document.getElementById('admin-item-category').value = item.category || '';
-            document.getElementById('admin-item-price').value = Number(item.price || 0);
-            document.getElementById('admin-item-notes').value = item.notes || '';
             adminColorStockEntries = normalizeAdminColorStockEntries(item.colorStock);
             renderAdminColorStockEditor();
             const submitBtn = document.getElementById('admin-inventory-submit-btn');
             if (submitBtn) submitBtn.textContent = 'Update Inventory Item';
-            document.getElementById('admin-item-name').focus();
         }
 
         async function deleteAdminInventoryItem(itemId) {
@@ -2876,11 +2851,11 @@
             const statusEl = document.getElementById('admin-inventory-status');
             const itemId = document.getElementById('admin-item-id').value || '';
             const payload = {
-                name: (document.getElementById('admin-item-name').value || '').trim(),
-                sku: (document.getElementById('admin-item-sku').value || '').trim(),
-                category: (document.getElementById('admin-item-category').value || '').trim(),
-                price: Number(document.getElementById('admin-item-price').value || 0),
-                notes: (document.getElementById('admin-item-notes').value || '').trim(),
+                name: 'Color & Size Stock',
+                sku: '',
+                category: '',
+                price: 0,
+                notes: '',
                 colorStock: normalizeAdminColorStockEntries(adminColorStockEntries)
             };
 
@@ -3091,14 +3066,6 @@
 
         renderAdminSaleSizePicker();
         toggleAdminDesignSaleFields();
-
-        document.getElementById('admin-inventory-search').addEventListener('input', function() {
-            rerenderAdminInventoryViews();
-        });
-
-        document.getElementById('admin-inventory-filter').addEventListener('change', function() {
-            rerenderAdminInventoryViews();
-        });
 
         document.getElementById('admin-customers-search').addEventListener('input', function() {
             renderAdminCustomers(adminDashboardState.customers);
