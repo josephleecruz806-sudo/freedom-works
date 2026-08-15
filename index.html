@@ -9153,17 +9153,23 @@
                 allGallery.innerHTML = '';
                 allGallery.classList.add('visible');
 
+                const filteredEntries = getQuickPickFilteredEntries('All', searchTerm);
+                if (!filteredEntries.length) {
+                    allGallery.innerHTML = '<section class="qp-all-section"><h3 class="qp-all-section-title">No matches</h3><div class="account-order-empty">No graphics match your search. Try another keyword or switch categories.</div></section>';
+                    return;
+                }
+
+                if (searchTerm) {
+                    renderPaginatedGallerySection(allGallery, filteredEntries, 'Search Results', QP_FILTER_GALLERY_BATCH_SIZE, QP_FILTER_GALLERY_BATCH_SIZE);
+                    return;
+                }
+
                 const groupedItems = new Map();
-                getQuickPickFilteredEntries('All', searchTerm).forEach(({ item, idx }) => {
+                filteredEntries.forEach(({ item, idx }) => {
                     const groupName = item.cat || 'Misc';
                     if (!groupedItems.has(groupName)) groupedItems.set(groupName, []);
                     groupedItems.get(groupName).push({ item, idx });
                 });
-
-                if (!groupedItems.size) {
-                    allGallery.innerHTML = '<section class="qp-all-section"><h3 class="qp-all-section-title">No matches</h3><div class="account-order-empty">No graphics match your search. Try another keyword or switch categories.</div></section>';
-                    return;
-                }
 
                 groupedItems.forEach((entries, groupName) => {
                     renderPaginatedGallerySection(allGallery, entries, groupName, QP_ALL_SECTION_PREVIEW_SIZE, QP_FILTER_GALLERY_BATCH_SIZE);
