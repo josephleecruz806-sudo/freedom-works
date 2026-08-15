@@ -25,13 +25,6 @@ try {
   sharp = null;
 }
 
-let twilio = null;
-try {
-  twilio = require('twilio');
-} catch (_) {
-  twilio = null;
-}
-
 dotenv.config();
 
 const app = express();
@@ -50,12 +43,7 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || (SMTP_PORT === 465 ? 'true
 const SMTP_USER = String(process.env.SMTP_USER || '').trim();
 const SMTP_PASS = String(process.env.SMTP_PASS || '').trim();
 const SMTP_FROM = String(process.env.SMTP_FROM || SMTP_USER || OWNER_NOTIFY_EMAIL).trim();
-const TWILIO_ACCOUNT_SID = String(process.env.TWILIO_ACCOUNT_SID || '').trim();
-const TWILIO_AUTH_TOKEN = String(process.env.TWILIO_AUTH_TOKEN || '').trim();
-const TWILIO_PHONE_NUMBER = String(process.env.TWILIO_PHONE_NUMBER || '').trim();
-const OWNER_PHONE_NUMBER = String(process.env.OWNER_PHONE_NUMBER || '').trim();
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
-const twilioClient = twilio && TWILIO_ACCOUNT_SID && TWILIO_AUTH_TOKEN ? twilio(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN) : null;
 const UPSTASH_REDIS_REST_URL = String(process.env.UPSTASH_REDIS_REST_URL || '').trim().replace(/\/+$/, '');
 const UPSTASH_REDIS_REST_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || '').trim();
 
@@ -925,50 +913,12 @@ async function sendCustomerReceiptEmail(order) {
   return true;
 }
 
-async function sendOwnerSmsNotification(order) {
-  if (!twilioClient || !TWILIO_PHONE_NUMBER || !OWNER_PHONE_NUMBER) return false;
-
-  // Build order details summary
-  const items = Array.isArray(order?.items) ? order.items : [];
-  const itemSummary = items
-    .map((item) => {
-      const parts = [];
-      if (item.designName) parts.push(item.designName);
-      if (item.shirtSize) parts.push(item.shirtSize);
-      if (item.shirtColorName) parts.push(item.shirtColorName);
-      return parts.join(' | ');
-    })
-    .slice(0, 2) // Limit to first 2 items to keep SMS concise
-    .join('; ');
-
-  const itemCount = items.length;
-  const itemText = itemCount > 2 ? `${itemCount} items` : `${itemCount} item${itemCount !== 1 ? 's' : ''}`;
-  
-  // Build shipping info
-  const shipping = order.shipping || {};
-  const fulfillmentMethod = shipping.fulfillmentMethod || 'unknown';
-  const shippingText = fulfillmentMethod === 'pickup' 
-    ? '📍 Pickup' 
-    : `🚚 Delivery: ${shipping.city || ''} ${shipping.state || ''}`.trim();
-  
-  const orderSummary = `🎉 New order: ${order.id}\n💰 Total: $${Number(order.total || 0).toFixed(2)}\n👤 ${order.shipping.fullName}\n${shippingText}\n📦 ${itemText}${itemSummary ? ': ' + itemSummary : ''}`;
-
-  await twilioClient.messages.create({
-    body: orderSummary,
-    from: TWILIO_PHONE_NUMBER,
-    to: OWNER_PHONE_NUMBER,
-  });
-
-  return true;
-}
-
 async function notifyOwnerOfNewOrder(order) {
   const emailSent = await sendOwnerEmailNotification(order).catch(() => false);
-  const smsSent = await sendOwnerSmsNotification(order).catch(() => false);
 
-  if (!emailSent && !smsSent) {
+  if (!emailSent) {
     // eslint-disable-next-line no-console
-    console.log(`New order saved ${order.id} for $${Number(order.total || 0).toFixed(2)}. Configure SMTP to receive email alerts at ${OWNER_NOTIFY_EMAIL || 'your email'}, or configure Twilio to receive SMS alerts.`);
+    console.log(`New order saved ${order.id} for $${Number(order.total || 0).toFixed(2)}. Configure SMTP to receive alerts at ${OWNER_NOTIFY_EMAIL || 'your email'}.`);
   }
 }
 
