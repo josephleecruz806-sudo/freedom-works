@@ -6260,6 +6260,26 @@
             zoom: 1 !important;
         }
 
+        #builder-body .preview.both-active {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) !important;
+            row-gap: 28px !important;
+            align-items: start !important;
+        }
+        #builder-body .preview.both-active .shirt-preview-slot {
+            position: relative !important;
+            display: flex !important;
+            width: 100% !important;
+            min-height: calc(var(--mockup-ruler-size) + 42px) !important;
+            flex: none !important;
+            overflow: visible !important;
+        }
+        #builder-body .preview.both-active .mockup-preview-shell {
+            position: relative !important;
+            flex: 0 0 auto !important;
+            margin-inline: auto !important;
+        }
+
         #shirt-runner,
         #shirt-runner2,
         #mascot-bubble,
