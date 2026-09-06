@@ -3677,15 +3677,27 @@
             position: absolute;
             top: 14px;
             right: 16px;
-            background: none;
-            border: none;
-            color: rgba(255,255,255,0.7);
+            width: 36px;
+            height: 36px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(11, 24, 54, 0.75);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.85);
             font-size: 1.45rem;
             cursor: pointer;
             padding: 0;
+            line-height: 1;
+            z-index: 10;
+            transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
         }
         .login-sale-popup-close:hover {
+            background: rgba(22, 45, 96, 0.95);
             color: #fff;
+            transform: scale(1.05);
         }
         .login-sale-popup-thumbs {
             display: flex;
@@ -3808,14 +3820,25 @@
             position: absolute;
             top: 12px;
             right: 14px;
-            background: none;
-            border: none;
-            color: rgba(255, 255, 255, 0.72);
+            width: 34px;
+            height: 34px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 999px;
+            background: rgba(13, 36, 68, 0.75);
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: rgba(255, 255, 255, 0.8);
             font-size: 1.4rem;
             cursor: pointer;
             padding: 0;
+            line-height: 1;
+            z-index: 10;
+            transition: background 0.2s ease, color 0.2s ease;
         }
         .rewards-popup-close:hover {
+            background: rgba(22, 64, 96, 0.95);
             color: #ffffff;
         }
         @media (max-width: 760px) {
@@ -3836,6 +3859,11 @@
                 grid-template-columns: 1fr;
                 padding: 18px;
                 gap: 16px;
+            }
+            .login-sale-popup-close {
+                top: 10px;
+                right: 10px;
+                z-index: 10;
             }
             .login-sale-popup-media {
                 min-height: 220px;
@@ -7379,7 +7407,6 @@
 
     <div id="login-sale-popup-overlay" role="dialog" aria-modal="true" aria-labelledby="login-sale-popup-title" aria-describedby="login-sale-popup-text">
         <div class="login-sale-popup">
-            <button type="button" class="login-sale-popup-close" aria-label="Close sale preview" onclick="closeLoginSalePopup()">&times;</button>
             <div class="login-sale-popup-media">
                 <img id="login-sale-popup-image" alt="Sale design preview" loading="eager" decoding="async">
             </div>
