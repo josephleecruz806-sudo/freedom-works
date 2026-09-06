@@ -5741,7 +5741,6 @@
 
             .site-guide-trigger,
             .customer-back-trigger {
-                bottom: calc(env(safe-area-inset-bottom, 0px) + 84px) !important;
                 z-index: 110 !important;
                 min-height: 34px !important;
                 padding: 8px 12px !important;
@@ -5752,17 +5751,37 @@
                 box-shadow: 0 8px 18px rgba(0,0,0,0.2) !important;
                 opacity: 0.94;
                 white-space: nowrap;
-                max-width: calc(50vw - 20px) !important;
+                max-width: min(42vw, 138px) !important;
                 overflow: hidden;
                 text-overflow: ellipsis;
             }
 
             .customer-back-trigger {
-                left: clamp(6px, calc(50% - 176px), 34px) !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 18px) !important;
+                left: 12px !important;
+                right: auto !important;
+                margin: 0 !important;
             }
 
             .site-guide-trigger {
-                right: clamp(6px, calc(50% - 176px), 34px) !important;
+                bottom: calc(env(safe-area-inset-bottom, 0px) + 76px) !important;
+                left: auto !important;
+                right: 12px !important;
+                margin: 0 !important;
+            }
+
+            @media (orientation: portrait) {
+                .customer-back-trigger {
+                    bottom: calc(env(safe-area-inset-bottom, 0px) + 18px) !important;
+                    left: 12px !important;
+                    right: auto !important;
+                }
+
+                .site-guide-trigger {
+                    bottom: calc(env(safe-area-inset-bottom, 0px) + 76px) !important;
+                    left: auto !important;
+                    right: 12px !important;
+                }
             }
 
             .site-guide-trigger:hover,
