@@ -905,6 +905,28 @@
         .admin-inline-btn {
             padding: 7px 10px;
         }
+        .admin-customer-name-wrap {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            flex-wrap: wrap;
+            min-width: 170px;
+        }
+        .admin-customer-email-btn {
+            border: 1px solid rgba(255,216,106,0.72);
+            background: linear-gradient(135deg, #ffe08a, #ffb347);
+            color: #17233e;
+            padding: 8px 12px;
+            box-shadow: 0 5px 14px rgba(255,179,71,0.28);
+            white-space: nowrap;
+        }
+        .admin-customer-email-btn:hover,
+        .admin-customer-email-btn:focus-visible {
+            border-color: #fff3bd;
+            background: linear-gradient(135deg, #fff0ad, #ffc766);
+            box-shadow: 0 7px 18px rgba(255,179,71,0.4);
+            outline: none;
+        }
         .admin-danger-btn {
             border: 1px solid rgba(231, 76, 60, 0.25);
             background: rgba(231, 76, 60, 0.16);
@@ -2829,11 +2851,11 @@
                     const totalSpent = Number(customer.totalSpent || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
                     const emailAddress = String(customer.email || '').trim();
                     return '<tr>'
-                        + '<td>' + escapeHtml(customer.name || 'N/A') + '</td>'
-                        + '<td><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
-                        + '<span>' + escapeHtml(emailAddress) + '</span>'
-                        + '<button type="button" class="admin-inline-btn" data-customer-email="' + escapeHtml(emailAddress) + '" data-customer-name="' + escapeHtml(customer.name || 'Customer') + '">Email</button>'
+                        + '<td><div class="admin-customer-name-wrap">'
+                        + '<span>' + escapeHtml(customer.name || 'N/A') + '</span>'
+                        + '<button type="button" class="admin-inline-btn admin-customer-email-btn" aria-label="Email ' + escapeHtml(customer.name || 'customer') + '" data-customer-email="' + escapeHtml(emailAddress) + '" data-customer-name="' + escapeHtml(customer.name || 'Customer') + '">Email Customer</button>'
                         + '</div></td>'
+                        + '<td>' + escapeHtml(emailAddress) + '</td>'
                         + '<td>' + escapeHtml(joined) + '</td>'
                         + '<td>' + escapeHtml(String(Number(customer.orderCount || 0))) + '</td>'
                         + '<td>' + escapeHtml(totalSpent) + '</td>'
