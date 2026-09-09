@@ -427,6 +427,15 @@
             background: linear-gradient(180deg, rgba(255,216,106,0.16), rgba(255,255,255,0.06));
             outline: none;
         }
+        .admin-stat-card.new-order-alert {
+            border-color: #ff5c67;
+            background: linear-gradient(180deg, rgba(230,55,70,0.34), rgba(133,20,37,0.18));
+            animation: adminNewOrderFlash 1s ease-in-out infinite;
+        }
+        @keyframes adminNewOrderFlash {
+            0%, 100% { box-shadow: 0 0 0 rgba(255,72,88,0.05), inset 0 1px 0 rgba(255,255,255,0.05); }
+            50% { box-shadow: 0 0 24px rgba(255,72,88,0.72), inset 0 1px 0 rgba(255,255,255,0.1); }
+        }
         .admin-metric-modal {
             position: fixed;
             inset: 0;
@@ -1814,6 +1823,8 @@
         let adminTrendMode = 'months';
         let adminOrderFilter = 'all';
         let adminOrderView = 'active';
+        let adminKnownActiveOrderIds = null;
+        let adminNewOrderAlert = false;
 
         function escapeHtml(value) {
             return String(value || '')
@@ -2533,7 +2544,8 @@
                 { label: 'Special Offers', value: 'Open', note: 'Create limited-time design promotions.', action: 'special-offers' }
             ];
             grid.innerHTML = cards.map(function(card) {
-                return '<button type="button" class="admin-stat-card" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
+                const alertClass = adminNewOrderAlert && (card.action === 'pending' || card.label === 'Pending Sales') ? ' new-order-alert' : '';
+                return '<button type="button" class="admin-stat-card' + alertClass + '" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
             }).join('');
 
             grid.querySelectorAll('[data-stat-action]').forEach(function(card) {
@@ -2549,6 +2561,10 @@
             if (action === 'customers' || action === 'add-designs' || action === 'name-design' || action === 'special-offers') {
                 showAdminMetricModal(action);
                 return;
+            }
+            if (action === 'pending') {
+                adminNewOrderAlert = false;
+                renderAdminStats(adminDashboardState.inventorySummary, adminDashboardState.sales);
             }
             if (action === 'inventory' || action === 'low-stock' || action === 'out-of-stock') {
                 const filter = action === 'low-stock' ? 'low' : (action === 'out-of-stock' ? 'out' : 'all');
@@ -3092,6 +3108,14 @@
         }
 
         function renderAdminDashboard(data) {
+            const activeOrders = Array.isArray(data && data.sales && data.sales.recentOrders) ? data.sales.recentOrders : [];
+            const activeOrderIds = new Set(activeOrders.map(function(order) { return String(order && order.id || '').trim(); }).filter(Boolean));
+            if (adminKnownActiveOrderIds) {
+                adminNewOrderAlert = Array.from(activeOrderIds).some(function(orderId) {
+                    return !adminKnownActiveOrderIds.has(orderId);
+                });
+            }
+            adminKnownActiveOrderIds = activeOrderIds;
             adminDashboardState = {
                 inventory: Array.isArray(data && data.inventory) ? data.inventory : [],
                 inventorySummary: (data && data.inventorySummary) || {},
@@ -3693,8 +3717,8 @@
         });
 
         window.setInterval(function() {
-            refreshDashboardOnTrendChange();
-        }, 60000);
+            if (adminSession) loadAdminDashboard();
+        }, 30000);
 
         renderAdminColorStockEditor();
         updateAdminUi();
