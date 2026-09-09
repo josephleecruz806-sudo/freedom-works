@@ -527,6 +527,16 @@ async function ensureRandomDailySaleBatch() {
   }));
 
   await writeDesignSales([...newBatch, ...current]);
+  try {
+    await sendCustomerSaleAnnouncement(
+      'Freedom Works Sale Alert',
+      `We just launched a new storewide sale with ${newBatch.length} featured designs. Visit the shop now to see what’s on offer before the sale ends.`,
+      'New Store Sale'
+    );
+  } catch (err) {
+    // eslint-disable-next-line no-console
+    console.error('Auto sale announcement email failed:', err.message || err);
+  }
   // eslint-disable-next-line no-console
   console.log(`Auto random sale: put ${newBatch.length} designs on sale until ${endsAt.toISOString()}.`);
 }
@@ -911,6 +921,101 @@ async function sendCustomerReceiptEmail(order) {
   });
 
   return true;
+}
+
+function buildCustomerSaleEmailHtml({ subject, saleTitle, message }) {
+  const resolvedSubject = String(subject || 'Freedom Works Sale Alert').trim() || 'Freedom Works Sale Alert';
+  const resolvedTitle = String(saleTitle || 'Current Store Sale').trim() || 'Current Store Sale';
+  const resolvedMessage = String(message || '').trim() || 'We have a special sale happening right now. Visit our store to check out the latest deals.';
+  const safeBody = resolvedMessage
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/\n/g, '<br>');
+
+  return `
+    <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#11213d;background:#f7f9fc;padding:24px;border-radius:18px;">
+      <div style="background:linear-gradient(135deg,#11213d,#22407d);color:#ffffff;padding:20px 24px;border-radius:14px;">
+        <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.8;">Freedom Works</div>
+        <h2 style="margin:10px 0 0;font-size:28px;line-height:1.2;">${escapeHtml(resolvedTitle)}</h2>
+      </div>
+      <div style="padding:20px 6px 0;">
+        <p style="margin:0 0 12px;font-size:16px;line-height:1.6;color:#1f2d3d;">${safeBody}</p>
+        <p style="margin:18px 0 0;font-size:15px;line-height:1.6;color:#1f2d3d;">Shop the latest deals and save on your next favorite design.</p>
+        <p style="margin:24px 0 0;">
+          <a href="https://freedom-works.onrender.com/" style="display:inline-block;background:#22407d;color:#ffffff;text-decoration:none;padding:12px 18px;border-radius:10px;font-weight:700;">Shop the Sale</a>
+        </p>
+        <p style="margin:18px 0 0;font-size:12px;line-height:1.5;color:#596d88;">Subject: ${escapeHtml(resolvedSubject)}</p>
+      </div>
+    </div>
+  `;
+}
+
+async function sendCustomerSaleAnnouncementEmail(toEmail, subject, message, saleTitle) {
+  const transport = getEmailTransport();
+  const email = normalizeEmail(toEmail);
+  if (!transport || !email) return { ok: false, reason: 'SMTP not configured or email invalid.' };
+
+  const resolvedSubject = String(subject || 'Freedom Works Sale Alert').trim() || 'Freedom Works Sale Alert';
+  const resolvedTitle = String(saleTitle || 'Current Store Sale').trim() || 'Current Store Sale';
+  const resolvedMessage = String(message || '').trim() || 'We have a special sale happening right now. Visit our store to check out the latest deals.';
+
+  await transport.sendMail({
+    from: SMTP_FROM,
+    to: email,
+    replyTo: OWNER_NOTIFY_EMAIL || SMTP_USER || SMTP_FROM,
+    subject: resolvedSubject,
+    text: [
+      `Sale: ${resolvedTitle}`,
+      '',
+      resolvedMessage,
+      '',
+      'Shop now: https://freedom-works.onrender.com/',
+      '',
+      'Thanks,',
+      'Freedom Works',
+    ].join('\n'),
+    html: buildCustomerSaleEmailHtml({
+      subject: resolvedSubject,
+      saleTitle: resolvedTitle,
+      message: resolvedMessage,
+    }),
+  });
+
+  return { ok: true };
+}
+
+async function sendCustomerSaleAnnouncement(subject, message, saleTitle) {
+  const customers = readCustomers();
+  const recipientEmails = Array.from(new Set(
+    customers
+      .map((customer) => normalizeEmail(customer?.email))
+      .filter(Boolean)
+  ));
+
+  if (!recipientEmails.length) {
+    return { ok: true, sent: 0, failed: 0, total: 0 };
+  }
+
+  const transport = getEmailTransport();
+  if (!transport) {
+    throw new Error('SMTP is not configured on the server. Add SMTP_HOST, SMTP_USER, SMTP_PASS, and OWNER_NOTIFY_EMAIL before sending customer emails.');
+  }
+
+  let sent = 0;
+  let failed = 0;
+
+  for (const email of recipientEmails) {
+    try {
+      const result = await sendCustomerSaleAnnouncementEmail(email, subject, message, saleTitle);
+      if (result.ok) sent += 1;
+      else failed += 1;
+    } catch (_) {
+      failed += 1;
+    }
+  }
+
+  return { ok: true, sent, failed, total: recipientEmails.length };
 }
 
 async function notifyOwnerOfNewOrder(order) {
@@ -1533,6 +1638,59 @@ app.get('/api/admin/customers', requireAdmin, (_req, res) => {
   res.json({ ok: true, customers: getCustomerAccountsSummary() });
 });
 
+app.post('/api/admin/customers/send-email', requireAdmin, async (req, res) => {
+  const recipient = normalizeEmail(req.body?.email || '');
+  const subject = String(req.body?.subject || '').trim();
+  const message = String(req.body?.message || '').trim();
+
+  if (!recipient || !recipient.includes('@')) {
+    return res.status(400).json({ error: 'Please choose a valid customer email.' });
+  }
+  if (!subject) {
+    return res.status(400).json({ error: 'Please add an email subject.' });
+  }
+  if (!message) {
+    return res.status(400).json({ error: 'Please add a message before sending.' });
+  }
+
+  try {
+    const transport = getEmailTransport();
+    if (!transport) {
+      return res.status(503).json({ error: 'SMTP is not configured on the server. Add SMTP_HOST, SMTP_USER, SMTP_PASS, and OWNER_NOTIFY_EMAIL before sending customer emails.' });
+    }
+
+    await transport.sendMail({
+      from: SMTP_FROM,
+      to: recipient,
+      replyTo: OWNER_NOTIFY_EMAIL || SMTP_USER || SMTP_FROM,
+      subject,
+      text: message,
+      html: `<div style="font-family:Arial,Helvetica,sans-serif;line-height:1.6;color:#11213d;padding:18px;">${escapeHtml(message).replace(/\n/g, '<br>')}</div>`,
+    });
+
+    return res.json({ ok: true, sentTo: recipient, subject });
+  } catch (err) {
+    return res.status(500).json({ error: err.message || 'Unable to send this email.' });
+  }
+});
+
+app.post('/api/admin/customers/broadcast-sale', requireAdmin, async (req, res) => {
+  const subject = String(req.body?.subject || '').trim() || 'Freedom Works Sale Alert';
+  const saleTitle = String(req.body?.saleTitle || '').trim() || 'Current Store Sale';
+  const message = String(req.body?.message || '').trim();
+
+  if (!message) {
+    return res.status(400).json({ error: 'Please add the sale message to send to customers.' });
+  }
+
+  try {
+    const result = await sendCustomerSaleAnnouncement(subject, message, saleTitle);
+    return res.json({ ok: true, ...result, message: `Sale emails sent to ${result.sent} customer account(s).` });
+  } catch (err) {
+    return res.status(503).json({ error: err.message || 'Could not send the sale announcement right now.' });
+  }
+});
+
 app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (req, res) => {
   if (!stripe || !STRIPE_WEBHOOK_SECRET) {
     return res.status(400).send('Stripe webhook not configured');
@@ -1926,6 +2084,20 @@ app.post('/api/admin/design-sales', requireAdmin, async (req, res) => {
   });
 
   await writeDesignSales(current);
+
+  if (!hadExistingRecords) {
+    try {
+      await sendCustomerSaleAnnouncement(
+        'Freedom Works Sale Alert',
+        `A new sale is live now on ${savedRecords.length} featured design${savedRecords.length === 1 ? '' : 's'}. Visit the store and check out the latest deals before the sale window closes.`,
+        'New Store Sale'
+      );
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.error('Owner sale announcement email failed:', err.message || err);
+    }
+  }
+
   res.status(hadExistingRecords ? 200 : 201).json({
     ok: true,
     designSales: savedRecords,

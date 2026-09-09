@@ -298,7 +298,8 @@
         #admin-status-msg,
         #admin-login-status-msg,
         #admin-inventory-status,
-        #admin-design-sale-status {
+        #admin-design-sale-status,
+        #admin-customer-email-status {
             min-height: 20px;
             margin-top: 12px;
             color: #ffd6d6;
@@ -307,7 +308,8 @@
         #admin-status-msg.success,
         #admin-login-status-msg.success,
         #admin-inventory-status.success,
-        #admin-design-sale-status.success {
+        #admin-design-sale-status.success,
+        #admin-customer-email-status.success {
             color: #b8f7cf;
         }
         .admin-sale-config-note {
@@ -979,35 +981,219 @@
                 text-align: left;
             }
             .admin-dashboard-grid,
-            .admin-form-grid {
+            .admin-form-grid,
+            .admin-overview-grid,
+            .admin-highlight-grid,
+            .admin-mini-grid,
+            .admin-source-grid {
                 grid-template-columns: 1fr;
             }
             .owner-shell {
-                width: calc(100vw - 18px);
-                margin-top: 10px;
+                width: calc(100vw - 16px);
+                margin-top: 8px;
             }
             .owner-page {
-                padding: 18px;
+                padding: 16px;
             }
-                .admin-overview-grid,
-                .admin-month-chart,
-                .admin-highlight-grid,
-                .admin-mini-grid,
-                .admin-source-grid {
-                    grid-template-columns: 1fr;
-                }
-                .admin-toolbar,
-                .admin-toolbar-group,
-                .admin-collection-item,
-                .admin-trend-head,
-                .admin-trend-summary {
-                    flex-direction: column;
-                    align-items: stretch;
-                }
-                .admin-search,
-                .admin-filter-select {
-                    width: 100%;
-                }
+            .admin-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .admin-toolbar,
+            .admin-toolbar-group,
+            .admin-collection-item,
+            .admin-trend-head,
+            .admin-trend-summary {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .admin-search,
+            .admin-filter-select {
+                width: 100%;
+            }
+            .admin-month-chart {
+                min-height: 180px;
+            }
+            .admin-month-track {
+                max-width: 52px;
+                height: 140px;
+            }
+            .admin-offer-card {
+                grid-template-columns: 1fr;
+            }
+            .admin-offer-actions {
+                justify-content: flex-start;
+            }
+        }
+
+        @media (max-width: 560px) {
+            body {
+                overflow-x: hidden;
+            }
+            .owner-shell {
+                width: calc(100vw - 10px);
+                margin: 6px auto 28px;
+            }
+            .owner-topbar {
+                padding: 12px 14px;
+                border-radius: 16px;
+                margin-bottom: 12px;
+            }
+            .owner-topbar h1 {
+                font-size: 1.15rem;
+            }
+            .owner-topbar p {
+                font-size: 0.8rem;
+            }
+            .owner-links {
+                width: 100%;
+            }
+            .owner-link,
+            .owner-logout-btn,
+            .owner-primary-btn,
+            .owner-secondary-btn {
+                flex: 1 1 auto;
+                text-align: center;
+                padding: 10px 12px;
+                font-size: 0.8rem;
+            }
+            .owner-page {
+                padding: 12px;
+                border-radius: 18px;
+            }
+            .owner-hero {
+                gap: 10px;
+                margin-bottom: 14px;
+            }
+            .owner-hero h2 {
+                font-size: 1.2rem;
+            }
+            .owner-hero p {
+                font-size: 0.8rem;
+            }
+            .owner-hero-actions {
+                margin-top: 10px;
+                gap: 8px;
+            }
+            .admin-meta {
+                font-size: 0.8rem;
+            }
+            .admin-stats-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 8px;
+            }
+            .admin-stat-card {
+                padding: 12px 10px;
+            }
+            .admin-stat-card strong {
+                font-size: 1.1rem;
+            }
+            .admin-panel {
+                padding: 12px;
+                border-radius: 14px;
+                max-height: none;
+            }
+            .admin-section-title {
+                margin-bottom: 8px;
+                font-size: 0.96rem;
+            }
+            .admin-panel-head {
+                margin-bottom: 10px;
+            }
+            .admin-panel-head p,
+            .admin-panel-subtitle,
+            .admin-offer-copy,
+            .admin-sale-card p,
+            .admin-highlight-card p,
+            .admin-highlight-card li,
+            .admin-collection-item p {
+                font-size: 0.77rem;
+            }
+            .admin-trend-head {
+                margin-bottom: 12px;
+            }
+            .admin-dashboard-grid > .admin-panel,
+            .admin-overview-grid > .admin-panel,
+            .admin-panel.admin-trend-panel,
+            .admin-panel.admin-panel-stack,
+            .admin-table-wrap,
+            .admin-sales-list,
+            .admin-collection,
+            .admin-design-picker,
+            .admin-offer-list {
+                max-height: 360px;
+                overflow: auto;
+                -webkit-overflow-scrolling: touch;
+            }
+            .admin-trend-summary {
+                width: 100%;
+                align-items: flex-start;
+                text-align: left;
+            }
+            .admin-trend-controls {
+                width: 100%;
+            }
+            .admin-trend-controls button {
+                padding: 8px 10px;
+                font-size: 0.72rem;
+            }
+            .admin-month-chart.days {
+                grid-template-columns: repeat(7, minmax(0, 1fr));
+            }
+            .admin-month-chart.weeks {
+                grid-template-columns: repeat(4, minmax(0, 1fr));
+            }
+            .admin-month-chart {
+                gap: 7px;
+                min-height: 160px;
+            }
+            .admin-month-track {
+                max-width: 42px;
+                height: 120px;
+            }
+            .admin-month-value,
+            .admin-month-label {
+                font-size: 0.68rem;
+            }
+            .admin-search,
+            .admin-filter-select,
+            .stripe-field input,
+            .stripe-field select {
+                min-height: 42px;
+                font-size: 0.86rem;
+            }
+            .admin-form-actions {
+                display: grid;
+                grid-template-columns: 1fr;
+            }
+            .admin-form-actions button,
+            .admin-design-picker-card,
+            .admin-size-chip,
+            .admin-offer-preset {
+                width: 100%;
+            }
+            .admin-design-picker {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+            .admin-sale-card,
+            .admin-offer-card,
+            .admin-collection-item {
+                padding: 12px;
+            }
+            .admin-order-item-body {
+                grid-template-columns: 1fr;
+            }
+            .admin-order-item-media,
+            .admin-order-item-media-stack {
+                width: 100%;
+                max-width: 110px;
+            }
+            .admin-order-item-media-stack .admin-order-item-media {
+                width: 100%;
+                max-width: 110px;
+            }
+            .admin-table {
+                min-width: 640px;
+            }
         }
     </style>
 </head>
@@ -1135,6 +1321,30 @@
                             </div>
                             <div id="admin-inventory-status" role="alert"></div>
                         </form>
+
+                        <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
+                            <div class="admin-panel-head">
+                                <div>
+                                    <h3 class="admin-section-title">Inventory Items</h3>
+                                    <p>Search, filter, and manage your tracked stock entries without leaving the owner dashboard.</p>
+                                </div>
+                            </div>
+                            <div class="admin-toolbar">
+                                <div class="admin-toolbar-group">
+                                    <input id="admin-inventory-search" class="admin-search" type="search" placeholder="Search item or SKU">
+                                </div>
+                                <div class="admin-toolbar-group">
+                                    <select id="admin-inventory-filter" class="admin-filter-select">
+                                        <option value="all">All stock</option>
+                                        <option value="healthy">Healthy</option>
+                                        <option value="low">Low stock</option>
+                                        <option value="out">Out of stock</option>
+                                    </select>
+                                    <span class="admin-toolbar-note" id="admin-inventory-count">0 items</span>
+                                </div>
+                            </div>
+                            <div class="admin-table-wrap" id="admin-inventory-list"></div>
+                        </div>
 
                         <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
                             <div class="admin-panel-head">
@@ -1291,6 +1501,34 @@
                         </div>
                     </div>
                     <div class="admin-table-wrap" id="admin-customers-list"></div>
+                    <div id="admin-customer-email-status" role="alert"></div>
+                </section>
+
+                <section class="admin-panel" style="margin-top:16px;">
+                    <div class="admin-panel-head">
+                        <div>
+                            <h3 class="admin-section-title">Sale Email Broadcast</h3>
+                            <p>Send a sale update to every customer account that has signed up.</p>
+                        </div>
+                    </div>
+                    <div class="admin-form-grid">
+                        <div class="stripe-field">
+                            <label for="admin-sale-email-subject">Email Subject</label>
+                            <input id="admin-sale-email-subject" type="text" value="Freedom Works Sale Alert" maxlength="120">
+                        </div>
+                        <div class="stripe-field">
+                            <label for="admin-sale-email-title">Sale Title</label>
+                            <input id="admin-sale-email-title" type="text" value="Current Store Sale" maxlength="80">
+                        </div>
+                    </div>
+                    <div class="stripe-field" style="margin-top:12px;">
+                        <label for="admin-sale-email-message">Sale Message</label>
+                        <textarea id="admin-sale-email-message" rows="6" style="width:100%;border-radius:12px;border:1px solid rgba(255,255,255,0.12);background:rgba(255,255,255,0.08);color:#fff;padding:12px;resize:vertical;">We’re running a special sale right now. Shop the latest deals and save on your next favorite design.</textarea>
+                    </div>
+                    <div class="admin-form-actions" style="margin-top:12px;">
+                        <button id="admin-sale-email-btn" class="owner-primary-btn" type="button">Send To Customer Accounts</button>
+                    </div>
+                    <div id="admin-sale-email-status" role="alert"></div>
                 </section>
             </div>
         </main>
@@ -2589,9 +2827,13 @@
                 + records.map(function(customer) {
                     const joined = customer.createdAt ? new Date(customer.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : '\u2014';
                     const totalSpent = Number(customer.totalSpent || 0).toLocaleString('en-US', { style: 'currency', currency: 'USD' });
+                    const emailAddress = String(customer.email || '').trim();
                     return '<tr>'
                         + '<td>' + escapeHtml(customer.name || 'N/A') + '</td>'
-                        + '<td>' + escapeHtml(customer.email || '') + '</td>'
+                        + '<td><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+                        + '<span>' + escapeHtml(emailAddress) + '</span>'
+                        + '<button type="button" class="admin-inline-btn" data-customer-email="' + escapeHtml(emailAddress) + '" data-customer-name="' + escapeHtml(customer.name || 'Customer') + '">Email</button>'
+                        + '</div></td>'
                         + '<td>' + escapeHtml(joined) + '</td>'
                         + '<td>' + escapeHtml(String(Number(customer.orderCount || 0))) + '</td>'
                         + '<td>' + escapeHtml(totalSpent) + '</td>'
@@ -2599,6 +2841,58 @@
                         + '</tr>';
                 }).join('')
                 + '</tbody></table>';
+
+            listEl.querySelectorAll('[data-customer-email]').forEach(function(button) {
+                button.addEventListener('click', function() {
+                    const emailAddress = String(button.getAttribute('data-customer-email') || '').trim();
+                    const customerName = String(button.getAttribute('data-customer-name') || 'Customer').trim();
+                    if (!emailAddress) return;
+                    const subject = window.prompt('Email subject for ' + customerName + ':', 'Message from Freedom Works');
+                    if (subject === null) return;
+                    const message = window.prompt('Message for ' + emailAddress + ':', 'Hi ' + customerName + ',\n\nWe wanted to share an update with you.\n\nThanks,\nFreedom Works');
+                    if (message === null) return;
+                    sendAdminCustomerEmail(emailAddress, subject.trim(), message.trim());
+                });
+            });
+        }
+
+        async function sendAdminCustomerEmail(emailAddress, subject, message) {
+            const cleanedEmail = String(emailAddress || '').trim();
+            const cleanedSubject = String(subject || '').trim();
+            const cleanedMessage = String(message || '').trim();
+
+            if (!cleanedEmail || !cleanedSubject || !cleanedMessage) {
+                return;
+            }
+
+            const statusEl = document.getElementById('admin-customer-email-status') || document.getElementById('admin-status-msg');
+            if (statusEl) {
+                statusEl.textContent = 'Sending email to ' + cleanedEmail + '...';
+                statusEl.classList.remove('success');
+            }
+
+            try {
+                const resp = await fetchWithApiCandidates('/api/admin/customers/send-email', {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify({
+                        email: cleanedEmail,
+                        subject: cleanedSubject,
+                        message: cleanedMessage,
+                    })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to send customer email.');
+                if (statusEl) {
+                    statusEl.textContent = 'Email sent to ' + cleanedEmail + '.';
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to send customer email.';
+                    statusEl.classList.remove('success');
+                }
+            }
         }
 
         function renderAdminDashboard(data) {
@@ -3097,8 +3391,59 @@
         renderAdminSaleSizePicker();
         toggleAdminDesignSaleFields();
 
+        document.getElementById('admin-inventory-search').addEventListener('input', function() {
+            renderAdminInventory(adminDashboardState.inventory);
+        });
+
+        document.getElementById('admin-inventory-filter').addEventListener('change', function() {
+            renderAdminInventory(adminDashboardState.inventory);
+        });
+
         document.getElementById('admin-customers-search').addEventListener('input', function() {
             renderAdminCustomers(adminDashboardState.customers);
+        });
+
+        document.getElementById('admin-sale-email-btn').addEventListener('click', async function() {
+            const statusEl = document.getElementById('admin-sale-email-status');
+            const subject = String(document.getElementById('admin-sale-email-subject')?.value || '').trim();
+            const saleTitle = String(document.getElementById('admin-sale-email-title')?.value || '').trim();
+            const message = String(document.getElementById('admin-sale-email-message')?.value || '').trim();
+
+            if (!message) {
+                if (statusEl) {
+                    statusEl.textContent = 'Please add a sale message before sending.';
+                    statusEl.classList.remove('success');
+                }
+                return;
+            }
+
+            if (statusEl) {
+                statusEl.textContent = 'Sending sale emails...';
+                statusEl.classList.remove('success');
+            }
+
+            try {
+                const resp = await fetchWithApiCandidates('/api/admin/customers/broadcast-sale', {
+                    method: 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify({
+                        subject: subject || 'Freedom Works Sale Alert',
+                        saleTitle: saleTitle || 'Current Store Sale',
+                        message,
+                    })
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to send the sale email blast.');
+                if (statusEl) {
+                    statusEl.textContent = data.message || `Sale emails sent to ${data.sent || 0} customer account(s).`;
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to send the sale email blast.';
+                    statusEl.classList.remove('success');
+                }
+            }
         });
 
         document.querySelectorAll('[data-trend-mode]').forEach(function(button) {
