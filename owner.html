@@ -2515,11 +2515,12 @@
             const inventorySummary = summary || {};
             const salesSummary = sales || {};
             const cards = [
-                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'orders' },
+                { label: 'Sales', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'sales' },
+                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'sales' },
                 { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.', action: 'paid' },
                 { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.', action: 'pending' },
-                { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.', action: 'orders' },
-                { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.', action: 'orders' },
+                { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.', action: 'sales' },
+                { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.', action: 'sales' },
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
                 { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
@@ -2580,7 +2581,8 @@
                 history: 'Order History',
                 paid: 'Paid Orders',
                 pending: 'Pending Orders',
-                orders: 'Recent Orders'
+                orders: 'Recent Orders',
+                sales: 'Sales'
             };
             title.textContent = labels[action] || 'Dashboard Details';
             body.replaceChildren(source.cloneNode(true));
