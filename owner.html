@@ -407,11 +407,25 @@
             margin-bottom: 18px;
         }
         .admin-stat-card {
+            display: block;
+            width: 100%;
+            text-align: left;
+            color: inherit;
+            font: inherit;
             border-radius: 16px;
             padding: 16px;
             background: linear-gradient(180deg, rgba(255,255,255,0.08), rgba(255,255,255,0.04));
             border: 1px solid rgba(255,255,255,0.1);
             box-shadow: inset 0 1px 0 rgba(255,255,255,0.05);
+            cursor: pointer;
+            transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+        }
+        .admin-stat-card:hover,
+        .admin-stat-card:focus-visible {
+            transform: translateY(-2px);
+            border-color: rgba(255,216,106,0.62);
+            background: linear-gradient(180deg, rgba(255,216,106,0.16), rgba(255,255,255,0.06));
+            outline: none;
         }
         .admin-stat-card span {
             display: block;
@@ -1274,13 +1288,15 @@
             </div>
 
             <div id="admin-dashboard-panel" style="display:none;">
-                <section class="admin-panel admin-recent-orders-panel">
+                <section class="admin-panel admin-recent-orders-panel" id="admin-recent-orders-panel">
                     <div class="admin-panel-head">
                         <div>
                             <h3 class="admin-section-title">Recent Orders</h3>
                             <p class="admin-panel-subtitle">The latest customer activity saved by checkout.</p>
                         </div>
+                        <button type="button" class="owner-secondary-btn" id="admin-orders-clear-filter" style="display:none;">Show All Orders</button>
                     </div>
+                    <div id="admin-orders-filter-status" class="admin-panel-subtitle" style="display:none;margin-bottom:12px;"></div>
                     <div class="admin-sales-list" id="admin-sales-list"></div>
                 </section>
                 <div id="admin-status-msg"></div>
@@ -1325,7 +1341,7 @@
                     </section>
                 </div>
                 <div class="admin-dashboard-grid">
-                    <section class="admin-panel">
+                    <section class="admin-panel" id="admin-inventory-panel">
                         <div class="admin-panel-head">
                             <div>
                                 <h3 class="admin-section-title">Color &amp; Size Stock</h3>
@@ -1732,6 +1748,7 @@
         let ownerLastSyncAt = '';
         let adminRenderedTrendKey = '';
         let adminTrendMode = 'months';
+        let adminOrderFilter = 'all';
 
         function escapeHtml(value) {
             return String(value || '')
@@ -2434,18 +2451,40 @@
             const inventorySummary = summary || {};
             const salesSummary = sales || {};
             const cards = [
-                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.' },
-                { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.' },
-                { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.' },
-                { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.' },
-                { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.' },
-                { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.' },
-                { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.' },
-                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.' }
+                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'orders' },
+                { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.', action: 'paid' },
+                { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.', action: 'pending' },
+                { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.', action: 'orders' },
+                { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.', action: 'orders' },
+                { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory' },
+                { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
+                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
             ];
             grid.innerHTML = cards.map(function(card) {
-                return '<div class="admin-stat-card"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></div>';
+                return '<button type="button" class="admin-stat-card" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
             }).join('');
+
+            grid.querySelectorAll('[data-stat-action]').forEach(function(card) {
+                card.addEventListener('click', function() {
+                    focusAdminDashboardArea(card.getAttribute('data-stat-action') || 'orders');
+                });
+            });
+        }
+
+        function focusAdminDashboardArea(action) {
+            const inventoryPanel = document.getElementById('admin-inventory-panel');
+            const ordersPanel = document.getElementById('admin-recent-orders-panel');
+            if (action === 'inventory' || action === 'low-stock' || action === 'out-of-stock') {
+                const filter = action === 'low-stock' ? 'low' : (action === 'out-of-stock' ? 'out' : 'all');
+                const filterEl = document.getElementById('admin-inventory-filter');
+                if (filterEl) filterEl.value = filter;
+                renderAdminInventory(adminDashboardState.inventory);
+                inventoryPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                return;
+            }
+            adminOrderFilter = action === 'paid' || action === 'pending' ? action : 'all';
+            renderAdminSales(adminDashboardState.sales);
+            ordersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
 
         function renderMonthlySalesTrend(sales) {
@@ -2738,11 +2777,27 @@
         function renderAdminSales(sales) {
             const listEl = document.getElementById('admin-sales-list');
             if (!listEl) return;
-            const orders = Array.isArray(sales && sales.recentOrders)
+            const allOrders = Array.isArray(sales && sales.recentOrders)
                 ? sales.recentOrders.filter(function(order) { return !isOwnerDashboardTestOrder(order); })
                 : [];
+            const orders = adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
+                ? allOrders.filter(function(order) {
+                    return String(order.status || 'pending').toLowerCase() === adminOrderFilter;
+                })
+                : allOrders;
+            const filterStatusEl = document.getElementById('admin-orders-filter-status');
+            const clearFilterBtn = document.getElementById('admin-orders-clear-filter');
+            if (filterStatusEl) {
+                filterStatusEl.textContent = adminOrderFilter === 'paid'
+                    ? 'Showing paid orders only.'
+                    : (adminOrderFilter === 'pending' ? 'Showing pending orders only.' : '');
+                filterStatusEl.style.display = adminOrderFilter === 'all' ? 'none' : '';
+            }
+            if (clearFilterBtn) clearFilterBtn.style.display = adminOrderFilter === 'all' ? 'none' : '';
             if (!orders.length) {
-                listEl.innerHTML = '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>';
+                listEl.innerHTML = adminOrderFilter === 'all'
+                    ? '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>'
+                    : '<div class="admin-empty">No ' + escapeHtml(adminOrderFilter) + ' orders are currently available.</div>';
                 return;
             }
             listEl.innerHTML = orders.map(function(order) {
@@ -3388,6 +3443,11 @@
 
         document.getElementById('admin-customers-search').addEventListener('input', function() {
             renderAdminCustomers(adminDashboardState.customers);
+        });
+
+        document.getElementById('admin-orders-clear-filter').addEventListener('click', function() {
+            adminOrderFilter = 'all';
+            renderAdminSales(adminDashboardState.sales);
         });
 
         document.getElementById('admin-sale-email-btn').addEventListener('click', function() {
