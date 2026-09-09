@@ -1490,7 +1490,9 @@ function isOwnerDashboardTestOrder(order) {
 }
 
 function getSalesSummary() {
-  const orders = readOrders().filter((order) => !isOwnerDashboardTestOrder(order));
+  const allOrders = readOrders().filter((order) => !isOwnerDashboardTestOrder(order));
+  const historyOrders = allOrders.filter((order) => String(order.status || '').toLowerCase() === 'completed');
+  const orders = allOrders.filter((order) => String(order.status || '').toLowerCase() !== 'completed');
   const paidOrders = orders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
   const pendingOrders = orders.filter((order) => String(order.status || '').toLowerCase() !== 'paid');
   const revenue = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
@@ -1579,6 +1581,21 @@ function getSalesSummary() {
   return {
     revenue: Number(revenue.toFixed(2)),
     orderCount: orders.length,
+    orderHistoryCount: historyOrders.length,
+    orderHistory: historyOrders.slice(0, 8).map((order) => ({
+      id: order.id,
+      status: order.status || 'completed',
+      total: Number(order.total || 0),
+      shippingAmount: Number(order.shippingAmount || 0),
+      source: order.source || 'stripe',
+      createdAt: order.createdAt,
+      completedAt: order.completedAt || order.updatedAt || order.createdAt,
+      customerName: order?.customer?.name || '',
+      customerEmail: order?.customer?.email || '',
+      shipping: order?.shipping || {},
+      items: Array.isArray(order?.items) ? order.items : [],
+      itemCount: Array.isArray(order.items) ? order.items.length : 0,
+    })),
     paidOrderCount: paidOrders.length,
     pendingOrderCount: pendingOrders.length,
     unitsSold,
@@ -2010,6 +2027,21 @@ app.get('/api/admin/dashboard', requireAdmin, (_req, res) => {
     designSales: getSanitizedDesignSales(),
     customers: getCustomerAccountsSummary(),
   });
+});
+
+app.post('/api/admin/orders/:orderId/complete', requireAdmin, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+  if (!orderId) return res.status(400).json({ error: 'Order ID is required.' });
+
+  const orders = readOrders();
+  const order = orders.find((entry) => String(entry.id || '') === orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  order.status = 'completed';
+  order.completedAt = new Date().toISOString();
+  order.updatedAt = order.completedAt;
+  await writeOrders(orders);
+  return res.json({ ok: true, orderId, status: order.status });
 });
 
 app.get('/api/admin/design-sales', requireAdmin, (_req, res) => {

@@ -916,6 +916,16 @@
             gap: 8px;
             flex-wrap: wrap;
         }
+        .admin-order-actions {
+            display: flex;
+            justify-content: flex-end;
+            margin: 10px 0 4px;
+        }
+        .admin-order-done-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #55d68a, #249d68);
+            box-shadow: 0 6px 16px rgba(36,157,104,0.28);
+        }
         .admin-inline-btn {
             padding: 7px 10px;
         }
@@ -1291,8 +1301,8 @@
                 <section class="admin-panel admin-recent-orders-panel" id="admin-recent-orders-panel">
                     <div class="admin-panel-head">
                         <div>
-                            <h3 class="admin-section-title">Recent Orders</h3>
-                            <p class="admin-panel-subtitle">The latest customer activity saved by checkout.</p>
+                            <h3 class="admin-section-title" id="admin-orders-panel-title">Recent Orders</h3>
+                            <p class="admin-panel-subtitle" id="admin-orders-panel-subtitle">The latest customer activity saved by checkout.</p>
                         </div>
                         <button type="button" class="owner-secondary-btn" id="admin-orders-clear-filter" style="display:none;">Show All Orders</button>
                     </div>
@@ -1749,6 +1759,7 @@
         let adminRenderedTrendKey = '';
         let adminTrendMode = 'months';
         let adminOrderFilter = 'all';
+        let adminOrderView = 'active';
 
         function escapeHtml(value) {
             return String(value || '')
@@ -2459,6 +2470,7 @@
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
                 { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
+                ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' }
             ];
             grid.innerHTML = cards.map(function(card) {
                 return '<button type="button" class="admin-stat-card" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
@@ -2482,7 +2494,8 @@
                 inventoryPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
-            adminOrderFilter = action === 'paid' || action === 'pending' ? action : 'all';
+            adminOrderView = action === 'history' ? 'history' : 'active';
+            adminOrderFilter = adminOrderView === 'history' ? 'all' : (action === 'paid' || action === 'pending' ? action : 'all');
             renderAdminSales(adminDashboardState.sales);
             ordersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
         }
@@ -2777,9 +2790,11 @@
         function renderAdminSales(sales) {
             const listEl = document.getElementById('admin-sales-list');
             if (!listEl) return;
-            const allOrders = Array.isArray(sales && sales.recentOrders)
+            const allOrders = adminOrderView === 'history'
+                ? (Array.isArray(sales && sales.orderHistory) ? sales.orderHistory : [])
+                : (Array.isArray(sales && sales.recentOrders)
                 ? sales.recentOrders.filter(function(order) { return !isOwnerDashboardTestOrder(order); })
-                : [];
+                : []);
             const orders = adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
                 ? allOrders.filter(function(order) {
                     return String(order.status || 'pending').toLowerCase() === adminOrderFilter;
@@ -2787,6 +2802,10 @@
                 : allOrders;
             const filterStatusEl = document.getElementById('admin-orders-filter-status');
             const clearFilterBtn = document.getElementById('admin-orders-clear-filter');
+            const titleEl = document.getElementById('admin-orders-panel-title');
+            const subtitleEl = document.getElementById('admin-orders-panel-subtitle');
+            if (titleEl) titleEl.textContent = adminOrderView === 'history' ? 'Order History' : 'Recent Orders';
+            if (subtitleEl) subtitleEl.textContent = adminOrderView === 'history' ? 'Completed orders moved out of the active list.' : 'The latest customer activity saved by checkout.';
             if (filterStatusEl) {
                 filterStatusEl.textContent = adminOrderFilter === 'paid'
                     ? 'Showing paid orders only.'
@@ -2795,7 +2814,9 @@
             }
             if (clearFilterBtn) clearFilterBtn.style.display = adminOrderFilter === 'all' ? 'none' : '';
             if (!orders.length) {
-                listEl.innerHTML = adminOrderFilter === 'all'
+                listEl.innerHTML = adminOrderView === 'history'
+                    ? '<div class="admin-empty">No completed orders are in history yet.</div>'
+                    : adminOrderFilter === 'all'
                     ? '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>'
                     : '<div class="admin-empty">No ' + escapeHtml(adminOrderFilter) + ' orders are currently available.</div>';
                 return;
@@ -2819,6 +2840,7 @@
                     + '<div><strong>' + escapeHtml(order.id || 'Order') + '</strong><p>' + escapeHtml(formatAccountOrderDate(order.createdAt)) + '</p></div>'
                         + '<div class="admin-order-meta"><span class="account-order-badge ' + (String(order.status || '').toLowerCase() === 'paid' ? 'paid' : 'pending') + '">' + escapeHtml(order.status || 'pending') + '</span><span class="account-order-badge">' + escapeHtml(String(order.source || '').toUpperCase()) + '</span><span class="account-order-badge">' + escapeHtml(fulfillmentMethod === 'pickup' ? 'PICKUP' : 'DELIVERY') + '</span><span class="account-order-total">' + escapeHtml(formatPriceAmount(Number(order.total || 0))) + '</span></div>'
                     + '</div>'
+                    + (adminOrderView === 'active' ? '<div class="admin-order-actions"><button type="button" class="owner-primary-btn admin-order-done-btn" data-order-id="' + escapeHtml(order.id || '') + '">Done</button></div>' : '')
                     + '<p>' + escapeHtml(order.customerName || order.customerEmail || 'Customer not provided') + '</p>'
                     + '<p>' + escapeHtml(String(order.itemCount || 0)) + ' item(s)</p>'
                     + (shippingAmount > 0 ? '<p><strong>' + escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup charge:' : 'Delivery charge:') + '</strong> ' + escapeHtml(formatPriceAmount(shippingAmount)) + '</p>' : '')
@@ -2875,6 +2897,27 @@
                     return;
                 }
                 imgEl.addEventListener('error', showFallback, { once: true });
+            });
+            listEl.querySelectorAll('.admin-order-done-btn').forEach(function(button) {
+                button.addEventListener('click', async function() {
+                    const orderId = String(button.getAttribute('data-order-id') || '').trim();
+                    if (!orderId || !window.confirm('Mark order ' + orderId + ' as done and move it to Order History?')) return;
+                    button.disabled = true;
+                    button.textContent = 'Saving...';
+                    try {
+                        const resp = await fetchWithApiCandidates('/api/admin/orders/' + encodeURIComponent(orderId) + '/complete', {
+                            method: 'POST',
+                            headers: getAdminAuthHeaders()
+                        });
+                        const data = await resp.json().catch(function() { return {}; });
+                        if (!resp.ok) throw new Error(data.error || 'Unable to complete this order.');
+                        await loadAdminDashboard();
+                    } catch (err) {
+                        button.disabled = false;
+                        button.textContent = 'Done';
+                        window.alert(err.message || 'Unable to complete this order.');
+                    }
+                });
             });
         }
 
@@ -3446,6 +3489,7 @@
         });
 
         document.getElementById('admin-orders-clear-filter').addEventListener('click', function() {
+            adminOrderView = 'active';
             adminOrderFilter = 'all';
             renderAdminSales(adminDashboardState.sales);
         });
