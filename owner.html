@@ -427,6 +427,50 @@
             background: linear-gradient(180deg, rgba(255,216,106,0.16), rgba(255,255,255,0.06));
             outline: none;
         }
+        .admin-metric-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 50;
+            display: flex;
+            align-items: flex-start;
+            justify-content: center;
+            padding: 22px;
+            background: rgba(5, 12, 28, 0.72);
+            overflow-y: auto;
+        }
+        .admin-metric-modal[hidden] {
+            display: none;
+        }
+        .admin-metric-modal-card {
+            width: min(960px, 100%);
+            max-height: calc(100vh - 44px);
+            overflow: auto;
+            border: 1px solid rgba(255,216,106,0.34);
+            border-radius: 18px;
+            background: linear-gradient(180deg, #17294d, #0e1b38);
+            box-shadow: 0 24px 70px rgba(0,0,0,0.42);
+        }
+        .admin-metric-modal-head {
+            position: sticky;
+            top: 0;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 16px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            background: rgba(18, 34, 68, 0.96);
+        }
+        .admin-metric-modal-head h3 {
+            margin: 0;
+        }
+        .admin-metric-modal-body {
+            padding: 16px;
+        }
+        .admin-metric-modal-body > .admin-panel {
+            margin: 0;
+        }
         .admin-stat-card span {
             display: block;
             letter-spacing: 0.5px;
@@ -1298,6 +1342,15 @@
             </div>
 
             <div id="admin-dashboard-panel" style="display:none;">
+                <div id="admin-metric-modal" class="admin-metric-modal" hidden>
+                    <div class="admin-metric-modal-card" role="dialog" aria-modal="true" aria-labelledby="admin-metric-modal-title">
+                        <div class="admin-metric-modal-head">
+                            <h3 id="admin-metric-modal-title">Dashboard Details</h3>
+                            <button type="button" class="owner-secondary-btn" id="admin-metric-modal-close">Close</button>
+                        </div>
+                        <div class="admin-metric-modal-body" id="admin-metric-modal-body"></div>
+                    </div>
+                </div>
                 <section class="admin-panel admin-recent-orders-panel" id="admin-recent-orders-panel">
                     <div class="admin-panel-head">
                         <div>
@@ -1537,7 +1590,7 @@
                     </section>
                 </div>
 
-                <section class="admin-panel" style="margin-top:16px;">
+                <section class="admin-panel" id="admin-customer-accounts-panel" style="margin-top:16px;">
                     <div class="admin-panel-head">
                         <div>
                             <h3 class="admin-section-title">Customer Accounts</h3>
@@ -2470,7 +2523,8 @@
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
                 { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
-                ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' }
+                ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' },
+                { label: 'Customers', value: String(Number(adminDashboardState.customers?.length || 0)), note: 'Registered customer accounts.', action: 'customers' }
             ];
             grid.innerHTML = cards.map(function(card) {
                 return '<button type="button" class="admin-stat-card" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
@@ -2486,18 +2540,59 @@
         function focusAdminDashboardArea(action) {
             const inventoryPanel = document.getElementById('admin-inventory-panel');
             const ordersPanel = document.getElementById('admin-recent-orders-panel');
+            if (action === 'customers') {
+                showAdminMetricModal(action);
+                return;
+            }
             if (action === 'inventory' || action === 'low-stock' || action === 'out-of-stock') {
                 const filter = action === 'low-stock' ? 'low' : (action === 'out-of-stock' ? 'out' : 'all');
                 const filterEl = document.getElementById('admin-inventory-filter');
                 if (filterEl) filterEl.value = filter;
                 renderAdminInventory(adminDashboardState.inventory);
+                showAdminMetricModal(action);
                 inventoryPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
             adminOrderView = action === 'history' ? 'history' : 'active';
             adminOrderFilter = adminOrderView === 'history' ? 'all' : (action === 'paid' || action === 'pending' ? action : 'all');
             renderAdminSales(adminDashboardState.sales);
+            showAdminMetricModal(action);
             ordersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function showAdminMetricModal(action) {
+            const modal = document.getElementById('admin-metric-modal');
+            const body = document.getElementById('admin-metric-modal-body');
+            const title = document.getElementById('admin-metric-modal-title');
+            if (!modal || !body || !title) return;
+            const sourceId = action === 'customers'
+                ? 'admin-customer-accounts-panel'
+                : (action === 'inventory' || action === 'low-stock' || action === 'out-of-stock'
+                    ? 'admin-inventory-panel'
+                    : 'admin-recent-orders-panel');
+            const source = document.getElementById(sourceId);
+            if (!source) return;
+            const labels = {
+                customers: 'Customers',
+                inventory: 'Inventory',
+                'low-stock': 'Low Stock',
+                'out-of-stock': 'Out Of Stock',
+                history: 'Order History',
+                paid: 'Paid Orders',
+                pending: 'Pending Orders',
+                orders: 'Recent Orders'
+            };
+            title.textContent = labels[action] || 'Dashboard Details';
+            body.replaceChildren(source.cloneNode(true));
+            modal.hidden = false;
+            document.body.style.overflow = 'hidden';
+            document.getElementById('admin-metric-modal-close')?.focus();
+        }
+
+        function closeAdminMetricModal() {
+            const modal = document.getElementById('admin-metric-modal');
+            if (modal) modal.hidden = true;
+            document.body.style.overflow = '';
         }
 
         function renderMonthlySalesTrend(sales) {
@@ -3492,6 +3587,18 @@
             adminOrderView = 'active';
             adminOrderFilter = 'all';
             renderAdminSales(adminDashboardState.sales);
+        });
+
+        document.getElementById('admin-metric-modal-close').addEventListener('click', function() {
+            closeAdminMetricModal();
+        });
+
+        document.getElementById('admin-metric-modal').addEventListener('click', function(event) {
+            if (event.target === event.currentTarget) closeAdminMetricModal();
+        });
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') closeAdminMetricModal();
         });
 
         document.getElementById('admin-sale-email-btn').addEventListener('click', function() {
