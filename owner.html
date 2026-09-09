@@ -3390,11 +3390,16 @@
             renderAdminCustomers(adminDashboardState.customers);
         });
 
-        document.getElementById('admin-sale-email-btn').addEventListener('click', async function() {
+        document.getElementById('admin-sale-email-btn').addEventListener('click', function() {
             const statusEl = document.getElementById('admin-sale-email-status');
             const subject = String(document.getElementById('admin-sale-email-subject')?.value || '').trim();
             const saleTitle = String(document.getElementById('admin-sale-email-title')?.value || '').trim();
             const message = String(document.getElementById('admin-sale-email-message')?.value || '').trim();
+            const customerEmails = Array.from(new Set(
+                (Array.isArray(adminDashboardState.customers) ? adminDashboardState.customers : [])
+                    .map(function(customer) { return String(customer?.email || '').trim(); })
+                    .filter(function(email) { return email.includes('@'); })
+                    ));
 
             if (!message) {
                 if (statusEl) {
@@ -3404,33 +3409,30 @@
                 return;
             }
 
-            if (statusEl) {
-                statusEl.textContent = 'Sending sale emails...';
-                statusEl.classList.remove('success');
-            }
-
-            try {
-                const resp = await fetchWithApiCandidates('/api/admin/customers/broadcast-sale', {
-                    method: 'POST',
-                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
-                    body: JSON.stringify({
-                        subject: subject || 'Freedom Works Sale Alert',
-                        saleTitle: saleTitle || 'Current Store Sale',
-                        message,
-                    })
-                });
-                const data = await resp.json().catch(function() { return {}; });
-                if (!resp.ok) throw new Error(data.error || 'Unable to send the sale email blast.');
+            if (!customerEmails.length) {
                 if (statusEl) {
-                    statusEl.textContent = data.message || `Sale emails sent to ${data.sent || 0} customer account(s).`;
-                    statusEl.classList.add('success');
-                }
-            } catch (err) {
-                if (statusEl) {
-                    statusEl.textContent = err.message || 'Unable to send the sale email blast.';
+                    statusEl.textContent = 'No customer email accounts are available for this broadcast.';
                     statusEl.classList.remove('success');
                 }
+                return;
             }
+
+            const resolvedSubject = subject || 'Freedom Works Sale Alert';
+            const resolvedTitle = saleTitle || 'Current Store Sale';
+            const body = 'Sale: ' + resolvedTitle + '\n\n'
+                + message + '\n\n'
+                + 'Shop now: https://freedom-works.onrender.com/\n\n'
+                + 'Thanks,\nFreedom Works';
+            const mailtoUrl = 'mailto:?bcc=' + encodeURIComponent(customerEmails.join(','))
+                + '&subject=' + encodeURIComponent(resolvedSubject)
+                + '&body=' + encodeURIComponent(body);
+
+            if (statusEl) {
+                statusEl.textContent = 'Opening your email app for ' + customerEmails.length + ' customer account(s)...';
+                statusEl.classList.add('success');
+            }
+
+            window.location.href = mailtoUrl;
         });
 
         document.querySelectorAll('[data-trend-mode]').forEach(function(button) {
