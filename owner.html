@@ -1411,6 +1411,7 @@
                                 <p>Track how many shirts you have in stock for each website color and size.</p>
                             </div>
                         </div>
+                        <div id="admin-inventory-tools">
                         <form id="admin-inventory-form" novalidate>
                             <input type="hidden" id="admin-item-id">
                             <div class="admin-form-grid">
@@ -1455,8 +1456,9 @@
                             </div>
                             <div class="admin-table-wrap" id="admin-inventory-list"></div>
                         </div>
+                        </div>
 
-                        <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
+                        <div id="admin-add-designs-panel" style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
                             <div class="admin-panel-head">
                                 <div>
                                     <h3 class="admin-section-title">Add New Designs</h3>
@@ -1472,7 +1474,8 @@
                             </div>
                             <div id="admin-design-upload-status" role="alert"></div>
 
-                            <div style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
+                        </div>
+                            <div id="admin-name-design-panel" style="margin-top:20px; padding-top:16px; border-top:1px solid rgba(255,255,255,0.08);">
                                 <div class="admin-panel-head">
                                     <div>
                                         <h3 class="admin-section-title">Name A Design</h3>
@@ -1495,10 +1498,8 @@
                                     <button id="admin-design-rename-btn" class="owner-primary-btn" type="button">Save Name</button>
                                 </div>
                                 <div id="admin-design-rename-status" role="alert"></div>
-                            </div>
                         </div>
-
-                        <div style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
+                        <div id="admin-special-offers-panel" style="margin-top:26px; padding-top:22px; border-top:1px solid rgba(255,255,255,0.08);">
                             <div class="admin-panel-head">
                                 <div>
                                     <h3 class="admin-section-title">Special Offers</h3>
@@ -2526,7 +2527,10 @@
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
                 { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
                 ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' },
-                { label: 'Customers', value: String(Number(adminDashboardState.customers?.length || 0)), note: 'Registered customer accounts.', action: 'customers' }
+                { label: 'Customers', value: String(Number(adminDashboardState.customers?.length || 0)), note: 'Registered customer accounts.', action: 'customers' },
+                { label: 'Add New Designs', value: 'Open', note: 'Upload designs to the storefront gallery.', action: 'add-designs' },
+                { label: 'Name Designs', value: 'Open', note: 'Set the customer-facing design name.', action: 'name-design' },
+                { label: 'Special Offers', value: 'Open', note: 'Create limited-time design promotions.', action: 'special-offers' }
             ];
             grid.innerHTML = cards.map(function(card) {
                 return '<button type="button" class="admin-stat-card" data-stat-action="' + escapeHtml(card.action) + '" aria-label="Open ' + escapeHtml(card.label) + '"><span>' + escapeHtml(card.label) + '</span><strong>' + escapeHtml(card.value) + '</strong><small>' + escapeHtml(card.note) + '</small></button>';
@@ -2542,7 +2546,7 @@
         function focusAdminDashboardArea(action) {
             const inventoryPanel = document.getElementById('admin-inventory-panel');
             const ordersPanel = document.getElementById('admin-recent-orders-panel');
-            if (action === 'customers') {
+            if (action === 'customers' || action === 'add-designs' || action === 'name-design' || action === 'special-offers') {
                 showAdminMetricModal(action);
                 return;
             }
@@ -2569,8 +2573,14 @@
             if (!modal || !body || !title) return;
             const sourceId = action === 'customers'
                 ? 'admin-customer-accounts-panel'
+                : action === 'add-designs'
+                    ? 'admin-add-designs-panel'
+                    : action === 'name-design'
+                        ? 'admin-name-design-panel'
+                        : action === 'special-offers'
+                            ? 'admin-special-offers-panel'
                 : (action === 'inventory' || action === 'low-stock' || action === 'out-of-stock'
-                    ? 'admin-inventory-panel'
+                    ? 'admin-inventory-tools'
                     : 'admin-recent-orders-panel');
             const source = document.getElementById(sourceId);
             if (!source) return;
@@ -2583,7 +2593,10 @@
                 paid: 'Paid Orders',
                 pending: 'Pending Orders',
                 orders: 'Recent Orders',
-                sales: 'Sales'
+                sales: 'Sales',
+                'add-designs': 'Add New Designs',
+                'name-design': 'Name A Design',
+                'special-offers': 'Special Offers'
             };
             title.textContent = labels[action] || 'Dashboard Details';
             body.replaceChildren(source.cloneNode(true));
