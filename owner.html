@@ -2851,48 +2851,12 @@
                     if (subject === null) return;
                     const message = window.prompt('Message for ' + emailAddress + ':', 'Hi ' + customerName + ',\n\nWe wanted to share an update with you.\n\nThanks,\nFreedom Works');
                     if (message === null) return;
-                    sendAdminCustomerEmail(emailAddress, subject.trim(), message.trim());
+                    const mailtoUrl = 'mailto:' + encodeURIComponent(emailAddress)
+                        + '?subject=' + encodeURIComponent(subject.trim())
+                        + '&body=' + encodeURIComponent(message.trim());
+                    window.location.href = mailtoUrl;
                 });
             });
-        }
-
-        async function sendAdminCustomerEmail(emailAddress, subject, message) {
-            const cleanedEmail = String(emailAddress || '').trim();
-            const cleanedSubject = String(subject || '').trim();
-            const cleanedMessage = String(message || '').trim();
-
-            if (!cleanedEmail || !cleanedSubject || !cleanedMessage) {
-                return;
-            }
-
-            const statusEl = document.getElementById('admin-customer-email-status') || document.getElementById('admin-status-msg');
-            if (statusEl) {
-                statusEl.textContent = 'Sending email to ' + cleanedEmail + '...';
-                statusEl.classList.remove('success');
-            }
-
-            try {
-                const resp = await fetchWithApiCandidates('/api/admin/customers/send-email', {
-                    method: 'POST',
-                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
-                    body: JSON.stringify({
-                        email: cleanedEmail,
-                        subject: cleanedSubject,
-                        message: cleanedMessage,
-                    })
-                });
-                const data = await resp.json().catch(function() { return {}; });
-                if (!resp.ok) throw new Error(data.error || 'Unable to send customer email.');
-                if (statusEl) {
-                    statusEl.textContent = 'Email sent to ' + cleanedEmail + '.';
-                    statusEl.classList.add('success');
-                }
-            } catch (err) {
-                if (statusEl) {
-                    statusEl.textContent = err.message || 'Unable to send customer email.';
-                    statusEl.classList.remove('success');
-                }
-            }
         }
 
         function renderAdminDashboard(data) {
