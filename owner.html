@@ -2849,11 +2849,8 @@
                     if (!emailAddress) return;
                     const subject = window.prompt('Email subject for ' + customerName + ':', 'Message from Freedom Works');
                     if (subject === null) return;
-                    const message = window.prompt('Message for ' + emailAddress + ':', 'Hi ' + customerName + ',\n\nWe wanted to share an update with you.\n\nThanks,\nFreedom Works');
-                    if (message === null) return;
                     const mailtoUrl = 'mailto:' + encodeURIComponent(emailAddress)
-                        + '?subject=' + encodeURIComponent(subject.trim())
-                        + '&body=' + encodeURIComponent(message.trim());
+                        + '?subject=' + encodeURIComponent(subject.trim());
                     window.location.href = mailtoUrl;
                 });
             });
