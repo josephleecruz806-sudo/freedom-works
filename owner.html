@@ -2517,6 +2517,7 @@
             const cards = [
                 { label: 'Sales', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'sales' },
                 { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid and pending order totals combined.', action: 'sales' },
+                { label: 'Pending Sales', value: formatPriceAmount(Number(salesSummary.pendingSales || 0)), note: 'Sales value from orders not yet paid.', action: 'pending' },
                 { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.', action: 'paid' },
                 { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.', action: 'pending' },
                 { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.', action: 'sales' },

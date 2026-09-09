@@ -1496,6 +1496,7 @@ function getSalesSummary() {
   const paidOrders = orders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
   const pendingOrders = orders.filter((order) => String(order.status || '').toLowerCase() !== 'paid');
   const revenue = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const pendingSales = pendingOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const unitsSold = paidOrders.reduce((sum, order) => {
     const items = Array.isArray(order.items) ? order.items : [];
     return sum + items.length;
@@ -1580,6 +1581,7 @@ function getSalesSummary() {
 
   return {
     revenue: Number(revenue.toFixed(2)),
+    pendingSales: Number(pendingSales.toFixed(2)),
     orderCount: orders.length,
     orderHistoryCount: historyOrders.length,
     orderHistory: historyOrders.slice(0, 8).map((order) => ({
