@@ -2534,6 +2534,7 @@
                 { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.', action: 'pending' },
                 { label: 'Average Order', value: formatPriceAmount(Number(salesSummary.averageOrderValue || 0)), note: 'Average value across saved orders.', action: 'sales' },
                 { label: 'Units Sold', value: String(Number(salesSummary.unitsSold || 0)), note: 'Combined quantity across recent orders.', action: 'sales' },
+                { label: 'In Stock', value: String((Array.isArray(adminDashboardState.inventory) ? adminDashboardState.inventory : []).filter(function(item) { return Number(item.stock || 0) > 0; }).length), note: 'Inventory items currently available.', action: 'inventory' },
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
                 { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
