@@ -6616,8 +6616,11 @@
             left: 50%;
             transform: translate(-50%, -50%);
             width: min(72vw, 620px);
+            aspect-ratio: 620 / 390;
             max-height: 72vh;
             object-fit: contain;
+            animation: none !important;
+            transition: none !important;
             filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.7));
         }
         /* A filter on body turns it into the containing block for fixed children, which shifts the splash. */
