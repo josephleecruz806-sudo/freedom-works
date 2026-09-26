@@ -675,6 +675,38 @@
                 filter: drop-shadow(0 0 26px rgba(255, 255, 255, 1)) drop-shadow(0 0 58px rgba(255, 255, 255, 0.82));
             }
         }
+        .intro-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 100000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-mid) 44%, var(--theme-bg-end) 100%);
+            opacity: 1;
+            transition: opacity 0.9s ease;
+        }
+        .intro-splash.intro-splash-hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+        .intro-splash-logo {
+            max-width: 96vw;
+            max-height: 82vh;
+            width: auto;
+            height: auto;
+            filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.88)) drop-shadow(0 0 42px rgba(255, 255, 255, 0.62));
+            animation: logoGlowPulse 1.35s ease-in-out infinite alternate;
+        }
+        .intro-splash-tagline {
+            margin-top: 14px;
+            color: #fff;
+            font-weight: 600;
+            font-size: 1.1rem;
+            text-align: center;
+            padding: 0 1.5rem;
+        }
         header > p {
             position: relative;
             z-index: 2;
@@ -1760,6 +1792,100 @@
             margin-top: 0;
             color: #fff;
         }
+        .custom-builder-steps {
+            display: grid;
+            gap: 12px;
+            margin: 18px auto 0;
+            max-width: 920px;
+        }
+        .custom-builder-step {
+            border: 1px solid rgba(255,255,255,0.14);
+            border-radius: 14px;
+            padding: 16px;
+            background: rgba(8,18,45,0.42);
+            transition: opacity 180ms ease, border-color 180ms ease, background 180ms ease;
+        }
+        .custom-builder-step.is-current {
+            border-color: rgba(110,198,255,0.65);
+            background: rgba(18,42,85,0.64);
+        }
+        .custom-builder-step.is-complete {
+            border-color: rgba(110,255,201,0.38);
+        }
+        .custom-builder-step.is-locked {
+            opacity: 0.48;
+        }
+        .custom-builder-step.is-locked .custom-step-content {
+            display: none;
+        }
+        .custom-step-heading {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 0;
+            color: #fff;
+            font-size: 1.08rem;
+        }
+        .custom-step-number {
+            display: inline-grid;
+            place-items: center;
+            width: 30px;
+            height: 30px;
+            flex: 0 0 30px;
+            border-radius: 50%;
+            background: #4a90e2;
+            color: #fff;
+            font-size: 0.9rem;
+        }
+        .custom-step-status {
+            margin-left: auto;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #a5b7d1;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .custom-step-status::before {
+            content: "";
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            background: rgba(255,255,255,0.16);
+            border: 1px solid rgba(255,255,255,0.28);
+            box-sizing: border-box;
+        }
+        .custom-step-status.is-complete {
+            color: #8fffd5;
+        }
+        .custom-step-status.is-complete::before {
+            content: "✓";
+            display: inline-grid;
+            place-items: center;
+            background: #2ecb84;
+            border-color: #2ecb84;
+            color: #082914;
+            font-size: 0.72rem;
+            font-weight: 900;
+        }
+        .custom-step-content {
+            margin-top: 14px;
+        }
+        .custom-step-next {
+            margin-top: 14px;
+            border: 0;
+            border-radius: 999px;
+            padding: 9px 18px;
+            background: #ffe08a;
+            color: #241900;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .custom-step-next[disabled] {
+            cursor: not-allowed;
+            opacity: 0.45;
+        }
         .custom-design label {
             display: block;
             margin: 15px 0 5px;
@@ -1881,6 +2007,100 @@
         }
         .mockup-upload-preview img[hidden] {
             display: none;
+        }
+        #front-upload-wrap,
+        #back-upload-wrap {
+            text-align: center;
+        }
+        .fix-image-button {
+            display: none;
+            margin: 8px auto 0;
+            padding: 12px 18px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(180deg, #ffd166, #f7b801);
+            color: #13253f;
+            font-size: 0.96rem;
+            font-weight: 800;
+            cursor: pointer;
+            box-shadow: 0 6px 18px rgba(247, 184, 1, 0.35);
+            touch-action: manipulation;
+        }
+        .fix-image-button.is-visible {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .image-fix-status {
+            display: none;
+            margin: 8px 0 0;
+            padding: 8px 12px;
+            border-radius: 8px;
+            background: rgba(255, 209, 102, 0.18);
+            border: 1px solid rgba(255, 209, 102, 0.7);
+            color: #ffe38a;
+            font-size: 0.86rem;
+            font-weight: 700;
+            line-height: 1.4;
+        }
+        .image-fix-status.is-visible {
+            display: block;
+        }
+        #front-upload-wrap input[type="file"],
+        #back-upload-wrap input[type="file"] {
+            display: block;
+            width: 100%;
+            max-width: 100%;
+            min-height: 52px;
+            padding: 12px 14px;
+            box-sizing: border-box;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 14px;
+            background: linear-gradient(180deg, rgba(255,255,255,0.14), rgba(255,255,255,0.06));
+            color: #eef6ff;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            touch-action: manipulation;
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        #front-upload-wrap input[type="file"]::file-selector-button,
+        #back-upload-wrap input[type="file"]::file-selector-button {
+            margin-right: 12px;
+            padding: 10px 14px;
+            border: none;
+            border-radius: 10px;
+            background: #ffffff;
+            color: #13253f;
+            font-weight: 800;
+            font-size: 0.92rem;
+            cursor: pointer;
+        }
+        .design-upload-preview {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 10px auto;
+            width: min(100%, 320px);
+            max-width: 320px;
+            min-height: 200px;
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid rgba(255,255,255,0.18);
+            background: rgba(255,255,255,0.04);
+            padding: 10px;
+            box-sizing: border-box;
+        }
+        .design-upload-preview img {
+            display: block;
+            max-width: 100%;
+            max-height: 260px;
+            width: auto;
+            height: auto;
+            margin: 0 auto;
+            border-radius: 10px;
+            object-fit: contain;
         }
         #mockup-section canvas {
             display: none !important;
@@ -2567,6 +2787,24 @@
         }
         .upload-quality-warning.is-error {
             color: #ff8e8e;
+        }
+        .upload-quality-checks {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px 14px;
+            margin: 6px 0 0;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+        .upload-quality-check {
+            display: none;
+            color: #65e58b;
+        }
+        .upload-quality-check::before {
+            content: '\2713';
+            display: inline-block;
+            margin-right: 4px;
+            font-size: 1rem;
         }
         .size-control {
             display: flex;
@@ -6391,10 +6629,20 @@
             margin: 16px auto !important;
         }
 
+        body.store-page-custom-builder #quick-pick-colors-section,
+        body.store-page-custom-builder #quick-pick-section,
+        body.store-page-custom-builder #qp-all-gallery-wrap {
+            display: none !important;
+        }
+
     </style>
 
 </head>
 <body>
+        <div id="intro-splash" class="intro-splash" aria-hidden="true">
+            <img class="intro-splash-logo" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom%20works%20logo%20transparent.png';}else{this.onerror=null;this.style.display='none';}">
+            <p class="intro-splash-tagline">Where you have the freedom to make your own custom t-shirts</p>
+        </div>
         <div id="image-zoom-panel" class="image-zoom-panel" aria-hidden="true">
             <div id="image-zoom-stage" class="image-zoom-stage"></div>
             <div class="image-zoom-hint">Hover to zoom</div>
@@ -6459,21 +6707,6 @@
             } catch (_) {}
         })();
     </script>
-
-    <nav class="side-quick-menu" aria-label="Page menu">
-        <p class="side-menu-title">Browse</p>
-        <div class="side-menu-links">
-            <a href="#home" data-store-page-link="home" onclick="navigateMenuToPage('home'); return false;">Home</a>
-            <a href="#on-sale" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale'); return false;">On Sale</a>
-            <a href="#custom-builder" data-store-page-link="custom-builder" onclick="navigateMenuToPage('custom-builder'); return false;">Custom Builder</a>
-            <a href="#quick-picks" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks'); return false;">Graphics</a>
-            <a href="#print-files" onclick="openPrintsOnlyMenu(); return false;">Prints Only</a>
-            <a href="#company-builder" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder'); return false;">Company T-Shirt Builder</a>
-            <a href="#cart" data-store-page-link="cart" onclick="navigateMenuToPage('cart'); return false;">Cart</a>
-            <button type="button" onclick="openMenuAccount()">Account</button>
-        </div>
-        <p class="side-menu-note">Each menu item opens its own page view.</p>
-    </nav>
 
     <button type="button" class="customer-back-trigger" id="customer-back-trigger" onclick="goBackStorePage()" hidden>Go Back</button>
     <button type="button" class="site-guide-trigger" id="site-guide-trigger" onclick="startCustomerGuide(true)" hidden>Show Guide</button>
@@ -6635,10 +6868,13 @@
             <div style="text-align:center;margin-bottom:16px;">
                 <button onclick="startDesignDemo()" style="background:linear-gradient(45deg,#a259ff,#4a90e2);border:none;color:#fff;padding:10px 22px;border-radius:22px;font-size:0.95rem;font-weight:700;cursor:pointer;box-shadow:0 4px 14px rgba(162,89,255,0.4);transition:transform 0.2s;" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform=''">&#x1F9BE; Show Me How!</button>
             </div>
-            <div>
+            <div class="custom-builder-steps">
+            <div class="custom-builder-step is-current" id="custom-step-1" data-step="1">
+                <h3 class="custom-step-heading"><span class="custom-step-number">1</span>What size of shirt would you like?<span class="custom-step-status" id="custom-step-1-status"></span></h3>
+                <div class="custom-step-content">
                 <label for="shirt-size">Pick T-Shirt Size:</label>
-                <select id="shirt-size" onchange="updateSelectedSizePreviewScale(true); var picked=!!this.value; document.getElementById('builder-body').style.display=(picked?'':'none'); document.getElementById('size-prompt').style.display=(picked?'none':''); document.getElementById('add-custom-btn').style.display=(picked?'':'none'); document.getElementById('custom-live-total').style.display=(picked?'':'none'); document.getElementById('custom-labor-note').style.display=(picked?'':'none');">
-                    <option value="" selected disabled>-- Pick a size --</option>
+                <select id="shirt-size" onchange="updateSelectedSizePreviewScale(true); var picked=!!this.value; document.getElementById('builder-body').style.display=(picked?'':'none'); document.getElementById('size-prompt').style.display=(picked?'none':''); document.getElementById('add-custom-btn').style.display=(picked?'':'none'); document.getElementById('custom-live-total').style.display=(picked?'':'none'); document.getElementById('custom-labor-note').style.display=(picked?'':'none'); syncCustomBuilderSteps();">
+                    <option value="" selected>-- Pick a size --</option>
                                         <option value="Newborn">Infant</option>
                                         <option value="6M">3-6 Months</option>
                                         <option value="9M">6-9 Months</option>
@@ -6660,45 +6896,15 @@
                                             <option value="2X">2XL</option>
                                         <option value="3X">3XL</option>
                 </select>
+                </div>
             </div>
-            <p id="size-prompt" style="color:#ffe066;font-weight:700;font-size:1.05rem;margin:16px 0 0;">?? Pick a size above to start building your shirt!</p>
-            <details class="size-chart-panel" style="margin-top:12px;">
-                <summary>Custom Builder Print Size Chart (Front)</summary>
-                <p class="size-chart-note">Recommended front print sizes in inches for each shirt size.</p>
-                <table class="size-chart-table">
-                    <thead>
-                        <tr>
-                            <th>Size</th>
-                            <th>Front Print</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr><td>Newborn</td><td>4.0&quot; x 5.25&quot;</td></tr>
-                        <tr><td>6M</td><td>4.5&quot; x 5.5&quot;</td></tr>
-                        <tr><td>9M</td><td>4.75&quot; x 5.75&quot;</td></tr>
-                        <tr><td>12M</td><td>5.0&quot; x 6.0&quot;</td></tr>
-                        <tr><td>18M</td><td>5.25&quot; x 6.25&quot;</td></tr>
-                        <tr><td>18-24M</td><td>5.5&quot; x 6.75&quot;</td></tr>
-                        <tr><td>2T</td><td>6.0&quot; x 8.0&quot;</td></tr>
-                        <tr><td>3T</td><td>6.5&quot; x 9.0&quot;</td></tr>
-                        <tr><td>4T</td><td>7.0&quot; x 9.5&quot;</td></tr>
-                        <tr><td>5T</td><td>7.5&quot; x 9.75&quot;</td></tr>
-                        <tr><td>Youth S</td><td>8.5&quot; x 10.0&quot;</td></tr>
-                        <tr><td>Youth M</td><td>9.0&quot; x 10.5&quot;</td></tr>
-                        <tr><td>Youth L</td><td>9.5&quot; x 10.75&quot;</td></tr>
-                        <tr><td>Youth XL</td><td>9.75&quot; x 11.0&quot;</td></tr>
-                        <tr><td>Adult S</td><td>10.0&quot; x 11.5&quot;</td></tr>
-                        <tr><td>Adult M</td><td>11.0&quot; x 12.5&quot;</td></tr>
-                        <tr><td>Adult L</td><td>12.0&quot; x 13.25&quot;</td></tr>
-                        <tr><td>Adult XL</td><td>12.5&quot; x 13.75&quot;</td></tr>
-                        <tr><td>2X</td><td>13.0&quot; x 14.5&quot;</td></tr>
-                        <tr><td>3X</td><td>13.5&quot; x 15.0&quot;</td></tr>
-                    </tbody>
-                </table>
-            </details>
-            <div id="builder-body" style="display:none;">
+            </div>
+            <p id="size-prompt" style="display:none;color:#ffe066;font-weight:700;font-size:1.05rem;margin:16px 0 0;">?? Pick a size above to start building your shirt!</p>
+            <div id="builder-body">
             <div class="phone-rotate-notice">Portrait mode works, but turning your phone sideways gives you a larger T-shirt preview if you want a closer look.</div>
-            <div>
+            <div class="custom-builder-step is-locked" id="custom-step-2" data-step="2">
+                <h3 class="custom-step-heading"><span class="custom-step-number">2</span>What color would you like?<span class="custom-step-status" id="custom-step-2-status"></span></h3>
+                <div class="custom-step-content">
                 <label>Pick T-Shirt Color:</label>
                 <div class="color-picker-row" id="color-swatches">
                     <div class="color-swatch light-swatch active" style="background:#ffffff" data-color="#ffffff" onclick="setShirtColor('#ffffff',this)" title="White">White</div>
@@ -6716,16 +6922,20 @@
                     <div class="color-swatch light-swatch" style="background:#ff6eb4" data-color="#ff6eb4" onclick="setShirtColor('#ff6eb4',this)" title="Safety Pink">Safety<br>Pink</div>
                     <div class="color-swatch light-swatch" style="background:#ffb6c1" data-color="#ffb6c1" onclick="setShirtColor('#ffb6c1',this)" title="Light Pink">Light<br>Pink</div>
                 </div>
+                </div>
             </div>
+            <div class="custom-builder-step is-locked" id="custom-step-3" data-step="3">
+                <h3 class="custom-step-heading"><span class="custom-step-number">3</span>Upload your image<span class="custom-step-status" id="custom-step-3-status"></span></h3>
+                <div class="custom-step-content">
             <div class="print-location-wrap">
                 <label class="print-location-label">Print Location:</label>
                 <div class="print-location-options">
                     <label class="print-location-option">
-                        <input type="radio" name="print-location" id="print-front" value="Front" checked onchange="if(typeof updatePrintLocationPreview==='function')updatePrintLocationPreview(); if(typeof syncSizeControlsVisibility==='function')syncSizeControlsVisibility();" >
+                        <input type="radio" name="print-location" id="print-front" value="Front" checked onchange="if(typeof updatePrintLocationPreview==='function')updatePrintLocationPreview(); if(typeof syncSizeControlsVisibility==='function')syncSizeControlsVisibility(); syncCustomBuilderSteps();" >
                         Front
                     </label>
                     <label class="print-location-option">
-                        <input type="radio" name="print-location" id="print-both" value="Both" onchange="if(typeof updatePrintLocationPreview==='function')updatePrintLocationPreview(); if(typeof syncSizeControlsVisibility==='function')syncSizeControlsVisibility();">
+                        <input type="radio" name="print-location" id="print-both" value="Both" onchange="if(typeof updatePrintLocationPreview==='function')updatePrintLocationPreview(); if(typeof syncSizeControlsVisibility==='function')syncSizeControlsVisibility(); syncCustomBuilderSteps();">
                         Both Sides
                     </label>
                 </div>
@@ -6734,17 +6944,44 @@
             <div id="front-upload-wrap">
                 <label for="design-upload-front">Front Design Image:</label>
                 <input type="file" id="design-upload-front" accept="image/*" onchange="previewDesign('front')">
+                <div id="design-upload-preview-front" class="design-upload-preview" style="display:none; margin:10px auto; width:min(100%, 320px); max-width:320px; min-height:200px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.04); padding:10px;">
+                    <img alt="Front design preview" style="width:auto; max-width:100%; max-height:260px; height:auto; display:block; margin:0 auto; border-radius:10px; object-fit:contain;">
+                </div>
                 <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
                 <p id="design-upload-warning-front" class="upload-quality-warning" aria-live="polite"></p>
-                <button type="button" onclick="clearDesign('front')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
+                <div id="design-upload-checks-front" class="upload-quality-checks" aria-live="polite"><span id="design-upload-check-png-front" class="upload-quality-check">PNG format</span><span id="design-upload-check-resolution-front" class="upload-quality-check">Good resolution</span></div>
+                <div style="display:flex; flex-direction:column; gap:8px; align-items:center; margin-top:8px;">
+                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button type="button" id="fix-image-front" class="fix-image-button" onclick="requestImageFix('front')">Fix my image (+$2.00)</button>
+                        <button type="button" class="custom-step-next" style="margin-top:0;" onclick="continueFromImageUpload()">Continue</button>
+                    </div>
+                    <p id="fix-image-status-front" class="image-fix-status" aria-live="polite">Image will be fixed.</p>
+                </div>
+                <button type="button" onclick="clearDesign('front')" style="margin:8px 0 0 0;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
             </div>
             <div id="back-upload-wrap" style="display:none;">
                 <label for="design-upload-back">Back Design Image:</label>
                 <input type="file" id="design-upload-back" accept="image/*" onchange="previewDesign('back')">
+                <div id="design-upload-preview-back" class="design-upload-preview" style="display:none; margin:10px auto; width:min(100%, 320px); max-width:320px; min-height:200px; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,0.18); background:rgba(255,255,255,0.04); padding:10px;">
+                    <img alt="Back design preview" style="width:auto; max-width:100%; max-height:260px; height:auto; display:block; margin:0 auto; border-radius:10px; object-fit:contain;">
+                </div>
                 <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
                 <p id="design-upload-warning-back" class="upload-quality-warning" aria-live="polite"></p>
-                <button type="button" onclick="clearDesign('back')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
+                <div id="design-upload-checks-back" class="upload-quality-checks" aria-live="polite"><span id="design-upload-check-png-back" class="upload-quality-check">PNG format</span><span id="design-upload-check-resolution-back" class="upload-quality-check">Good resolution</span></div>
+                <div style="display:flex; flex-direction:column; gap:8px; align-items:center; margin-top:8px;">
+                    <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+                        <button type="button" id="fix-image-back" class="fix-image-button" onclick="requestImageFix('back')">Fix my image (+$2.00)</button>
+                        <button type="button" class="custom-step-next" style="margin-top:0;" onclick="continueFromImageUpload()">Continue</button>
+                    </div>
+                    <p id="fix-image-status-back" class="image-fix-status" aria-live="polite">Image will be fixed.</p>
+                </div>
+                <button type="button" onclick="clearDesign('back')" style="margin:8px 0 0 0;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Image</button>
             </div>
+                </div>
+            </div>
+            <div class="custom-builder-step is-locked" id="custom-step-4" data-step="4">
+                <h3 class="custom-step-heading"><span class="custom-step-number">4</span>What size of print would you like?<span class="custom-step-status" id="custom-step-4-status"></span></h3>
+                <div class="custom-step-content">
             <div id="adjust-side-wrap" class="adjust-side-wrap" style="display:none;">
                 <span>Adjust Side:</span>
                 <div class="adjust-side-options">
@@ -6758,8 +6995,43 @@
                     </label>
                 </div>
             </div>
+                <details class="size-chart-panel" style="margin-top:12px;">
+                    <summary>Custom Builder Print Size Chart (Front)</summary>
+                    <p class="size-chart-note">Recommended front print sizes in inches for each shirt size.</p>
+                    <table class="size-chart-table">
+                        <thead>
+                            <tr>
+                                <th>Size</th>
+                                <th>Front Print</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr><td>Newborn</td><td>4.0&quot; x 5.25&quot;</td></tr>
+                            <tr><td>6M</td><td>4.5&quot; x 5.5&quot;</td></tr>
+                            <tr><td>9M</td><td>4.75&quot; x 5.75&quot;</td></tr>
+                            <tr><td>12M</td><td>5.0&quot; x 6.0&quot;</td></tr>
+                            <tr><td>18M</td><td>5.25&quot; x 6.25&quot;</td></tr>
+                            <tr><td>18-24M</td><td>5.5&quot; x 6.75&quot;</td></tr>
+                            <tr><td>2T</td><td>6.0&quot; x 8.0&quot;</td></tr>
+                            <tr><td>3T</td><td>6.5&quot; x 9.0&quot;</td></tr>
+                            <tr><td>4T</td><td>7.0&quot; x 9.5&quot;</td></tr>
+                            <tr><td>5T</td><td>7.5&quot; x 9.75&quot;</td></tr>
+                            <tr><td>Youth S</td><td>8.5&quot; x 10.0&quot;</td></tr>
+                            <tr><td>Youth M</td><td>9.0&quot; x 10.5&quot;</td></tr>
+                            <tr><td>Youth L</td><td>9.5&quot; x 10.75&quot;</td></tr>
+                            <tr><td>Youth XL</td><td>9.75&quot; x 11.0&quot;</td></tr>
+                            <tr><td>Adult S</td><td>10.0&quot; x 11.5&quot;</td></tr>
+                            <tr><td>Adult M</td><td>11.0&quot; x 12.5&quot;</td></tr>
+                            <tr><td>Adult L</td><td>12.0&quot; x 13.25&quot;</td></tr>
+                            <tr><td>Adult XL</td><td>12.5&quot; x 13.75&quot;</td></tr>
+                            <tr><td>2X</td><td>13.0&quot; x 14.5&quot;</td></tr>
+                            <tr><td>3X</td><td>13.5&quot; x 15.0&quot;</td></tr>
+                        </tbody>
+                    </table>
+                </details>
             <div class="mockup-size-panel" id="size-controls-wrap" style="margin-top:12px;">
                 <h3>Print Size (Inches)</h3>
+                <p style="margin:0 0 10px; color:#dfeafc; font-size:0.9rem; line-height:1.5;">Your shirt size already has a recommended print size set for it, and you can increase or decrease it if you want a larger or smaller print.</p>
                 <div class="mockup-size-row">
                     <label for="custom-width-range"><span>Width</span><span id="width-val">7.5&quot;</span></label>
                     <input id="custom-width-range" type="range" min="2" max="15" step="0.1" value="7.5" oninput="setCustomPrintSize('width', this.value, 'front')">
@@ -6777,6 +7049,8 @@
                     </div>
                 </div>
 
+            </div>
+                </div>
             </div>
             <script>
                     // --- Front/Back mockup upload/placement logic ---
@@ -6803,13 +7077,123 @@
 
                     // Mockup upload/placement logic is defined in the main script block below.
 
+                    function validateCustomBuilderStep(stepNumber) {
+                        const size = !!document.getElementById('shirt-size')?.value;
+                        const color = !!(typeof shirtColorPicked !== 'undefined' && shirtColorPicked);
+                        const location = document.querySelector('input[name="print-location"]:checked')?.value || 'Front';
+                        const hasFront = !!(typeof frontDesignUploaded !== 'undefined' && frontDesignUploaded);
+                        const hasBack = !!(typeof backDesignUploaded !== 'undefined' && backDesignUploaded);
+                        const hasDesign = location === 'Both' ? hasFront && hasBack : location === 'Back' ? hasBack : hasFront;
+                        const orderReady = document.body.dataset.customOrderReady === 'true';
+                        const checks = {
+                            1: size,
+                            2: size && color,
+                            3: size && color && hasDesign,
+                            4: size && color && hasDesign && !!document.getElementById('custom-width-range') && (document.getElementById('custom-width-range').value || '').trim() !== '',
+                            5: size && color && hasDesign && orderReady
+                        };
+                        const isAllowed = !!checks[stepNumber];
+                        if (!isAllowed) {
+                            const messages = {
+                                1: 'Please choose a T-shirt size before continuing.',
+                                2: 'Please choose a T-shirt color before continuing.',
+                                3: 'Please upload the required image before continuing.',
+                                4: 'Please set the print size before continuing.',
+                                5: 'Please finish step 4 before placing the order.'
+                            };
+                            alert(messages[stepNumber] || 'Complete the current step before moving ahead.');
+                        }
+                        return isAllowed;
+                    }
+
+                    function syncCustomBuilderSteps(advance, advancedFrom) {
+                        const size = !!document.getElementById('shirt-size')?.value;
+                        const color = typeof shirtColorPicked !== 'undefined' && shirtColorPicked;
+                        const location = document.querySelector('input[name="print-location"]:checked')?.value || 'Front';
+                        const hasFront = typeof frontDesignUploaded !== 'undefined' && frontDesignUploaded;
+                        const hasBack = typeof backDesignUploaded !== 'undefined' && backDesignUploaded;
+                        const hasDesign = location === 'Both' ? hasFront && hasBack : location === 'Back' ? hasBack : hasFront;
+                        const designConfirmed = !!window.customDesignConfirmed;
+                        const widthInput = document.getElementById('custom-width-range');
+                        const printSizeReady = !!(size && color && hasDesign && designConfirmed && widthInput && (widthInput.value || '').trim() !== '');
+                        let orderReady = printSizeReady && hasDesign;
+                        if (!hasDesign) orderReady = false;
+                        if (advance && advancedFrom === 4 && hasDesign) orderReady = true;
+                        document.body.dataset.customOrderReady = orderReady ? 'true' : 'false';
+
+                        const complete = [size, size && color, size && color && hasDesign && designConfirmed, printSizeReady, size && color && hasDesign && orderReady];
+                        const unlocked = [true, size, size && color, size && color && hasDesign && designConfirmed, size && color && hasDesign && orderReady];
+                        const firstIncomplete = complete.findIndex((value) => !value);
+                        const currentStepNumber = firstIncomplete < 0 ? 5 : firstIncomplete + 1;
+                        complete.forEach((isComplete, index) => {
+                            const step = document.getElementById('custom-step-' + (index + 1));
+                            if (!step) return;
+                            step.classList.toggle('is-locked', !unlocked[index]);
+                            step.classList.toggle('is-complete', isComplete && index < 4);
+                            step.classList.toggle('is-current', index === (firstIncomplete < 0 ? 4 : firstIncomplete));
+                        });
+
+                        const statuses = [
+                            size ? document.getElementById('shirt-size').selectedOptions[0].textContent : 'Choose a size',
+                            color ? 'Color selected' : 'Choose a color',
+                            hasDesign && designConfirmed ? 'Image uploaded' : 'Upload an image',
+                            orderReady ? 'Print size set' : 'Choose print size',
+                            orderReady ? 'Ready' : 'Finish step 4'
+                        ];
+                        statuses.forEach((status, index) => {
+                            const statusEl = document.getElementById('custom-step-' + (index + 1) + '-status');
+                            if (statusEl) {
+                                statusEl.textContent = status;
+                                statusEl.classList.toggle('is-complete', complete[index]);
+                            }
+                        });
+                        const orderButton = document.getElementById('add-custom-btn');
+                        if (orderButton) orderButton.style.display = orderReady ? '' : 'none';
+                        if (window.customBuilderCurrentStep !== currentStepNumber) {
+                            window.customBuilderCurrentStep = currentStepNumber;
+                            requestAnimationFrame(() => {
+                                document.getElementById('custom-step-' + currentStepNumber)?.scrollIntoView({
+                                    behavior: 'smooth',
+                                    block: 'start'
+                                });
+                            });
+                        }
+                    }
+
+                    function continueFromImageUpload() {
+                        const location = document.querySelector('input[name="print-location"]:checked')?.value || 'Front';
+                        const hasFront = typeof frontDesignUploaded !== 'undefined' && frontDesignUploaded;
+                        const hasBack = typeof backDesignUploaded !== 'undefined' && backDesignUploaded;
+                        const hasDesign = location === 'Both' ? hasFront && hasBack : location === 'Back' ? hasBack : hasFront;
+                        if (!hasDesign) {
+                            alert(location === 'Both'
+                                ? 'Please upload both front and back images before continuing.'
+                                : 'Please upload an image before continuing.');
+                            return;
+                        }
+                        window.customDesignConfirmed = true;
+                        syncCustomBuilderSteps(true, 3);
+                    }
+
                     function clearDesign(side) {
                         const targetSide = side === 'back' ? 'back' : 'front';
                         const inputId = targetSide === 'back' ? 'design-upload-back' : 'design-upload-front';
                         const overlayId = targetSide === 'back' ? 'design-overlay-back' : 'design-overlay';
+                        const previewId = targetSide === 'back' ? 'design-upload-preview-back' : 'design-upload-preview-front';
                         const boxId = targetSide === 'back' ? 'print-area-back' : 'print-area';
                         if (typeof setUploadWarningMessage === 'function') {
                             setUploadWarningMessage(targetSide, '', { context: 'design' });
+                        }
+                        window.customImageFixState = window.customImageFixState || {};
+                        window.customImageFixState[targetSide] = false;
+                        window.customDesignConfirmed = false;
+                        window.customImageFixRequired = !!(window.customImageFixState.front || window.customImageFixState.back);
+                        syncFixMyImageButton('front', !!window.customImageFixState.front);
+                        syncFixMyImageButton('back', !!window.customImageFixState.back);
+                        const fixStatus = document.getElementById('fix-image-status-' + targetSide);
+                        if (fixStatus) {
+                            fixStatus.classList.remove('is-visible');
+                            fixStatus.hidden = true;
                         }
                         
                         const input = document.getElementById(inputId);
@@ -6822,6 +7206,11 @@
                             overlay.src = '';
                             overlay.style.display = 'none';
                         }
+                        const previewBox = document.getElementById(previewId);
+                        const previewImg = previewBox?.querySelector('img');
+                        if (previewImg) previewImg.src = '';
+                        if (previewBox) previewBox.style.display = 'none';
+                        syncUploadQualityIndicators(targetSide, null, 0, 0, 'design');
                         const box = document.getElementById(boxId);
                         if (box) box.style.display = 'none';
                         
@@ -6847,6 +7236,7 @@
                         
                         updatePrintLocationPreview();
                         updateCustomPriceDisplay();
+                        syncCustomBuilderSteps();
                         scaleMockupCanvasesForSize();
                     }
 
@@ -6907,9 +7297,15 @@
             </div>
 
             </div><!-- end builder-body -->
-            <button id="add-custom-btn" style="margin-top:24px;display:none;background:linear-gradient(45deg,#4a90e2,#a259ff);border:none;color:#fff;padding:13px 32px;border-radius:25px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 4px 18px rgba(74,144,226,0.4);transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(74,144,226,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(74,144,226,0.4)'" onclick="addCustomToCart()">Create T-Shirt</button>
+            <div class="custom-builder-step is-locked" id="custom-step-5" data-step="5">
+                <h3 class="custom-step-heading"><span class="custom-step-number">5</span>Place your order<span class="custom-step-status" id="custom-step-5-status"></span></h3>
+                <div class="custom-step-content">
+                <button id="add-custom-btn" style="margin-top:24px;display:none;background:linear-gradient(45deg,#4a90e2,#a259ff);border:none;color:#fff;padding:13px 32px;border-radius:25px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 4px 18px rgba(74,144,226,0.4);transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(74,144,226,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(74,144,226,0.4)'" onclick="addCustomToCart()">Place Your Order</button>
+                </div>
+            </div>
             <p id="custom-live-total" style="margin:10px 0 0;color:#cfe6ff;font-weight:800;letter-spacing:0.3px;display:none;">Total: $0.00</p>
             <p style="margin:8px 0 0;color:#ffe08a;font-size:0.92rem;font-weight:700;letter-spacing:0.2px;display:none;" id="custom-labor-note">Breakdown: Shirt $0.00 = $0.00</p>
+            </div>
         </section>
 
         <section class="front-back-mockup quick-pick-grid-builder" id="quick-pick-grid-section" data-store-page="quick-pick-builder prints-only" hidden>
@@ -7109,6 +7505,7 @@
                     <input type="file" id="mockup-pocket-upload" accept="image/*" onchange="previewMockupDesign('pocket')">
                     <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
                     <p id="mockup-upload-warning-pocket" class="upload-quality-warning" aria-live="polite"></p>
+                    <div id="mockup-upload-checks-pocket" class="upload-quality-checks" aria-live="polite"><span id="mockup-upload-check-png-pocket" class="upload-quality-check">PNG format</span><span id="mockup-upload-check-resolution-pocket" class="upload-quality-check">Good resolution</span></div>
                     <button type="button" onclick="clearMockupDesign('pocket')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Pocket</button>
                     <div class="mockup-upload-preview" aria-live="polite">
                         <img id="mockup-pocket-upload-preview" alt="Pocket upload preview" hidden>
@@ -7192,6 +7589,7 @@
                     <input type="file" id="mockup-back-upload" accept="image/*" onchange="previewMockupDesign('back')">
                     <p class="upload-guidance-text">Any image is accepted. PNG is recommended, and high resolution (1500x1500px or higher) gives the best print quality.</p>
                     <p id="mockup-upload-warning-back" class="upload-quality-warning" aria-live="polite"></p>
+                    <div id="mockup-upload-checks-back" class="upload-quality-checks" aria-live="polite"><span id="mockup-upload-check-png-back" class="upload-quality-check">PNG format</span><span id="mockup-upload-check-resolution-back" class="upload-quality-check">Good resolution</span></div>
                     <button type="button" onclick="clearMockupDesign('back')" style="margin-left:10px;padding:6px 12px;background:#ff6b6b;color:#fff;border:none;border-radius:6px;cursor:pointer;font-weight:600;font-size:0.9rem;">Remove Back Image</button>
                     <div class="mockup-upload-preview" aria-live="polite">
                         <img id="mockup-back-upload-preview" alt="Back upload preview" hidden>
@@ -9221,12 +9619,14 @@
             updateModalBodyLock();
         }
 
-        function closeRewardsInfoPopup() {
+        function closeRewardsInfoPopup(options) {
+            const settings = options || {};
             const overlay = document.getElementById('rewards-popup-overlay');
             if (!overlay) return;
             overlay.classList.remove('open');
             rewardsInfoPopupOpen = false;
             updateModalBodyLock();
+            if (!settings.suppressStartup) continueAfterStartupRewards();
         }
 
         function maybeShowRewardsInfoPopup() {
@@ -9246,6 +9646,11 @@
             updateModalBodyLock();
             if (!settings.suppressRewards) {
                 maybeShowRewardsInfoPopup();
+                if (startupSalesFlowPending) {
+                    startupSalesFlowPending = false;
+                    startupRewardsFlowPending = true;
+                    if (!rewardsInfoPopupOpen) openRewardsInfoPopup();
+                }
             }
         }
 
@@ -10247,6 +10652,8 @@
             overlay.dataset.hasImage = '1';
             overlay.style.display = 'block';
             frontDesignUploaded = true;
+            window.customDesignConfirmed = false;
+            if (typeof syncCustomBuilderSteps === 'function') syncCustomBuilderSteps();
 
             const imageProbe = new Image();
             imageProbe.onload = function() {
@@ -11294,6 +11701,10 @@
         let suppressStoreHistoryPush = false;
         let authMode = 'login';
         let guestStoreAccess = false;
+        let startupSalesFlowPending = false;
+        let startupAuthFlowPending = false;
+        let startupBuilderFlowPending = false;
+        let startupRewardsFlowPending = false;
         let customerGuideActive = false;
         let customerGuideStepIndex = 0;
         let loginSalePopupOpen = false;
@@ -12588,7 +12999,7 @@
 
         function openAuthModal(mode) {
             closeLoginSalePopup({ suppressRewards: true });
-            closeRewardsInfoPopup();
+            closeRewardsInfoPopup({ suppressStartup: true });
             if (mode) setAuthMode(mode);
             const overlay = document.getElementById('auth-modal-overlay');
             if (!overlay) return;
@@ -12605,6 +13016,51 @@
         function closeAuthModal() {
             document.getElementById('auth-modal-overlay')?.classList.remove('open');
             updateModalBodyLock();
+        }
+
+        function continueAfterStartupAuth() {
+            const rewardsAlreadyShown = startupRewardsFlowPending;
+            const salesAlreadyShown = startupSalesFlowPending;
+            if (!startupAuthFlowPending && !rewardsAlreadyShown && !salesAlreadyShown) return;
+            startupAuthFlowPending = false;
+            startupSalesFlowPending = false;
+            startupBuilderFlowPending = true;
+            closeAuthModal();
+            document.getElementById('auth-form')?.reset();
+            setAuthMode('login');
+            if (rewardsAlreadyShown || salesAlreadyShown) {
+                startupRewardsFlowPending = false;
+                closeRewardsInfoPopup({ suppressStartup: true });
+                startupRewardsFlowPending = true;
+                openRewardsInfoPopup();
+                return;
+            }
+            startupRewardsFlowPending = true;
+            openRewardsInfoPopup();
+        }
+
+        function continueAfterStartupRewards() {
+            if (!startupRewardsFlowPending) return;
+            startupRewardsFlowPending = false;
+            startupSalesFlowPending = false;
+            renderStorePage('custom-builder', true);
+        }
+
+        function startStartupAuthFlow() {
+            if (getStorePageFromHash() !== 'home' && getStorePageFromHash() !== 'menu') return;
+            startupSalesFlowPending = true;
+            startupBuilderFlowPending = true;
+            renderStorePage('custom-builder', false);
+            const items = getLoginSalePopupItems();
+            if (items.length) {
+                renderLoginSalePopup(items[0], items);
+                markLoginSalePopupSeen();
+                openLoginSalePopup();
+                return;
+            }
+            startupSalesFlowPending = false;
+            startupRewardsFlowPending = true;
+            openRewardsInfoPopup();
         }
 
         function openMenuAccount() {
@@ -12651,10 +13107,8 @@
         }
 
         function getStartupStorePage() {
-            if (shouldUseMobileHomeLanding()) {
-                return 'home';
-            }
-            return getStorePageFromHash();
+            const requestedPage = getStorePageFromHash();
+            return requestedPage === 'home' || requestedPage === 'menu' ? 'custom-builder' : requestedPage;
         }
 
         function refreshVisiblePageUi(page) {
@@ -12723,7 +13177,7 @@
 
         function renderStorePage(page, syncHash) {
             const requestedPage = STORE_PAGES.includes(page) ? page : 'home';
-            const nextPage = customerHasStoreAccess() ? requestedPage : 'home';
+            const nextPage = customerHasStoreAccess() || requestedPage === 'custom-builder' ? requestedPage : 'home';
             const previousPage = currentStorePage;
             if (!suppressStoreHistoryPush && previousPage && previousPage !== nextPage) {
                 if (storePageHistory[storePageHistory.length - 1] !== previousPage) {
@@ -14261,6 +14715,7 @@
             document.addEventListener('change', e => {
                 if (e.target.id === 'design-upload-front' || e.target.id === 'design-upload-back') {
                     const file = e.target.files[0];
+                    setTimeout(() => syncCustomBuilderSteps(), 120);
                     // Pick expression based on whether it's a photo vs graphic (rough guess by file size)
                     const isPhoto = file && file.size > 150000;
                     const expr = isPhoto ? expressions[2] : expressions[1]; // surprised for photos, excited for graphics
@@ -16250,6 +16705,9 @@
             scaleMockupCanvasesForSize();
             updateCustomPriceDisplay();
             enforceBothModeTopLeftAnchor();
+            if (typeof syncCustomBuilderSteps === 'function') {
+                syncCustomBuilderSteps();
+            }
         }
 
         function applyRecommendedCustomPrintSize(size, sideOverride) {
@@ -16574,13 +17032,14 @@
             const shirtCharge = shirtColorPicked ? getShirtChargeForSize(selectedSize) : 0;
             const designCount = getSelectedCustomDesignCount();
             const hasDesign = designCount > 0;
+            const imageFixCharge = getBackgroundCleanupFee();
 
             // If no design, but a shirt color is picked, show just the shirt charge
             if (!hasDesign) {
-                return shirtCharge;
+                return shirtCharge + imageFixCharge;
             }
 
-            const subtotal = getSelectedCustomPrintCharge() + shirtCharge;
+            const subtotal = getSelectedCustomPrintCharge() + shirtCharge + imageFixCharge;
             return applyTargetMargin(subtotal);
         }
 
@@ -17374,6 +17833,7 @@
             const customLaborNote = document.getElementById('custom-labor-note');
             if (customLaborNote) customLaborNote.style.display = '';
             if (typeof updateCustomPriceDisplay === 'function') updateCustomPriceDisplay();
+            syncCustomBuilderSteps();
         }
 
         function getCurrentShirtColorDetails(isMockup) {
@@ -17419,6 +17879,140 @@
                 : 'PNG is recommended for cleaner edges and better print quality. You can still continue with this image.';
         }
 
+        function getBackgroundCleanupFee() {
+            return window.customImageFixRequired ? 2 : 0;
+        }
+
+        function syncFixMyImageButton(side, shouldShow) {
+            const button = document.getElementById('fix-image-' + (side === 'back' ? 'back' : 'front'));
+            const status = document.getElementById('fix-image-status-' + (side === 'back' ? 'back' : 'front'));
+            if (button) {
+                button.classList.toggle('is-visible', !!shouldShow);
+                button.hidden = !shouldShow;
+            }
+            if (status) {
+                const showStatus = !!shouldShow && !!window.customImageFixState?.[side === 'back' ? 'back' : 'front'];
+                status.classList.toggle('is-visible', showStatus);
+                status.hidden = !showStatus;
+            }
+        }
+
+        function requestImageFix(side) {
+            const targetSide = side === 'back' ? 'back' : 'front';
+            const imageFixState = window.customImageFixState || (window.customImageFixState = {});
+            imageFixState[targetSide] = true;
+            window.customImageFixRequired = !!(imageFixState.front || imageFixState.back);
+            syncFixMyImageButton('front', !!imageFixState.front);
+            syncFixMyImageButton('back', !!imageFixState.back);
+            const status = document.getElementById('fix-image-status-' + targetSide);
+            if (status) {
+                status.textContent = 'Image will be fixed.';
+                status.classList.add('is-visible');
+                status.hidden = false;
+            }
+            const button = document.getElementById('fix-image-' + targetSide);
+            if (button) {
+                button.hidden = true;
+                button.classList.remove('is-visible');
+            }
+            showUploadNotice('Image will be fixed. Background cleanup and PNG conversion is $2.00.');
+            if (typeof updateCustomPriceDisplay === 'function') updateCustomPriceDisplay();
+        }
+
+        function scanForBackgroundAndPng(file, resolvedSrc, targetSide) {
+            if (!file || !resolvedSrc) return false;
+            const isPng = isPngUploadFile(file);
+            if (!isPng) {
+                const warning = 'This image is not a PNG and may need background cleanup before print. Use Fix my image to convert it to a PNG and remove the background for $2.00.';
+                setUploadWarningMessage(targetSide, warning, { context: 'design', isError: false });
+                syncFixMyImageButton(targetSide, true);
+                return true;
+            }
+
+            const image = new Image();
+            image.onload = function() {
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d', { willReadFrequently: true });
+                const maxSample = 180;
+                const scale = Math.min(1, maxSample / Math.max(image.naturalWidth || 1, image.naturalHeight || 1));
+                const sampleWidth = Math.max(24, Math.round((image.naturalWidth || 1) * scale));
+                const sampleHeight = Math.max(24, Math.round((image.naturalHeight || 1) * scale));
+                canvas.width = sampleWidth;
+                canvas.height = sampleHeight;
+                ctx.clearRect(0, 0, sampleWidth, sampleHeight);
+                ctx.drawImage(image, 0, 0, sampleWidth, sampleHeight);
+
+                const data = ctx.getImageData(0, 0, sampleWidth, sampleHeight).data;
+                let opaquePixels = 0;
+                let transparentPixels = 0;
+                let borderSamples = 0;
+                let backgroundLikeBorderSamples = 0;
+                let borderBrightnessSum = 0;
+                let borderColorVariance = 0;
+                let lastBorderColorR = null;
+                let lastBorderColorG = null;
+                let lastBorderColorB = null;
+                const borderLimit = Math.max(6, Math.min(14, Math.round(Math.min(sampleWidth, sampleHeight) * 0.12)));
+
+                for (let y = 0; y < sampleHeight; y++) {
+                    for (let x = 0; x < sampleWidth; x++) {
+                        const idx = (y * sampleWidth + x) * 4;
+                        const r = data[idx];
+                        const g = data[idx + 1];
+                        const b = data[idx + 2];
+                        const a = data[idx + 3];
+
+                        if (a <= 18) {
+                            transparentPixels++;
+                            continue;
+                        }
+
+                        opaquePixels++;
+                        const nearBorder = x <= borderLimit || y <= borderLimit || x >= sampleWidth - borderLimit - 1 || y >= sampleHeight - borderLimit - 1;
+                        if (!nearBorder) continue;
+
+                        borderSamples++;
+                        const brightness = (r + g + b) / 3;
+                        const colorDelta = lastBorderColorR === null ? 0 : Math.abs(r - lastBorderColorR) + Math.abs(g - lastBorderColorG) + Math.abs(b - lastBorderColorB);
+                        borderColorVariance += colorDelta;
+                        lastBorderColorR = r;
+                        lastBorderColorG = g;
+                        lastBorderColorB = b;
+                        borderBrightnessSum += brightness;
+
+                        const isNearWhite = brightness > 220 && Math.abs(r - g) < 18 && Math.abs(g - b) < 18;
+                        const isNearColor = brightness > 180 && Math.abs(r - g) + Math.abs(g - b) < 70;
+                        if (isNearWhite || isNearColor) {
+                            backgroundLikeBorderSamples++;
+                        }
+                    }
+                }
+
+                const transparentRatio = transparentPixels / Math.max(1, opaquePixels + transparentPixels);
+                const borderRatio = borderSamples / Math.max(1, opaquePixels);
+                const backgroundLikeRatio = borderSamples > 0 ? backgroundLikeBorderSamples / borderSamples : 0;
+                const avgBorderBrightness = borderSamples > 0 ? borderBrightnessSum / borderSamples : 0;
+                const averageColorDrift = borderSamples > 0 ? borderColorVariance / borderSamples : 0;
+                const likelyBackground =
+                    opaquePixels > 1200 &&
+                    transparentRatio < 0.35 &&
+                    borderRatio > 0.18 &&
+                    backgroundLikeRatio > 0.72 &&
+                    avgBorderBrightness > 180 &&
+                    averageColorDrift < 110;
+
+                if (likelyBackground) {
+                    const warning = 'This image appears to have a background. Fix my image removes the background and converts it to PNG for $2.00.';
+                    setUploadWarningMessage(targetSide, warning, { context: 'design', isError: false });
+                    syncFixMyImageButton(targetSide, true);
+                } else {
+                    syncFixMyImageButton(targetSide, false);
+                }
+            };
+            image.src = resolvedSrc;
+            return false;
+        }
+
         function setUploadWarningMessage(targetSide, message, options) {
             const side = String(targetSide || 'front').toLowerCase();
             const context = options && options.context === 'mockup' ? 'mockup' : 'design';
@@ -17437,10 +18031,21 @@
             else warningEl.classList.remove('is-error');
         }
 
+        function syncUploadQualityIndicators(targetSide, file, width, height, context) {
+            const side = targetSide === 'back' ? 'back' : (targetSide === 'pocket' ? 'pocket' : 'front');
+            const prefix = context === 'mockup' ? 'mockup-upload' : 'design-upload';
+            const pngCheck = document.getElementById(prefix + '-check-png-' + side);
+            const resolutionCheck = document.getElementById(prefix + '-check-resolution-' + side);
+            if (!pngCheck || !resolutionCheck) return;
+            pngCheck.style.display = file && isPngUploadFile(file) ? 'inline-block' : 'none';
+            resolutionCheck.style.display = file && !getLowResolutionUploadWarning(width, height) ? 'inline-block' : 'none';
+        }
+
         function previewDesign(side) {
             const targetSide = side === 'back' ? 'back' : 'front';
             const inputId = targetSide === 'back' ? 'design-upload-back' : 'design-upload-front';
             const overlayId = targetSide === 'back' ? 'design-overlay-back' : 'design-overlay';
+            const previewId = targetSide === 'back' ? 'design-upload-preview-back' : 'design-upload-preview-front';
             const input = document.getElementById(inputId);
             setUploadWarningMessage(targetSide, '', { context: 'design' });
             const selectedSize = document.getElementById('shirt-size')?.value || '';
@@ -17455,31 +18060,45 @@
                 return;
             }
             const file = input?.files?.[0];
-            if (file) {
-                const pngRecommendation = getPngRecommendationWarning(file);
-                if (pngRecommendation) {
-                    setUploadWarningMessage(targetSide, pngRecommendation, { context: 'design', isError: false });
-                    showUploadNotice(pngRecommendation);
+            if (!file) return;
+            window.customDesignConfirmed = false;
+
+            const pngRecommendation = getPngRecommendationWarning(file);
+            if (pngRecommendation) {
+                setUploadWarningMessage(targetSide, pngRecommendation, { context: 'design', isError: false });
+                showUploadNotice(pngRecommendation);
+            }
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const targetOverlay = document.getElementById(overlayId);
+                if (!targetOverlay) return;
+                const previewBox = document.getElementById(previewId);
+                const previewImg = previewBox?.querySelector('img');
+                const resolvedSrc = e.target.result;
+                targetOverlay.dataset.catalogSrc = '';
+                targetOverlay.dataset.uploadName = file.name || '';
+                targetOverlay.dataset.hasImage = '1';
+                targetOverlay.src = resolvedSrc;
+                if (previewImg) {
+                    previewImg.src = resolvedSrc;
+                    previewImg.alt = (targetSide === 'front' ? 'Front' : 'Back') + ' design preview';
                 }
-                const reader = new FileReader();
-                reader.onload = function(e) {
-                    const targetOverlay = document.getElementById(overlayId);
-                    if (!targetOverlay) return;
-                    targetOverlay.dataset.catalogSrc = '';
-                    targetOverlay.dataset.uploadName = file.name || '';
-                    targetOverlay.dataset.hasImage = '1';
+                if (previewBox) previewBox.style.display = 'block';
+                scanForBackgroundAndPng(file, resolvedSrc, targetSide);
+
+                const finalizeUpload = function() {
                     const imageProbe = new Image();
                     imageProbe.onload = function() {
-                        const resolvedSrc = e.target.result;
                         const resolvedWidth = imageProbe.naturalWidth;
                         const resolvedHeight = imageProbe.naturalHeight;
                         const aspectRatio = resolvedWidth / Math.max(resolvedHeight, 1);
                         targetOverlay.dataset.aspectRatio = String(aspectRatio);
                         targetOverlay.dataset.hasImage = '1';
-                        targetOverlay.src = resolvedSrc;
                         const resolutionWarning = getLowResolutionUploadWarning(resolvedWidth, resolvedHeight);
                         const combinedWarning = [pngRecommendation, resolutionWarning].filter(Boolean).join(' ');
                         setUploadWarningMessage(targetSide, combinedWarning, { context: 'design', isError: false });
+                        syncUploadQualityIndicators(targetSide, file, resolvedWidth, resolvedHeight, 'design');
 
                         const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
                         applySizeDrivenPrintProfile(selectedSize, false);
@@ -17497,9 +18116,12 @@
                             syncBackOverlayGeometry();
                         }
 
+                        targetOverlay.style.display = 'block';
+                        targetOverlay.hidden = false;
                         scaleMockupCanvasesForSize();
                         updatePrintLocationPreview();
                         updateCustomPriceDisplay();
+                        syncCustomBuilderSteps();
                         const baseMessage = targetSide === 'front'
                             ? 'Front design uploaded to the shirt.'
                             : 'Back design uploaded to the shirt.';
@@ -17508,8 +18130,9 @@
                     imageProbe.onerror = function() {
                         targetOverlay.dataset.aspectRatio = '1';
                         targetOverlay.dataset.hasImage = '1';
-                        targetOverlay.src = e.target.result;
+                        targetOverlay.src = resolvedSrc;
                         setUploadWarningMessage(targetSide, '', { context: 'design', isError: false });
+                        syncUploadQualityIndicators(targetSide, file, 0, 0, 'design');
                         const selectedSize = document.getElementById('shirt-size')?.value || 'Adult M';
                         applySizeDrivenPrintProfile(selectedSize, false);
                         applyRecommendedCustomPrintSize(selectedSize, targetSide);
@@ -17527,14 +18150,34 @@
                         scaleMockupCanvasesForSize();
                         updatePrintLocationPreview();
                         updateCustomPriceDisplay();
+                        syncCustomBuilderSteps();
                         showUploadNotice(targetSide === 'front'
                             ? 'Front design uploaded to the shirt.'
                             : 'Back design uploaded to the shirt.');
                     };
-                    imageProbe.src = e.target.result;
+                    imageProbe.src = resolvedSrc;
                 };
-                reader.readAsDataURL(file);
-            }
+
+                requestAnimationFrame(function() {
+                    window.setTimeout(function() {
+                        const shouldUseImage = window.confirm('Is this the right image for your custom shirt?');
+                        if (!shouldUseImage) {
+                            if (input) input.value = '';
+                            if (previewImg) {
+                                previewImg.src = '';
+                                previewImg.alt = 'No image selected';
+                            }
+                            if (previewBox) previewBox.style.display = 'none';
+                            targetOverlay.src = '';
+                            targetOverlay.style.display = 'none';
+                            targetOverlay.dataset.hasImage = '';
+                            return;
+                        }
+                        finalizeUpload();
+                    }, 80);
+                });
+            };
+            reader.readAsDataURL(file);
         }
 
         (function initMainDesignDrag() {
@@ -17997,6 +18640,7 @@
                     const resolutionWarning = getLowResolutionUploadWarning(resolvedWidth, resolvedHeight);
                     const combinedWarning = [pngRecommendation, resolutionWarning].filter(Boolean).join(' ');
                     setUploadWarningMessage(targetSide, combinedWarning, { context: 'mockup', isError: false });
+                    syncUploadQualityIndicators(targetSide, file, resolvedWidth, resolvedHeight, 'mockup');
                     if (targetSide === 'front') {
                         window._mockupThumbFront = resolvedSrc;
                     } else if (targetSide === 'back') {
@@ -18064,6 +18708,7 @@
                 uploadPreview.src = '';
                 uploadPreview.hidden = true;
             }
+            syncUploadQualityIndicators(targetSide, null, 0, 0, 'mockup');
             if (targetSide === 'front') {
                 window._mockupThumbFront = '';
             } else if (targetSide === 'back') {
@@ -18241,9 +18886,32 @@
             updateCart();
         // End of addCustomToCart
             // Reset preview
-            shirtColorPicked = false;
-            clearDesign('front');
-            clearDesign('back');
+            const shouldCheckout = window.confirm('Your custom T-shirt was added to the cart. Would you like to checkout now, or make another custom T-shirt?');
+            if (shouldCheckout) {
+                if (typeof checkout === 'function') {
+                    checkout({ currentTarget: document.querySelector('.header-checkout-btn') || document.body });
+                } else {
+                    navigateToPage('cart');
+                }
+            } else {
+                shirtColorPicked = false;
+                const shirtSize = document.getElementById('shirt-size');
+                if (shirtSize) shirtSize.value = '';
+                document.body.dataset.customOrderReady = 'false';
+                if (document.getElementById('builder-body')) document.getElementById('builder-body').style.display = 'none';
+                if (document.getElementById('size-prompt')) document.getElementById('size-prompt').style.display = '';
+                if (document.getElementById('add-custom-btn')) document.getElementById('add-custom-btn').style.display = 'none';
+                clearDesign('front');
+                clearDesign('back');
+                document.querySelectorAll('.color-swatch').forEach((swatch) => swatch.classList.remove('active'));
+                syncCustomBuilderSteps();
+                if (startupBuilderFlowPending) {
+                    startupBuilderFlowPending = false;
+                    updateCustomPriceDisplay();
+                    renderStorePage('quick-picks', true);
+                    return;
+                }
+            }
             updateCustomPriceDisplay();
         }
         // Example (Node/Express): POST /create-payment-intent
@@ -19143,6 +19811,10 @@
                         statusEl.classList.add('success');
                         prefillCheckoutFromCustomer();
                         setTimeout(() => {
+                            if (startupAuthFlowPending) {
+                                continueAfterStartupAuth();
+                                return;
+                            }
                             closeAuthModal();
                             document.getElementById('auth-form').reset();
                             setAuthMode('login');
@@ -19157,6 +19829,10 @@
                         statusEl.classList.add('success');
                         prefillCheckoutFromCustomer();
                         setTimeout(() => {
+                            if (startupAuthFlowPending) {
+                                continueAfterStartupAuth();
+                                return;
+                            }
                             closeAuthModal();
                             document.getElementById('auth-form').reset();
                             setAuthMode('login');
@@ -19203,6 +19879,10 @@
                 statusEl.classList.add('success');
                 prefillCheckoutFromCustomer();
                 setTimeout(() => {
+                    if (startupAuthFlowPending) {
+                        continueAfterStartupAuth();
+                        return;
+                    }
                     closeAuthModal();
                     document.getElementById('auth-form').reset();
                     setAuthMode('login');
@@ -19409,14 +20089,30 @@
         updateCustomerAccountUi();
         updateAdminUi();
         
+        // Show the logo splash first, fade it out, then reveal the page underneath.
+        (function() {
+            var splash = document.getElementById('intro-splash');
+            if (!splash) return;
+            setTimeout(function() {
+                splash.classList.add('intro-splash-hidden');
+                setTimeout(function() {
+                    splash.hidden = true;
+                    window.dispatchEvent(new Event('freedomWorksSplashFinished'));
+                }, 900);
+            }, 5000);
+        })();
+
         // Ensure shirt mockup renders on page load
         window.addEventListener('DOMContentLoaded', async () => {
             initAutoThemeSystem();
+            window.addEventListener('freedomWorksSplashFinished', startStartupAuthFlow, { once: true });
+            // Switch away from the default "Create Account" home markup right away,
+            // instead of waiting on the catalog/sale fetches below.
+            renderStorePage(getStartupStorePage(), false);
             await initializeQuickPickCatalog();
             syncQuickPickLandingSizeOptions();
             renderOnSaleGallery();
             await loadTrendingSales();
-            renderStorePage(getStartupStorePage(), false);
             initCatalogImageZoom();
             initQuickPicks();
             initCatalogSaleCountdowns();
