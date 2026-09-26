@@ -1847,6 +1847,50 @@
             cursor: not-allowed;
             opacity: 0.45;
         }
+        #design-image-confirm,
+        #custom-order-added-confirm {
+            width: min(420px, calc(100vw - 32px));
+            padding: 24px;
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 12px;
+            background: #10213c;
+            color: #fff;
+            box-shadow: 0 18px 60px rgba(0,0,0,0.45);
+        }
+        #design-image-confirm::backdrop,
+        #custom-order-added-confirm::backdrop {
+            background: rgba(4,10,22,0.72);
+        }
+        #design-image-confirm h2,
+        #custom-order-added-confirm h2 {
+            margin: 0 0 20px;
+            font-size: 1.15rem;
+        }
+        #custom-order-added-confirm p {
+            margin: 0 0 20px;
+            line-height: 1.5;
+        }
+        .builder-confirm-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+        .builder-confirm-actions button {
+            margin: 0;
+            padding: 9px 18px;
+            border: 0;
+            border-radius: 999px;
+            font-weight: 800;
+            cursor: pointer;
+        }
+        .builder-confirm-secondary {
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+        }
+        .builder-confirm-primary {
+            background: #ffe08a;
+            color: #241900;
+        }
         .custom-design label {
             display: block;
             margin: 15px 0 5px;
@@ -7070,7 +7114,7 @@
                 </details>
             <div class="mockup-size-panel" id="size-controls-wrap" style="margin-top:12px;">
                 <h3>Print Size (Inches)</h3>
-                <p style="margin:0 0 10px; color:#dfeafc; font-size:0.9rem; line-height:1.5;">Your shirt size already has a recommended print size set for it, and you can increase or decrease it if you want a larger or smaller print.</p>
+                <p style="margin:0 0 10px; color:#dfeafc; font-size:0.9rem; line-height:1.5;">The print size is already adjusted for the T-shirt size you selected. You can increase or decrease it if you want a larger or smaller print.</p>
                 <div class="mockup-size-row">
                     <label for="custom-width-range"><span>Width</span><span id="width-val">7.5&quot;</span></label>
                     <input id="custom-width-range" type="range" min="2" max="15" step="0.1" value="7.5" oninput="setCustomPrintSize('width', this.value, 'front')">
@@ -7112,6 +7156,34 @@
                         if (typeof window._mascotWarn === 'function') {
                             window._mascotWarn(text);
                         }
+                    }
+
+                    function confirmUploadedImage() {
+                        return new Promise(function(resolve) {
+                            const dialog = document.getElementById('design-image-confirm');
+                            if (!dialog || typeof dialog.showModal !== 'function') {
+                                resolve(false);
+                                return;
+                            }
+                            dialog.addEventListener('close', function() {
+                                resolve(dialog.returnValue === 'yes');
+                            }, { once: true });
+                            dialog.showModal();
+                        });
+                    }
+
+                    function chooseAfterCustomOrder() {
+                        return new Promise(function(resolve) {
+                            const dialog = document.getElementById('custom-order-added-confirm');
+                            if (!dialog || typeof dialog.showModal !== 'function') {
+                                resolve('another');
+                                return;
+                            }
+                            dialog.addEventListener('close', function() {
+                                resolve(dialog.returnValue || 'another');
+                            }, { once: true });
+                            dialog.showModal();
+                        });
                     }
 
                     // Mockup upload/placement logic is defined in the main script block below.
@@ -7701,6 +7773,27 @@
     </footer>
 
     <!-- -- Stripe Checkout Modal -------------------------------------------- -->
+    <dialog id="design-image-confirm" aria-labelledby="design-image-confirm-title">
+        <form method="dialog">
+            <h2 id="design-image-confirm-title">Is this the right image for your custom shirt?</h2>
+            <div class="builder-confirm-actions">
+                <button type="submit" value="no" class="builder-confirm-secondary">No</button>
+                <button type="submit" value="yes" class="builder-confirm-primary">Yes</button>
+            </div>
+        </form>
+    </dialog>
+
+    <dialog id="custom-order-added-confirm" aria-labelledby="custom-order-added-title" aria-describedby="custom-order-added-text">
+        <form method="dialog">
+            <h2 id="custom-order-added-title">Your custom T-shirt was added to the cart.</h2>
+            <p id="custom-order-added-text">Would you like to checkout or make another custom T-shirt?</p>
+            <div class="builder-confirm-actions">
+                <button type="submit" value="checkout" class="builder-confirm-primary">Checkout</button>
+                <button type="submit" value="another" class="builder-confirm-secondary">Make Another</button>
+            </div>
+        </form>
+    </dialog>
+
     <div id="stripe-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="stripe-modal-title">
         <div id="stripe-modal">
             <button id="stripe-modal-close" aria-label="Close checkout" onclick="closeStripeModal()">&times;</button>
@@ -18199,20 +18292,21 @@
 
                 requestAnimationFrame(function() {
                     window.setTimeout(function() {
-                        const shouldUseImage = window.confirm('Is this the right image for your custom shirt?');
-                        if (!shouldUseImage) {
-                            if (input) input.value = '';
-                            if (previewImg) {
-                                previewImg.src = '';
-                                previewImg.alt = 'No image selected';
+                        confirmUploadedImage().then(function(shouldUseImage) {
+                            if (!shouldUseImage) {
+                                if (input) input.value = '';
+                                if (previewImg) {
+                                    previewImg.src = '';
+                                    previewImg.alt = 'No image selected';
+                                }
+                                if (previewBox) previewBox.style.display = 'none';
+                                targetOverlay.src = '';
+                                targetOverlay.style.display = 'none';
+                                targetOverlay.dataset.hasImage = '';
+                                return;
                             }
-                            if (previewBox) previewBox.style.display = 'none';
-                            targetOverlay.src = '';
-                            targetOverlay.style.display = 'none';
-                            targetOverlay.dataset.hasImage = '';
-                            return;
-                        }
-                        finalizeUpload();
+                            finalizeUpload();
+                        });
                     }, 80);
                 });
             };
@@ -18925,33 +19019,34 @@
             updateCart();
         // End of addCustomToCart
             // Reset preview
-            const shouldCheckout = window.confirm('Your custom T-shirt was added to the cart. Would you like to checkout now, or make another custom T-shirt?');
-            if (shouldCheckout) {
-                if (typeof checkout === 'function') {
-                    checkout({ currentTarget: document.querySelector('.header-checkout-btn') || document.body });
+            chooseAfterCustomOrder().then(function(choice) {
+                if (choice === 'checkout') {
+                    if (typeof checkout === 'function') {
+                        checkout({ currentTarget: document.querySelector('.header-checkout-btn') || document.body });
+                    } else {
+                        navigateToPage('cart');
+                    }
                 } else {
-                    navigateToPage('cart');
+                    shirtColorPicked = false;
+                    const shirtSize = document.getElementById('shirt-size');
+                    if (shirtSize) shirtSize.value = '';
+                    document.body.dataset.customOrderReady = 'false';
+                    if (document.getElementById('builder-body')) document.getElementById('builder-body').style.display = 'none';
+                    if (document.getElementById('size-prompt')) document.getElementById('size-prompt').style.display = '';
+                    if (document.getElementById('add-custom-btn')) document.getElementById('add-custom-btn').style.display = 'none';
+                    clearDesign('front');
+                    clearDesign('back');
+                    document.querySelectorAll('.color-swatch').forEach((swatch) => swatch.classList.remove('active'));
+                    syncCustomBuilderSteps();
+                    if (startupBuilderFlowPending) {
+                        startupBuilderFlowPending = false;
+                        updateCustomPriceDisplay();
+                        renderStorePage('quick-picks', true);
+                        return;
+                    }
                 }
-            } else {
-                shirtColorPicked = false;
-                const shirtSize = document.getElementById('shirt-size');
-                if (shirtSize) shirtSize.value = '';
-                document.body.dataset.customOrderReady = 'false';
-                if (document.getElementById('builder-body')) document.getElementById('builder-body').style.display = 'none';
-                if (document.getElementById('size-prompt')) document.getElementById('size-prompt').style.display = '';
-                if (document.getElementById('add-custom-btn')) document.getElementById('add-custom-btn').style.display = 'none';
-                clearDesign('front');
-                clearDesign('back');
-                document.querySelectorAll('.color-swatch').forEach((swatch) => swatch.classList.remove('active'));
-                syncCustomBuilderSteps();
-                if (startupBuilderFlowPending) {
-                    startupBuilderFlowPending = false;
-                    updateCustomPriceDisplay();
-                    renderStorePage('quick-picks', true);
-                    return;
-                }
-            }
-            updateCustomPriceDisplay();
+                updateCustomPriceDisplay();
+            });
         }
         // Example (Node/Express): POST /create-payment-intent
         //   const paymentIntent = await stripe.paymentIntents.create({ amount, currency: 'usd' });
