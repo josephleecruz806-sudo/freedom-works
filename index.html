@@ -637,8 +637,10 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            width: 100%;
             height: calc(285px * var(--header-scale));
             margin-top: 20px;
+            margin-inline: auto;
             position: relative;
             z-index: 2;
         }
@@ -5856,6 +5858,7 @@
             }
 
             .logo-wrap {
+                width: min(420px, calc(100vw - 24px)) !important;
                 height: 156px !important;
                 min-height: 156px !important;
                 max-width: 420px !important;
