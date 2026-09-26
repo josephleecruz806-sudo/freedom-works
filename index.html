@@ -6611,10 +6611,18 @@
             pointer-events: none;
         }
         #intro-splash-logo {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
             width: min(72vw, 620px);
             max-height: 72vh;
             object-fit: contain;
             filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.7));
+        }
+        /* A filter on body turns it into the containing block for fixed children, which shifts the splash. */
+        html.splash-on body.theme-shift-anim {
+            animation: themeBackgroundDrift var(--theme-drift-speed) linear infinite;
         }
 
     </style>
@@ -6658,10 +6666,12 @@
         (function () {
             var splash = document.getElementById('intro-splash');
             if (!splash) return;
+            document.documentElement.classList.add('splash-on');
             setTimeout(function () {
                 splash.classList.add('is-hiding');
                 setTimeout(function () {
                     if (splash.parentNode) splash.parentNode.removeChild(splash);
+                    document.documentElement.classList.remove('splash-on');
                 }, 1000);
             }, 6000);
         })();
