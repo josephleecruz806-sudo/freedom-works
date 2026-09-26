@@ -6594,10 +6594,50 @@
             display: none !important;
         }
 
+        #intro-splash {
+            position: fixed;
+            inset: 0;
+            z-index: 99999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background:
+                radial-gradient(circle at 20% 28%, color-mix(in srgb, var(--theme-glow-1) 68%, transparent) 0%, transparent 52%),
+                radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--theme-glow-2) 62%, transparent) 0%, transparent 48%),
+                linear-gradient(125deg, color-mix(in srgb, var(--theme-surface-a) 86%, black 14%) 0%, color-mix(in srgb, var(--theme-surface-b) 84%, black 16%) 58%, color-mix(in srgb, var(--theme-bg-end) 82%, black 18%) 100%);
+            opacity: 1;
+            transition: opacity 900ms ease;
+        }
+        #intro-splash.is-hiding {
+            opacity: 0;
+            pointer-events: none;
+        }
+        #intro-splash-logo {
+            width: min(72vw, 620px);
+            max-height: 72vh;
+            object-fit: contain;
+            filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.7));
+        }
+
     </style>
 
 </head>
 <body>
+    <div id="intro-splash" role="presentation">
+        <img id="intro-splash-logo" alt="Freedom Works" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='freedom-works-logo-transparent.png';}else{this.onerror=null;this.style.visibility='hidden';}">
+    </div>
+    <script>
+        (function () {
+            var splash = document.getElementById('intro-splash');
+            if (!splash) return;
+            setTimeout(function () {
+                splash.classList.add('is-hiding');
+                setTimeout(function () {
+                    if (splash.parentNode) splash.parentNode.removeChild(splash);
+                }, 1000);
+            }, 6000);
+        })();
+    </script>
         <div id="image-zoom-panel" class="image-zoom-panel" aria-hidden="true">
             <div id="image-zoom-stage" class="image-zoom-stage"></div>
             <div class="image-zoom-hint">Hover to zoom</div>
