@@ -6601,11 +6601,8 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            background-color: #0b1020;
-            background-image:
-                radial-gradient(circle at 20% 28%, color-mix(in srgb, var(--theme-glow-1) 68%, transparent) 0%, transparent 52%),
-                radial-gradient(circle at 80% 18%, color-mix(in srgb, var(--theme-glow-2) 62%, transparent) 0%, transparent 48%),
-                linear-gradient(125deg, color-mix(in srgb, var(--theme-surface-a) 86%, black 14%) 0%, color-mix(in srgb, var(--theme-surface-b) 84%, black 16%) 58%, color-mix(in srgb, var(--theme-bg-end) 82%, black 18%) 100%);
+            background-color: var(--splash-a, #10203c);
+            background-image: linear-gradient(140deg, var(--splash-a, #10203c) 0%, var(--splash-b, #1a2d52) 100%);
             opacity: 1;
             transition: opacity 900ms ease;
         }
@@ -6621,6 +6618,36 @@
         }
 
     </style>
+    <script>
+        // Set splash colors before first paint so it matches the seasonal theme applied later.
+        (function () {
+            var now = new Date();
+            var m = now.getMonth() + 1;
+            var d = now.getDate();
+            var key = 'winter';
+            if ((m === 12 && d >= 1) || (m === 1 && d <= 6)) key = 'winterHolidays';
+            else if (m === 2 && d >= 10 && d <= 16) key = 'valentine';
+            else if (m === 7 && d <= 7) key = 'fourthOfJuly';
+            else if (m === 10 && d >= 15) key = 'halloween';
+            else if (m === 11 && d >= 20) key = 'thanksgiving';
+            else if (m >= 3 && m <= 5) key = 'spring';
+            else if (m >= 6 && m <= 8) key = 'summer';
+            else if (m === 9 || (m === 10 && d < 15) || (m === 11 && d < 20)) key = 'fall';
+            var colors = {
+                winter: ['#10203c', '#1a2d52'],
+                spring: ['#163327', '#1f5a3f'],
+                fourthOfJuly: ['#0e2a63', '#1a4fa3'],
+                summer: ['#1b6a93', '#27a9cb'],
+                fall: ['#28120c', '#5a2a17'],
+                halloween: ['#130b1f', '#2a1146'],
+                thanksgiving: ['#2c1e11', '#5c3b20'],
+                winterHolidays: ['#0f2f2a', '#1d4f44'],
+                valentine: ['#4a142c', '#7a2145']
+            }[key];
+            document.documentElement.style.setProperty('--splash-a', colors[0]);
+            document.documentElement.style.setProperty('--splash-b', colors[1]);
+        })();
+    </script>
 
 </head>
 <body>
