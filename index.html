@@ -650,7 +650,6 @@
             position: relative;
             z-index: 2;
             filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.88)) drop-shadow(0 0 42px rgba(255, 255, 255, 0.62));
-            animation: logoGlowPulse 1.35s ease-in-out infinite alternate;
         }
         .dove-logo.is-ready {
             display: block;
@@ -666,46 +665,6 @@
             flex: 1 1 auto;
             object-fit: contain;
             filter: drop-shadow(0 0 14px rgba(255, 255, 255, 0.55));
-        }
-        @keyframes logoGlowPulse {
-            0% {
-                filter: drop-shadow(0 0 12px rgba(255, 255, 255, 0.72)) drop-shadow(0 0 28px rgba(255, 255, 255, 0.42));
-            }
-            100% {
-                filter: drop-shadow(0 0 26px rgba(255, 255, 255, 1)) drop-shadow(0 0 58px rgba(255, 255, 255, 0.82));
-            }
-        }
-        .intro-splash {
-            position: fixed;
-            inset: 0;
-            z-index: 100000;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: linear-gradient(135deg, var(--theme-bg-start) 0%, var(--theme-bg-mid) 44%, var(--theme-bg-end) 100%);
-            opacity: 1;
-            transition: opacity 0.9s ease;
-        }
-        .intro-splash.intro-splash-hidden {
-            opacity: 0;
-            pointer-events: none;
-        }
-        .intro-splash-logo {
-            max-width: 96vw;
-            max-height: 82vh;
-            width: auto;
-            height: auto;
-            filter: drop-shadow(0 0 18px rgba(255, 255, 255, 0.88)) drop-shadow(0 0 42px rgba(255, 255, 255, 0.62));
-            animation: logoGlowPulse 1.35s ease-in-out infinite alternate;
-        }
-        .intro-splash-tagline {
-            margin-top: 14px;
-            color: #fff;
-            font-weight: 600;
-            font-size: 1.1rem;
-            text-align: center;
-            padding: 0 1.5rem;
         }
         header > p {
             position: relative;
@@ -6639,10 +6598,6 @@
 
 </head>
 <body>
-        <div id="intro-splash" class="intro-splash" aria-hidden="true">
-            <img class="intro-splash-logo" alt="Freedom Works Logo" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.logoFallbackTried){this.dataset.logoFallbackTried='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.logoFallbackTried2){this.dataset.logoFallbackTried2='1';this.src='/freedom%20works%20logo%20transparent.png';}else{this.onerror=null;this.style.display='none';}">
-            <p class="intro-splash-tagline">Where you have the freedom to make your own custom t-shirts</p>
-        </div>
         <div id="image-zoom-panel" class="image-zoom-panel" aria-hidden="true">
             <div id="image-zoom-stage" class="image-zoom-stage"></div>
             <div class="image-zoom-hint">Hover to zoom</div>
@@ -20089,23 +20044,9 @@
         updateCustomerAccountUi();
         updateAdminUi();
         
-        // Show the logo splash first, fade it out, then reveal the page underneath.
-        (function() {
-            var splash = document.getElementById('intro-splash');
-            if (!splash) return;
-            setTimeout(function() {
-                splash.classList.add('intro-splash-hidden');
-                setTimeout(function() {
-                    splash.hidden = true;
-                    window.dispatchEvent(new Event('freedomWorksSplashFinished'));
-                }, 900);
-            }, 5000);
-        })();
-
         // Ensure shirt mockup renders on page load
         window.addEventListener('DOMContentLoaded', async () => {
             initAutoThemeSystem();
-            window.addEventListener('freedomWorksSplashFinished', startStartupAuthFlow, { once: true });
             // Switch away from the default "Create Account" home markup right away,
             // instead of waiting on the catalog/sale fetches below.
             renderStorePage(getStartupStorePage(), false);
