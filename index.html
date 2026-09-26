@@ -1847,6 +1847,27 @@
             cursor: not-allowed;
             opacity: 0.45;
         }
+        .custom-quantity-control {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-top: 12px;
+            color: #fff;
+        }
+        .custom-quantity-control label {
+            margin: 0;
+            color: #fff;
+        }
+        .custom-quantity-control input {
+            width: 76px;
+            min-height: 40px;
+            padding: 6px 8px;
+            border: 1px solid rgba(255,255,255,0.32);
+            border-radius: 8px;
+            background: #fff;
+            color: #172033;
+            font: inherit;
+        }
         #design-image-confirm,
         #custom-order-added-confirm {
             width: min(420px, calc(100vw - 32px));
@@ -7411,6 +7432,11 @@
             <div class="custom-builder-step is-locked" id="custom-step-5" data-step="5">
                 <h3 class="custom-step-heading"><span class="custom-step-number">5</span>Place your order<span class="custom-step-status" id="custom-step-5-status"></span></h3>
                 <div class="custom-step-content">
+                <div class="custom-quantity-control">
+                    <label for="custom-shirt-quantity">Quantity</label>
+                    <input id="custom-shirt-quantity" type="number" min="1" max="99" value="1" step="1" inputmode="numeric">
+                    <span>shirts</span>
+                </div>
                 <button id="add-custom-btn" style="margin-top:24px;display:none;background:linear-gradient(45deg,#4a90e2,#a259ff);border:none;color:#fff;padding:13px 32px;border-radius:25px;font-size:1rem;font-weight:800;cursor:pointer;box-shadow:0 4px 18px rgba(74,144,226,0.4);transition:transform 0.2s,box-shadow 0.2s;" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 8px 24px rgba(74,144,226,0.5)'" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 18px rgba(74,144,226,0.4)'" onclick="addCustomToCart()">Place Your Order</button>
                 </div>
             </div>
@@ -18933,6 +18959,13 @@
 
 
         function addCustomToCart() {
+            const quantityInput = document.getElementById('custom-shirt-quantity');
+            const selectedQuantity = quantityInput ? Number(quantityInput.value) : 1;
+            if (!Number.isInteger(selectedQuantity) || selectedQuantity < 1 || selectedQuantity > 99) {
+                alert('Please enter a quantity from 1 to 99.');
+                quantityInput?.focus();
+                return;
+            }
             const frontOverlay = document.getElementById('design-overlay');
             const backOverlay = document.getElementById('design-overlay-back');
             const frontDesignImg = frontOverlay?.src || '';
@@ -18966,9 +18999,10 @@
                     : findCatalogItemBySrc(frontCatalogSrc))
                 : null;
 
+            let customCartItem;
             if (catalogItem) {
                 const catalogOriginalPrice = getCatalogOriginalPriceForSize(catalogItem, selectedSize);
-                cart.push({
+                customCartItem = {
                     name: catalogItem.name || 'Catalog Design',
                     price: customPrice,
                     type: 'catalog',
@@ -18994,9 +19028,9 @@
                     saleSizes: [],
                     originalPrice: Number(customPrice || catalogOriginalPrice || 0),
                     saleEndsAt: ''
-                });
+                };
             } else {
-                cart.push({
+                customCartItem = {
                     name: 'Custom T-Shirt',
                     price: customPrice,
                     type: 'custom',
@@ -19012,9 +19046,14 @@
                     designFrontFile: frontUploadName || '',
                     designBackFile: backUploadName || '',
                     designPreview: _thumb,
-                });
+                };
             }
-            cartThumbs.push(_thumb);
+            for (let quantityIndex = 0; quantityIndex < selectedQuantity; quantityIndex += 1) {
+                const cartEntry = { ...customCartItem };
+                if (Array.isArray(customCartItem.saleSizes)) cartEntry.saleSizes = customCartItem.saleSizes.slice();
+                cart.push(cartEntry);
+                cartThumbs.push(_thumb);
+            }
             try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
             updateCart();
         // End of addCustomToCart
@@ -19028,6 +19067,7 @@
                     }
                 } else {
                     shirtColorPicked = false;
+                    if (quantityInput) quantityInput.value = '1';
                     const shirtSize = document.getElementById('shirt-size');
                     if (shirtSize) shirtSize.value = '';
                     document.body.dataset.customOrderReady = 'false';
