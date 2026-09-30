@@ -353,6 +353,12 @@
             font-size: 0.84rem;
             font-weight: 800;
         }
+        .admin-color-stock-add-options {
+            display: grid;
+            justify-items: start;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
         .admin-offer-list {
             display: grid;
             gap: 12px;
@@ -1430,6 +1436,8 @@
                                         <select id="admin-color-stock-name" style="max-width:200px;"></select>
                                         <select id="admin-color-stock-size" style="max-width:160px;"></select>
                                         <input id="admin-color-stock-count" type="number" min="0" step="1" placeholder="Stock #" style="max-width:120px;">
+                                    </div>
+                                    <div class="admin-color-stock-add-options">
                                         <label style="display:flex;align-items:center;gap:6px;"><input id="admin-color-stock-out" type="checkbox"> Out of stock</label>
                                         <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add to Inventory</button>
                                     </div>
