@@ -2077,14 +2077,18 @@
             if (!colorName || !size) return;
             const outOfStock = Boolean(outOfStockEl && outOfStockEl.checked);
             const stock = outOfStock ? 0 : Math.max(0, Math.round(Number(countEl && countEl.value || 0)) || 0);
-            const alreadyExists = adminColorStockEntries.some(function(entry) {
+            const existingEntry = adminColorStockEntries.find(function(entry) {
                 return String(entry.color || '').trim().toLowerCase() === colorName.toLowerCase()
                     && String(entry.size || '').trim().toLowerCase() === size.toLowerCase();
             });
-            if (!alreadyExists) {
+            const statusEl = document.getElementById('admin-inventory-status');
+            if (statusEl) statusEl.textContent = '';
+            if (!existingEntry) {
                 adminColorStockEntries = adminColorStockEntries.concat({ color: colorName, size: size, stock: stock, outOfStock: outOfStock });
+            } else if (outOfStock) {
+                existingEntry.stock = 0;
+                existingEntry.outOfStock = true;
             } else {
-                const statusEl = document.getElementById('admin-inventory-status');
                 if (statusEl) statusEl.textContent = 'That color and size combo is already added - edit its stock number below instead.';
             }
             if (countEl) countEl.value = '';
