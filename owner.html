@@ -2979,6 +2979,7 @@
                                 item.shirtSize ? ('Size: ' + item.shirtSize) : '',
                                 (item.shirtColorName || item.shirtColorHex) ? ('Shirt Color: ' + (item.shirtColorName || 'Not listed') + (item.shirtColorHex ? (' (' + item.shirtColorHex + ')') : '')) : '',
                                 item.printLocation ? ('Print Location: ' + item.printLocation) : '',
+                                (item.imageFixFront || item.imageFixBack) ? ('FIX MY IMAGE: ' + [item.imageFixFront ? 'Front' : '', item.imageFixBack ? 'Back' : ''].filter(Boolean).join(' & ') + ' - remove background + convert to PNG' + (Number(item.imageFixFee || 0) > 0 ? (' (+' + formatPriceAmount(Number(item.imageFixFee)) + ')') : '')) : '',
                                 item.designName ? ('Design: ' + item.designName) : '',
                                 item.designType ? ('Design Type: ' + item.designType) : '',
                                 item.designFrontFile ? ('Front File: ' + item.designFrontFile) : '',

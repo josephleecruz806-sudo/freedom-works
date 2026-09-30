@@ -13612,8 +13612,9 @@
                         const itemName = item?.name || 'Item';
                         const size = item?.shirtSize ? ' - ' + item.shirtSize : '';
                         const location = item?.printLocation ? ' - ' + item.printLocation : '';
+                        const fixNote = getImageFixSummary(item) ? ' - ' + getImageFixSummary(item) : '';
                         const price = Number(item?.price || 0).toFixed(2);
-                        return '<li>' + itemName + size + location + ' - $' + price + '</li>';
+                        return '<li>' + itemName + size + location + fixNote + ' - $' + price + '</li>';
                     }).join('') + '</ol>'
                     : '<div class="account-order-empty">No item details were saved for this order.</div>';
                 const statusClass = String(order?.status || 'pending').toLowerCase() === 'paid' ? 'paid' : 'pending';
@@ -19115,6 +19116,13 @@
             }
 
             const customPrice = getCurrentCustomPrice();
+            const fixState = window.customImageFixState || {};
+            const imageFixInfo = {
+                imageFixFront: hasFront && printLocation !== 'Back' && !!fixState.front,
+                imageFixBack: hasBack && printLocation !== 'Front' && !!fixState.back,
+                imageFixFee: getBackgroundCleanupFee()
+            };
+            if (!imageFixInfo.imageFixFront && !imageFixInfo.imageFixBack) imageFixInfo.imageFixFee = 0;
             const _frontEl = frontOverlay;
             const _backEl = backOverlay;
             const _thumb = hasFront ? captureThumb(_frontEl) : (hasBack ? captureThumb(_backEl) : '');
@@ -19144,6 +19152,7 @@
                     designBackFile: '',
                     designPreview: _thumb,
                     catalogDesignSrc: catalogItem.src,
+                    ...imageFixInfo,
                     saleOfferType: '',
                     saleOfferGroupId: '',
                     salePrice: 0,
@@ -19171,6 +19180,7 @@
                     designFrontFile: frontUploadName || '',
                     designBackFile: backUploadName || '',
                     designPreview: _thumb,
+                    ...imageFixInfo,
                 };
             }
             for (let quantityIndex = 0; quantityIndex < selectedQuantity; quantityIndex += 1) {
@@ -19619,6 +19629,9 @@
                     designBackPreview: normalizeOrderPreviewValue(item.designBack || ''),
                     catalogDesignSrc: item.catalogDesignSrc || '',
                     designPreview: normalizeOrderPreviewValue(item.designPreview || cartThumbs[index] || ''),
+                    imageFixFront: !!item.imageFixFront,
+                    imageFixBack: !!item.imageFixBack,
+                    imageFixFee: Number(item.imageFixFee || 0),
                     price: Number(pricingState.lineTotals[index] || 0)
                 }))
             };
@@ -19931,6 +19944,13 @@
             if (typeof window._mascotRemoveItem === 'function' && Math.random() < 0.6) window._mascotRemoveItem();
         }
 
+        function getImageFixSummary(item) {
+            const sides = [item?.imageFixFront ? 'Front' : '', item?.imageFixBack ? 'Back' : ''].filter(Boolean);
+            if (!sides.length) return '';
+            const fee = Number(item?.imageFixFee || 0);
+            return 'Fix my image: ' + sides.join(' & ') + (fee > 0 ? ' (+$' + fee.toFixed(2) + ')' : '');
+        }
+
         function updateCart() {
             const cartItems = document.getElementById('cart-items');
             const total = document.getElementById('total');
@@ -19955,7 +19975,10 @@
                 const saleMeta = lineSavings > 0
                     ? `<span class="cart-item-sale-meta"><span class="cart-item-original-price">Was $${originalLineTotal}</span><span class="cart-item-savings">You save $${lineSavings.toFixed(2)}</span></span>`
                     : '';
-                div.innerHTML = `${thumbHtml}<span class="cart-item-copy"><span class="cart-item-label">${label}</span>${saleMeta}</span><span class="cart-item-price"><span class="cart-item-current-price">$${lineTotal}</span><button onclick="removeFromCart(${index})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:0.85rem;font-weight:700;" title="Remove">&times;</button></span>`;
+                const fixMeta = getImageFixSummary(item)
+                    ? `<span class="cart-item-sale-meta" style="color:#f0b429;font-weight:700;">${escapeHtml(getImageFixSummary(item))}</span>`
+                    : '';
+                div.innerHTML = `${thumbHtml}<span class="cart-item-copy"><span class="cart-item-label">${label}</span>${fixMeta}${saleMeta}</span><span class="cart-item-price"><span class="cart-item-current-price">$${lineTotal}</span><button onclick="removeFromCart(${index})" style="background:#e74c3c;color:#fff;border:none;border-radius:6px;padding:3px 9px;cursor:pointer;font-size:0.85rem;font-weight:700;" title="Remove">&times;</button></span>`;
                 cartItems.appendChild(div);
             });
             total.textContent = getCheckoutTotal().toFixed(2);

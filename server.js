@@ -577,6 +577,9 @@ function sanitizeOrderItem(item) {
     designBackPreview: normalizeDesignPreview(record.designBackPreview || ''),
     catalogDesignSrc: normalizeTextField(record.catalogDesignSrc || '', 220),
     designPreview: normalizeDesignPreview(record.designPreview || ''),
+    imageFixFront: record.imageFixFront === true,
+    imageFixBack: record.imageFixBack === true,
+    imageFixFee: Math.min(20, Math.max(0, Number(record.imageFixFee || 0) || 0)),
     price: Math.max(0, Number(record.price || 0)),
   };
 }
@@ -590,32 +593,105 @@ function escapeHtml(value) {
     .replace(/'/g, '&#39;');
 }
 
-function buildOrderItemsSummary(order) {
+function formatMoney(value) {
+  return `$${Number(value || 0).toFixed(2)}`;
+}
+
+function formatOrderDate(value) {
+  const date = new Date(value || Date.now());
+  if (Number.isNaN(date.getTime())) return String(value || '');
+  try {
+    return date.toLocaleString('en-US', {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit',
+      timeZone: process.env.STORE_TIMEZONE || 'UTC',
+      timeZoneName: 'short',
+    });
+  } catch (_) {
+    return date.toISOString();
+  }
+}
+
+function getItemImageFixSides(item) {
+  return [item?.imageFixFront ? 'Front' : '', item?.imageFixBack ? 'Back' : ''].filter(Boolean);
+}
+
+function getItemImageFixLabel(item, forOwner) {
+  const sides = getItemImageFixSides(item);
+  if (!sides.length) return '';
+  const fee = Number(item?.imageFixFee || 0);
+  const feeText = fee > 0 ? ` (+${formatMoney(fee)})` : '';
+  return forOwner
+    ? `FIX MY IMAGE REQUESTED: ${sides.join(' & ')} - remove background + convert to PNG${feeText}`
+    : `Fix my image: ${sides.join(' & ')} - background removal + PNG conversion${feeText}`;
+}
+
+function countImageFixItems(items) {
+  return (Array.isArray(items) ? items : []).filter((item) => getItemImageFixSides(item).length).length;
+}
+
+function getOrderItemDetailLines(item, forOwner) {
+  return [
+    item?.shirtSize ? `Size: ${item.shirtSize}` : '',
+    (item?.shirtColorName || item?.shirtColorHex)
+      ? `Shirt Color: ${item?.shirtColorName || 'Not listed'}${item?.shirtColorHex ? ` (${item.shirtColorHex})` : ''}`
+      : '',
+    item?.printLocation ? `Print Location: ${item.printLocation}` : '',
+    item?.designName ? `Design: ${item.designName}` : '',
+    forOwner && item?.designType ? `Design Type: ${item.designType}` : '',
+    forOwner && item?.designFrontFile ? `Front File: ${item.designFrontFile}` : '',
+    forOwner && item?.designBackFile ? `Back File: ${item.designBackFile}` : '',
+    forOwner && item?.catalogDesignSrc ? `Catalog Source: ${item.catalogDesignSrc}` : '',
+  ].filter(Boolean);
+}
+
+function getOrderFulfillmentDetails(order) {
+  const shipping = order?.shipping || {};
+  const isPickup = String(order?.fulfillmentMethod || shipping?.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup';
+  const shippingAmount = isPickup ? 0 : Number(order?.shippingAmount || 0);
+  const addressLines = isPickup
+    ? []
+    : [
+      shipping.addressLine1 || '',
+      shipping.addressLine2 || '',
+      [[shipping.city || '', shipping.state || ''].filter(Boolean).join(', '), shipping.postalCode || ''].filter(Boolean).join(' '),
+      shipping.country && shipping.country !== 'US' ? shipping.country : '',
+    ].filter(Boolean);
+  return {
+    isPickup,
+    methodLabel: isPickup ? 'Pickup' : 'Delivery',
+    chargeLabel: isPickup ? 'Free' : formatMoney(shippingAmount),
+    shippingAmount,
+    recipient: shipping.fullName || '',
+    addressLines,
+  };
+}
+
+function getOrderMoneySummary(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const subtotal = items.reduce((sum, item) => sum + Number(item?.price || 0), 0);
+  const imageFixTotal = items.reduce((sum, item) => sum + (getItemImageFixSides(item).length ? Number(item?.imageFixFee || 0) : 0), 0);
+  const { shippingAmount } = getOrderFulfillmentDetails(order);
+  const total = Number(order?.total || 0);
+  const adjustment = Number((total - subtotal - shippingAmount).toFixed(2));
+  return { subtotal, imageFixTotal, shippingAmount, adjustment, total };
+}
+
+function buildOrderItemsSummary(order, forOwner = true) {
   const items = Array.isArray(order?.items) ? order.items : [];
   if (!items.length) return 'No items listed';
   return items.map((item, index) => {
-    const lines = [`${index + 1}. ${item?.name || 'Item'} - $${Number(item?.price || 0).toFixed(2)}`];
-    if (item?.shirtSize) lines.push(`Size: ${item.shirtSize}`);
-    if (item?.shirtColorName || item?.shirtColorHex) {
-      lines.push(`Shirt Color: ${(item?.shirtColorName || 'Not listed')}${item?.shirtColorHex ? ` (${item.shirtColorHex})` : ''}`);
-    }
-    if (item?.printLocation) lines.push(`Print Location: ${item.printLocation}`);
-    if (item?.designName) lines.push(`Design: ${item.designName}`);
-    if (item?.designType) lines.push(`Design Type: ${item.designType}`);
-    if (item?.designFrontFile) lines.push(`Front Design File: ${item.designFrontFile}`);
-    if (item?.designBackFile) lines.push(`Back Design File: ${item.designBackFile}`);
-    if (item?.designFrontPreview) {
-      lines.push(`Front Preview: ${/^data:image\//i.test(String(item.designFrontPreview || '')) ? 'embedded in owner HTML email and owner dashboard' : item.designFrontPreview}`);
-    }
-    if (item?.designBackPreview) {
-      lines.push(`Back Preview: ${/^data:image\//i.test(String(item.designBackPreview || '')) ? 'embedded in owner HTML email and owner dashboard' : item.designBackPreview}`);
-    }
-    if (item?.catalogDesignSrc) lines.push(`Catalog Source: ${item.catalogDesignSrc}`);
-    if (item?.designPreview) {
-      lines.push(`Preview Image: ${/^data:image\//i.test(String(item.designPreview || '')) ? 'embedded in owner HTML email and owner dashboard' : item.designPreview}`);
-    }
+    const fixLabel = getItemImageFixLabel(item, forOwner);
+    const lines = [
+      `${index + 1}. ${item?.name || 'Item'} - ${formatMoney(item?.price)}`,
+      ...(fixLabel ? [`>> ${fixLabel}`] : []),
+      ...getOrderItemDetailLines(item, forOwner),
+    ];
     return lines.map((line, lineIndex) => (lineIndex === 0 ? line : `   ${line}`)).join('\n');
-  }).join('\n');
+  }).join('\n\n');
 }
 
 function resolveOrderItemPreview(item) {
@@ -743,18 +819,14 @@ function buildOwnerPreviewAssets(order) {
 
 function buildOwnerNotificationHtml(order, previewByIndex, downloadByIndex) {
   const items = Array.isArray(order?.items) ? order.items : [];
-  const shipping = order?.shipping || {};
-  const fulfillmentMethod = String(order?.fulfillmentMethod || shipping?.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup' ? 'pickup' : 'delivery';
-  const shippingAmount = Number(order?.shippingAmount || 0);
-  const shippingSummary = fulfillmentMethod === 'pickup'
-    ? [shipping.fullName || '', shipping.email || ''].filter(Boolean).join(' | ')
-    : [
-      shipping.fullName || '',
-      shipping.addressLine1 || '',
-      shipping.addressLine2 || '',
-      [shipping.city || '', shipping.state || '', shipping.postalCode || ''].filter(Boolean).join(', '),
-      shipping.email || '',
-    ].filter(Boolean).join(' | ');
+  const fulfillment = getOrderFulfillmentDetails(order);
+  const money = getOrderMoneySummary(order);
+  const imageFixCount = countImageFixItems(items);
+  const customerName = getOrderContactName(order);
+  const customerEmail = getOrderReceiptEmail(order);
+  const row = (label, valueHtml) => `<tr><td style="padding:4px 14px 4px 0;color:#596d88;white-space:nowrap;vertical-align:top;">${escapeHtml(label)}</td><td style="padding:4px 0;vertical-align:top;">${valueHtml}</td></tr>`;
+  const table = (rows) => `<table role="presentation" style="border-collapse:collapse;font-size:14px;">${rows.filter(Boolean).join('')}</table>`;
+  const section = (title, bodyHtml) => `<div style="margin:0 0 14px;padding:14px 16px;border:1px solid #d8e2f2;border-radius:12px;background:#ffffff;"><h3 style="margin:0 0 10px;font-size:13px;text-transform:uppercase;letter-spacing:0.06em;color:#1459d9;">${escapeHtml(title)}</h3>${bodyHtml}</div>`;
 
   const itemCards = items.length
     ? items.map((item, idx) => {
@@ -776,21 +848,12 @@ function buildOwnerNotificationHtml(order, previewByIndex, downloadByIndex) {
           ? `<a href="${escapeHtml(backDownloadLink)}" style="display:inline-block;padding:7px 10px;border-radius:8px;background:#1459d9;color:#ffffff;text-decoration:none;font-size:12px;font-weight:700;">Download Back Upload</a>`
           : '',
       ].filter(Boolean).join(' ');
-      const details = [
-        item?.shirtSize ? `Size: ${item.shirtSize}` : '',
-        (item?.shirtColorName || item?.shirtColorHex)
-          ? `Shirt Color: ${item?.shirtColorName || 'Not listed'}${item?.shirtColorHex ? ` (${item.shirtColorHex})` : ''}`
-          : '',
-        item?.printLocation ? `Print Location: ${item.printLocation}` : '',
-        item?.designName ? `Design: ${item.designName}` : '',
-        item?.designType ? `Design Type: ${item.designType}` : '',
-        item?.designFrontFile ? `Front File: ${item.designFrontFile}` : '',
-        item?.designBackFile ? `Back File: ${item.designBackFile}` : '',
-        item?.catalogDesignSrc ? `Catalog Source: ${item.catalogDesignSrc}` : '',
-      ].filter(Boolean);
+      const details = getOrderItemDetailLines(item, true);
+      const fixLabel = getItemImageFixLabel(item, true);
 
-      return `<div style="border:1px solid #d8e2f2;border-radius:12px;padding:12px;margin-bottom:10px;">
-        <div style="font-weight:700;margin-bottom:6px;">${idx + 1}. ${escapeHtml(item?.name || 'Item')} - $${Number(item?.price || 0).toFixed(2)}</div>
+      return `<div style="border:1px solid ${fixLabel ? '#f0b429' : '#d8e2f2'};border-radius:12px;padding:12px;margin-bottom:10px;">
+        <div style="font-weight:700;margin-bottom:6px;">Item ${idx + 1} of ${items.length}: ${escapeHtml(item?.name || 'Item')} - ${formatMoney(item?.price)}</div>
+        ${fixLabel ? `<div style="margin:6px 0 8px;padding:8px 10px;border-radius:8px;background:#fff4d6;color:#7a4b00;font-weight:700;font-size:13px;">${escapeHtml(fixLabel)}</div>` : ''}
         ${previewList.length ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0;">${previewList.map((src, imageIndex) => `<div style="display:flex;flex-direction:column;gap:4px;"><img src="${escapeHtml(src)}" alt="Design preview ${imageIndex + 1}" style="width:120px;height:120px;border:1px solid #d8e2f2;border-radius:10px;object-fit:contain;background:#fff;"><span style="font-size:11px;color:#6a7e9f;">${imageIndex === 0 ? 'Front' : (imageIndex === 1 ? 'Back' : 'Preview')}</span></div>`).join('')}</div>` : ''}
         ${downloadButtons ? `<div style="display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 4px;">${downloadButtons}</div>` : ''}
         ${details.length ? `<ul style="margin:8px 0 0 18px;padding:0;">${details.map((line) => `<li style="margin:4px 0;">${escapeHtml(line)}</li>`).join('')}</ul>` : ''}
@@ -798,19 +861,48 @@ function buildOwnerNotificationHtml(order, previewByIndex, downloadByIndex) {
     }).join('')
     : '<p>No items listed.</p>';
 
-  return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0f213a;line-height:1.45;">
-    <h2 style="margin:0 0 10px;">New ${escapeHtml(String(order?.source || 'stripe').toUpperCase())} order received</h2>
-    <p style="margin:0 0 8px;"><strong>Order ID:</strong> ${escapeHtml(order?.id || 'Unknown')}</p>
-    <p style="margin:0 0 8px;"><strong>Status:</strong> ${escapeHtml(order?.status || 'pending')}</p>
-    <p style="margin:0 0 8px;"><strong>Total:</strong> $${Number(order?.total || 0).toFixed(2)}</p>
-    <p style="margin:0 0 8px;"><strong>Fulfillment:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping')}</p>
-    <p style="margin:0 0 8px;"><strong>${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup Charge' : 'Shipping Charge')}:</strong> ${escapeHtml(fulfillmentMethod === 'pickup' ? 'Free' : `$${shippingAmount.toFixed(2)}`)}</p>
-    <p style="margin:0 0 8px;"><strong>Customer:</strong> ${escapeHtml(order?.customer?.name || 'Not provided')}</p>
-    <p style="margin:0 0 8px;"><strong>Email:</strong> ${escapeHtml(order?.customer?.email || 'Not provided')}</p>
-    <p style="margin:0 0 8px;"><strong>${escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Deliver To')}:</strong> ${escapeHtml(shippingSummary || 'Not provided')}</p>
-    <p style="margin:0 0 14px;"><strong>Placed:</strong> ${escapeHtml(order?.createdAt || new Date().toISOString())}</p>
-    <h3 style="margin:0 0 10px;">Items</h3>
-    ${itemCards}
+  const statusText = String(order?.status || 'pending').toUpperCase();
+  const header = `<div style="margin:0 0 14px;padding:16px;border-radius:12px;background:#0f213a;color:#ffffff;">
+      <div style="font-size:12px;letter-spacing:0.08em;text-transform:uppercase;opacity:0.8;">New order received</div>
+      <div style="font-size:22px;font-weight:700;margin:4px 0;">${formatMoney(money.total)} &middot; ${items.length} item${items.length === 1 ? '' : 's'} &middot; ${escapeHtml(fulfillment.methodLabel)}</div>
+      <div style="font-size:13px;opacity:0.9;">Order ${escapeHtml(order?.id || 'Unknown')} &middot; ${escapeHtml(statusText)} &middot; ${escapeHtml(formatOrderDate(order?.createdAt))}</div>
+    </div>`;
+  const fixAlert = imageFixCount
+    ? `<div style="margin:0 0 14px;padding:12px 16px;border-radius:12px;background:#fff4d6;border:1px solid #f0b429;color:#7a4b00;font-weight:700;">Action needed: ${imageFixCount} item${imageFixCount === 1 ? '' : 's'} requested "Fix my image" (remove background + convert to PNG) before printing. See highlighted items below.</div>`
+    : '';
+
+  const customerSection = section('Customer', table([
+    row('Name', escapeHtml(customerName)),
+    row('Email', customerEmail ? `<a href="mailto:${escapeHtml(customerEmail)}" style="color:#1459d9;">${escapeHtml(customerEmail)}</a>` : 'Not provided'),
+    order?.customer?.id ? row('Account', 'Signed-in customer') : row('Account', 'Guest checkout'),
+  ]));
+
+  const fulfillmentSection = section(fulfillment.isPickup ? 'Pickup' : 'Delivery', table([
+    row('Method', escapeHtml(fulfillment.methodLabel)),
+    row(fulfillment.isPickup ? 'Pickup name' : 'Ship to', escapeHtml(fulfillment.recipient || 'Not provided')),
+    fulfillment.addressLines.length ? row('Address', fulfillment.addressLines.map(escapeHtml).join('<br>')) : '',
+    row(fulfillment.isPickup ? 'Pickup charge' : 'Delivery charge', escapeHtml(fulfillment.chargeLabel)),
+  ]));
+
+  const paymentSection = section('Payment', table([
+    row('Items subtotal', formatMoney(money.subtotal)),
+    money.imageFixTotal > 0 ? row('Includes image fixes', formatMoney(money.imageFixTotal)) : '',
+    row(fulfillment.isPickup ? 'Pickup' : 'Delivery', escapeHtml(fulfillment.chargeLabel)),
+    Math.abs(money.adjustment) >= 0.01 ? row('Adjustments', `${money.adjustment < 0 ? '-' : ''}${formatMoney(Math.abs(money.adjustment))}`) : '',
+    row('Total', `<strong>${formatMoney(money.total)}</strong>`),
+    row('Method', escapeHtml(String(order?.source || 'stripe').toUpperCase())),
+    row('Status', escapeHtml(statusText)),
+    order?.paymentIntentId ? row('Payment ID', escapeHtml(order.paymentIntentId)) : '',
+    Number(order?.rewardPointsEarned || 0) > 0 ? row('Reward points', `+${Math.floor(Number(order.rewardPointsEarned))}`) : '',
+  ]));
+
+  return `<div style="font-family:Arial,Helvetica,sans-serif;color:#0f213a;line-height:1.45;max-width:640px;background:#f4f7fc;padding:16px;">
+    ${header}
+    ${fixAlert}
+    ${section(`Items (${items.length})`, itemCards)}
+    ${customerSection}
+    ${fulfillmentSection}
+    ${paymentSection}
   </div>`;
 }
 
@@ -824,67 +916,70 @@ function getOrderContactName(order) {
   return String(order?.customer?.name || order?.shipping?.fullName || 'Customer').trim() || 'Customer';
 }
 
-function buildOwnerNotificationText(order) {
-  const source = String(order?.source || 'stripe').toUpperCase();
-  const customerName = order?.customer?.name || 'Not provided';
-  const customerEmail = order?.customer?.email || 'Not provided';
-  const shipping = order?.shipping || {};
-  const fulfillmentMethod = String(order?.fulfillmentMethod || shipping?.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup' ? 'pickup' : 'delivery';
-  const shippingAmount = Number(order?.shippingAmount || 0);
-  const shippingSummary = fulfillmentMethod === 'pickup'
-    ? [shipping.fullName || '', shipping.email || ''].filter(Boolean).join(' | ')
-    : [
-      shipping.fullName || '',
-      shipping.addressLine1 || '',
-      shipping.addressLine2 || '',
-      [shipping.city || '', shipping.state || '', shipping.postalCode || ''].filter(Boolean).join(', '),
-      shipping.email || ''
-    ].filter(Boolean).join(' | ');
+function buildOrderMoneyLines(order) {
+  const fulfillment = getOrderFulfillmentDetails(order);
+  const money = getOrderMoneySummary(order);
   return [
-    `New ${source} order received`,
-    `Order ID: ${order?.id || 'Unknown'}`,
-    `Status: ${order?.status || 'pending'}`,
-    `Total: $${Number(order?.total || 0).toFixed(2)}`,
-    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping'}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Shipping Charge: $${shippingAmount.toFixed(2)}`}`,
-    `Customer: ${customerName}`,
-    `Email: ${customerEmail}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Ship To'}: ${shippingSummary || 'Not provided'}`,
-    `Placed: ${order?.createdAt || new Date().toISOString()}`,
+    `Items subtotal: ${formatMoney(money.subtotal)}`,
+    money.imageFixTotal > 0 ? `  (includes image fixes: ${formatMoney(money.imageFixTotal)})` : '',
+    `${fulfillment.isPickup ? 'Pickup' : 'Delivery'}: ${fulfillment.chargeLabel}`,
+    Math.abs(money.adjustment) >= 0.01 ? `Adjustments: ${money.adjustment < 0 ? '-' : ''}${formatMoney(Math.abs(money.adjustment))}` : '',
+    `TOTAL: ${formatMoney(money.total)}`,
+    `Payment method: ${String(order?.source || 'stripe').toUpperCase()} (${String(order?.status || 'pending').toUpperCase()})`,
+  ].filter(Boolean);
+}
+
+function buildFulfillmentLines(order) {
+  const fulfillment = getOrderFulfillmentDetails(order);
+  return [
+    `Method: ${fulfillment.methodLabel}`,
+    `${fulfillment.isPickup ? 'Pickup name' : 'Ship to'}: ${fulfillment.recipient || 'Not provided'}`,
+    ...fulfillment.addressLines.map((line) => `  ${line}`),
+  ];
+}
+
+function buildOwnerNotificationText(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  const fulfillment = getOrderFulfillmentDetails(order);
+  const imageFixCount = countImageFixItems(items);
+  return [
+    `NEW ORDER - ${formatMoney(order?.total)} - ${items.length} item${items.length === 1 ? '' : 's'} - ${fulfillment.methodLabel}`,
+    `Order ${order?.id || 'Unknown'} | ${String(order?.status || 'pending').toUpperCase()} | ${formatOrderDate(order?.createdAt)}`,
+    ...(imageFixCount ? ['', `ACTION NEEDED: ${imageFixCount} item${imageFixCount === 1 ? '' : 's'} requested "Fix my image" (remove background + convert to PNG).`] : []),
     '',
-    'Items:',
-    buildOrderItemsSummary(order),
+    '=== ITEMS ===',
+    buildOrderItemsSummary(order, true),
+    '',
+    '=== CUSTOMER ===',
+    `Name: ${getOrderContactName(order)}`,
+    `Email: ${getOrderReceiptEmail(order) || 'Not provided'}`,
+    `Account: ${order?.customer?.id ? 'Signed-in customer' : 'Guest checkout'}`,
+    '',
+    `=== ${fulfillment.isPickup ? 'PICKUP' : 'DELIVERY'} ===`,
+    ...buildFulfillmentLines(order),
+    '',
+    '=== PAYMENT ===',
+    ...buildOrderMoneyLines(order),
+    ...(order?.paymentIntentId ? [`Payment ID: ${order.paymentIntentId}`] : []),
+    ...(Number(order?.rewardPointsEarned || 0) > 0 ? [`Reward points earned: +${Math.floor(Number(order.rewardPointsEarned))}`] : []),
   ].join('\n');
 }
 
 function buildCustomerReceiptText(order) {
-  const shipping = order?.shipping || {};
-  const fulfillmentMethod = String(order?.fulfillmentMethod || shipping?.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup' ? 'pickup' : 'delivery';
-  const shippingAmount = Number(order?.shippingAmount || 0);
-  const fulfillmentSummary = fulfillmentMethod === 'pickup'
-    ? [shipping.fullName || '', shipping.email || ''].filter(Boolean).join(' | ')
-    : [
-      shipping.fullName || '',
-      shipping.addressLine1 || '',
-      shipping.addressLine2 || '',
-      [shipping.city || '', shipping.state || '', shipping.postalCode || ''].filter(Boolean).join(', '),
-      shipping.email || ''
-    ].filter(Boolean).join(' | ');
-
+  const fulfillment = getOrderFulfillmentDetails(order);
   return [
-    `Thanks for your order, ${getOrderContactName(order)}.`,
+    `Thanks for your order, ${getOrderContactName(order)}!`,
     '',
-    `Order ID: ${order?.id || 'Unknown'}`,
-    `Status: ${order?.status || 'pending'}`,
-    `Payment Method: ${String(order?.source || 'stripe').toUpperCase()}`,
-    `Fulfillment: ${fulfillmentMethod === 'pickup' ? 'Pickup' : 'Shipping'}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Charge: Free' : `Shipping Charge: $${shippingAmount.toFixed(2)}`}`,
-    `Total: $${Number(order?.total || 0).toFixed(2)}`,
-    `${fulfillmentMethod === 'pickup' ? 'Pickup Contact' : 'Ship To'}: ${fulfillmentSummary || 'Not provided'}`,
-    `Placed: ${order?.createdAt || new Date().toISOString()}`,
+    `Order ${order?.id || 'Unknown'} | Placed ${formatOrderDate(order?.createdAt)}`,
     '',
-    'Items:',
-    buildOrderItemsSummary(order),
+    '=== ITEMS ===',
+    buildOrderItemsSummary(order, false),
+    '',
+    `=== ${fulfillment.isPickup ? 'PICKUP' : 'DELIVERY'} ===`,
+    ...buildFulfillmentLines(order),
+    '',
+    '=== PAYMENT ===',
+    ...buildOrderMoneyLines(order),
     '',
     'If you have any questions, reply to this email.',
   ].join('\n');
@@ -899,7 +994,14 @@ async function sendOwnerEmailNotification(order) {
   await transport.sendMail({
     from: SMTP_FROM,
     to: OWNER_NOTIFY_EMAIL,
-    subject: `New order ${order.id} - $${Number(order.total || 0).toFixed(2)}`,
+    replyTo: getOrderReceiptEmail(order) || undefined,
+    subject: [
+      `New order ${formatMoney(order.total)}`,
+      getOrderContactName(order),
+      getOrderFulfillmentDetails(order).methodLabel,
+      countImageFixItems(order.items) ? 'IMAGE FIX NEEDED' : '',
+      order.id,
+    ].filter(Boolean).join(' | '),
     text: buildOwnerNotificationText(order),
     html: buildOwnerNotificationHtml(order, previewAssets.previewByIndex, previewAssets.downloadByIndex),
     attachments: previewAssets.attachments,
