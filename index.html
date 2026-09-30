@@ -12564,11 +12564,12 @@
         }
 
         function isColorSizeOutOfStock(colorName, size) {
-            const normalizedSize = normalizeInventorySizeValue(size);
-            if (!colorName || !normalizedSize) return false;
+            if (!colorName) return false;
             const rule = getInventoryColorRule(colorName);
             if (!rule) return false;
             if (rule.outOfStock === true) return true;
+            const normalizedSize = normalizeInventorySizeValue(size);
+            if (!normalizedSize) return false;
             const outSizes = Array.isArray(rule.outOfStockSizes)
                 ? rule.outOfStockSizes.map(normalizeInventorySizeValue)
                 : [];
