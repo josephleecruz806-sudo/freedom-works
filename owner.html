@@ -1450,10 +1450,6 @@
                                     <div id="admin-color-stock-list"></div>
                                 </div>
                             </div>
-                            <div class="admin-form-actions">
-                                <button id="admin-inventory-submit-btn" class="owner-primary-btn" type="submit">Save Inventory Item</button>
-                                <button id="admin-inventory-reset-btn" class="owner-secondary-btn" type="button">Clear Form</button>
-                            </div>
                             <div id="admin-inventory-status" role="alert"></div>
                         </form>
 
@@ -2051,6 +2047,7 @@
                     if (!Number.isFinite(idx)) return;
                     adminColorStockEntries = adminColorStockEntries.filter(function(_, colorIdx) { return colorIdx !== idx; });
                     renderAdminColorStockEditor();
+                    saveAdminColorStock();
                 });
             });
 
@@ -2059,7 +2056,9 @@
                     const idx = Number(inputEl.getAttribute('data-color-out-index'));
                     if (!Number.isFinite(idx) || !adminColorStockEntries[idx]) return;
                     adminColorStockEntries[idx].outOfStock = inputEl.checked;
+                    if (inputEl.checked) adminColorStockEntries[idx].stock = 0;
                     renderAdminColorStockEditor();
+                    saveAdminColorStock();
                 });
             });
 
@@ -2068,7 +2067,9 @@
                     const idx = Number(inputEl.getAttribute('data-color-stock-index'));
                     if (!Number.isFinite(idx) || !adminColorStockEntries[idx]) return;
                     adminColorStockEntries[idx].stock = Math.max(0, Math.round(Number(inputEl.value || 0)) || 0);
+                    if (adminColorStockEntries[idx].stock > 0) adminColorStockEntries[idx].outOfStock = false;
                     renderAdminColorStockEditor();
+                    saveAdminColorStock();
                 });
             });
         }
@@ -2092,17 +2093,63 @@
             if (statusEl) statusEl.textContent = '';
             if (!existingEntry) {
                 adminColorStockEntries = adminColorStockEntries.concat({ color: colorName, size: size, stock: stock, outOfStock: outOfStock });
-            } else if (outOfStock) {
-                existingEntry.stock = 0;
-                existingEntry.outOfStock = true;
             } else {
-                if (statusEl) statusEl.textContent = 'That color and size combo is already added - edit its stock number below instead.';
+                existingEntry.stock = stock;
+                existingEntry.outOfStock = outOfStock;
             }
             if (countEl) countEl.value = '';
             if (outOfStockEl) outOfStockEl.checked = false;
             if (countEl) countEl.disabled = false;
             if (addButtonEl) addButtonEl.classList.remove('out-of-stock-selected');
             renderAdminColorStockEditor();
+            if (selectEl) selectEl.value = colorName;
+            if (sizeSelectEl) sizeSelectEl.value = size;
+            saveAdminColorStock();
+        }
+
+        let adminColorStockSaveChain = Promise.resolve();
+        function saveAdminColorStock() {
+            adminColorStockSaveChain = adminColorStockSaveChain.then(saveAdminColorStockNow, saveAdminColorStockNow);
+            return adminColorStockSaveChain;
+        }
+
+        async function saveAdminColorStockNow() {
+            const statusEl = document.getElementById('admin-inventory-status');
+            const itemIdEl = document.getElementById('admin-item-id');
+            const itemId = itemIdEl.value || '';
+            const payload = {
+                name: 'Color & Size Stock',
+                sku: '',
+                category: '',
+                price: 0,
+                notes: '',
+                colorStock: normalizeAdminColorStockEntries(adminColorStockEntries)
+            };
+            if (statusEl) {
+                statusEl.textContent = 'Saving...';
+                statusEl.classList.remove('success');
+            }
+            try {
+                const inventoryEndpoint = itemId ? (ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId)) : ADMIN_INVENTORY_ENDPOINT;
+                const resp = await fetchWithApiCandidates(inventoryEndpoint, {
+                    method: itemId ? 'PUT' : 'POST',
+                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
+                    body: JSON.stringify(payload)
+                });
+                const data = await resp.json().catch(function() { return {}; });
+                if (!resp.ok) throw new Error(data.error || 'Unable to save inventory.');
+                if (data.item && data.item.id) itemIdEl.value = data.item.id;
+                await loadAdminDashboard();
+                if (statusEl) {
+                    statusEl.textContent = 'Inventory saved.';
+                    statusEl.classList.add('success');
+                }
+            } catch (err) {
+                if (statusEl) {
+                    statusEl.textContent = err.message || 'Unable to save inventory.';
+                    statusEl.classList.remove('success');
+                }
+            }
         }
 
         function formatAdminColorStockSummary(item) {
@@ -2641,13 +2688,29 @@
                 'special-offers': 'Special Offers'
             };
             title.textContent = labels[action] || 'Dashboard Details';
-            body.replaceChildren(source.cloneNode(true));
+            restoreAdminMetricModalSource();
+            // Move (not clone) the panel so its buttons and inputs keep working.
+            adminMetricModalPlaceholder = document.createComment('admin-metric-modal-placeholder');
+            source.parentNode.insertBefore(adminMetricModalPlaceholder, source);
+            adminMetricModalSource = source;
+            body.replaceChildren(source);
             modal.hidden = false;
             document.body.style.overflow = 'hidden';
             document.getElementById('admin-metric-modal-close')?.focus();
         }
 
+        let adminMetricModalSource = null;
+        let adminMetricModalPlaceholder = null;
+        function restoreAdminMetricModalSource() {
+            if (adminMetricModalSource && adminMetricModalPlaceholder && adminMetricModalPlaceholder.parentNode) {
+                adminMetricModalPlaceholder.parentNode.replaceChild(adminMetricModalSource, adminMetricModalPlaceholder);
+            }
+            adminMetricModalSource = null;
+            adminMetricModalPlaceholder = null;
+        }
+
         function closeAdminMetricModal() {
+            restoreAdminMetricModalSource();
             const modal = document.getElementById('admin-metric-modal');
             if (modal) modal.hidden = true;
             document.body.style.overflow = '';
@@ -3177,8 +3240,6 @@
             document.getElementById('admin-item-id').value = existing.id || '';
             adminColorStockEntries = normalizeAdminColorStockEntries(existing.colorStock);
             renderAdminColorStockEditor();
-            const submitBtn = document.getElementById('admin-inventory-submit-btn');
-            if (submitBtn) submitBtn.textContent = 'Update Inventory Item';
         }
 
         async function loadAdminDesignCatalog() {
@@ -3265,14 +3326,13 @@
             document.getElementById('admin-color-stock-count').disabled = false;
             document.getElementById('admin-color-stock-add-btn').classList.remove('out-of-stock-selected');
             adminColorStockEntries = [];
+            adminColorStockRecordLoaded = false;
             renderAdminColorStockEditor();
             const statusEl = document.getElementById('admin-inventory-status');
             if (statusEl) {
                 statusEl.textContent = '';
                 statusEl.classList.remove('success');
             }
-            const submitBtn = document.getElementById('admin-inventory-submit-btn');
-            if (submitBtn) submitBtn.textContent = 'Save Inventory Item';
         }
 
         function rerenderAdminInventoryViews() {
@@ -3286,8 +3346,6 @@
             document.getElementById('admin-item-id').value = item.id || '';
             adminColorStockEntries = normalizeAdminColorStockEntries(item.colorStock);
             renderAdminColorStockEditor();
-            const submitBtn = document.getElementById('admin-inventory-submit-btn');
-            if (submitBtn) submitBtn.textContent = 'Update Inventory Item';
         }
 
         async function deleteAdminInventoryItem(itemId) {
@@ -3418,46 +3476,8 @@
             }
         });
 
-        document.getElementById('admin-inventory-form').addEventListener('submit', async function(e) {
+        document.getElementById('admin-inventory-form').addEventListener('submit', function(e) {
             e.preventDefault();
-            const submitBtn = document.getElementById('admin-inventory-submit-btn');
-            const statusEl = document.getElementById('admin-inventory-status');
-            const itemId = document.getElementById('admin-item-id').value || '';
-            const payload = {
-                name: 'Color & Size Stock',
-                sku: '',
-                category: '',
-                price: 0,
-                notes: '',
-                colorStock: normalizeAdminColorStockEntries(adminColorStockEntries)
-            };
-
-            statusEl.textContent = '';
-            statusEl.classList.remove('success');
-            submitBtn.disabled = true;
-
-            try {
-                const inventoryEndpoint = itemId ? (ADMIN_INVENTORY_ENDPOINT + '/' + encodeURIComponent(itemId)) : ADMIN_INVENTORY_ENDPOINT;
-                const resp = await fetchWithApiCandidates(inventoryEndpoint, {
-                    method: itemId ? 'PUT' : 'POST',
-                    headers: Object.assign({ 'Content-Type': 'application/json' }, getAdminAuthHeaders()),
-                    body: JSON.stringify(payload)
-                });
-                const data = await resp.json().catch(function() { return {}; });
-                if (!resp.ok) throw new Error(data.error || 'Unable to save inventory item.');
-                resetAdminInventoryForm();
-                await loadAdminDashboard();
-                statusEl.textContent = itemId ? 'Inventory item updated.' : 'Inventory item added.';
-                statusEl.classList.add('success');
-            } catch (err) {
-                statusEl.textContent = err.message || 'Unable to save inventory item.';
-            } finally {
-                submitBtn.disabled = false;
-            }
-        });
-
-        document.getElementById('admin-inventory-reset-btn').addEventListener('click', function() {
-            resetAdminInventoryForm();
         });
 
         document.getElementById('admin-color-stock-add-btn').addEventListener('click', function() {
