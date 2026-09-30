@@ -75,6 +75,12 @@
             padding: 12px 16px;
             box-shadow: 0 8px 22px rgba(74,144,226,0.34);
         }
+        #admin-color-stock-add-btn.out-of-stock-selected {
+            border-color: rgba(255,216,106,0.72);
+            background: rgba(255,216,106,0.2);
+            color: #fff3c1;
+            box-shadow: 0 0 0 2px rgba(255,216,106,0.18), 0 8px 18px rgba(255,216,106,0.14);
+        }
         .admin-design-picker-wrap {
             margin-bottom: 16px;
         }
@@ -2072,6 +2078,7 @@
             const sizeSelectEl = document.getElementById('admin-color-stock-size');
             const countEl = document.getElementById('admin-color-stock-count');
             const outOfStockEl = document.getElementById('admin-color-stock-out');
+            const addButtonEl = document.getElementById('admin-color-stock-add-btn');
             const colorName = String(selectEl && selectEl.value || '').trim();
             const size = String(sizeSelectEl && sizeSelectEl.value || '').trim();
             if (!colorName || !size) return;
@@ -2094,6 +2101,7 @@
             if (countEl) countEl.value = '';
             if (outOfStockEl) outOfStockEl.checked = false;
             if (countEl) countEl.disabled = false;
+            if (addButtonEl) addButtonEl.classList.remove('out-of-stock-selected');
             renderAdminColorStockEditor();
         }
 
@@ -3255,6 +3263,7 @@
             document.getElementById('admin-item-id').value = '';
             document.getElementById('admin-inventory-form').reset();
             document.getElementById('admin-color-stock-count').disabled = false;
+            document.getElementById('admin-color-stock-add-btn').classList.remove('out-of-stock-selected');
             adminColorStockEntries = [];
             renderAdminColorStockEditor();
             const statusEl = document.getElementById('admin-inventory-status');
@@ -3457,7 +3466,9 @@
 
         document.getElementById('admin-color-stock-out').addEventListener('change', function(event) {
             const countEl = document.getElementById('admin-color-stock-count');
+            const addButtonEl = document.getElementById('admin-color-stock-add-btn');
             countEl.disabled = event.target.checked;
+            addButtonEl.classList.toggle('out-of-stock-selected', event.target.checked);
             if (event.target.checked) countEl.value = '';
         });
 
