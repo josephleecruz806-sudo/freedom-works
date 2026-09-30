@@ -6662,6 +6662,16 @@
             display: none !important;
         }
 
+        .side-quick-menu[hidden] {
+            display: none !important;
+        }
+        body.store-page-menu .side-quick-menu {
+            display: block !important;
+            position: static;
+            width: min(100%, 520px);
+            margin: 20px auto;
+        }
+
         #intro-splash {
             position: fixed;
             inset: 0;
@@ -6690,6 +6700,55 @@
             animation: none !important;
             transition: none !important;
             filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.7));
+        }
+        #intro-choice {
+            width: min(420px, calc(100% - 32px));
+            max-height: calc(100vh - 32px);
+            margin: auto;
+            padding: 28px;
+            border: 1px solid rgba(255, 255, 255, 0.25);
+            border-radius: 8px;
+            background: #14243d;
+            color: #fff;
+            box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
+            text-align: center;
+        }
+        #intro-choice::backdrop {
+            background: rgba(5, 10, 20, 0.78);
+            backdrop-filter: blur(5px);
+        }
+        #intro-choice h2 {
+            margin: 0 0 10px;
+            font-size: 1.5rem;
+        }
+        #intro-choice p {
+            margin: 0 0 22px;
+            line-height: 1.5;
+        }
+        .intro-choice-actions {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 10px;
+        }
+        .intro-choice-actions button {
+            flex: 1 1 155px;
+            min-height: 46px;
+            padding: 10px;
+            border: 1px solid #7ab8d0;
+            border-radius: 4px;
+            background: #167e91;
+            color: #fff;
+            font: inherit;
+            font-weight: 700;
+            cursor: pointer;
+        }
+        .intro-choice-actions button:last-child {
+            background: transparent;
+        }
+        .intro-choice-actions button:hover,
+        .intro-choice-actions button:focus-visible {
+            background: #245b69;
         }
         /* A filter on body turns it into the containing block for fixed children, which shifts the splash. */
         html.splash-on body.theme-shift-anim {
@@ -6733,16 +6792,42 @@
     <div id="intro-splash" role="presentation">
         <img id="intro-splash-logo" alt="Freedom Works" src="/freedom-works-logo-transparent.png" onerror="if(!this.dataset.t1){this.dataset.t1='1';this.src='/Freedom%20Works%20logo%20transparent.png';}else if(!this.dataset.t2){this.dataset.t2='1';this.src='freedom-works-logo-transparent.png';}else{this.onerror=null;this.style.visibility='hidden';}">
     </div>
+    <dialog id="intro-choice" aria-labelledby="intro-choice-title" aria-describedby="intro-choice-text">
+        <h2 id="intro-choice-title">Welcome to Freedom Works</h2>
+        <p id="intro-choice-text">Would you like to make a T-shirt or continue to the website?</p>
+        <div class="intro-choice-actions">
+            <button type="button" id="intro-make-shirt" autofocus>Make a T-shirt</button>
+            <button type="button" id="intro-continue">Continue to website</button>
+            <button type="button" id="intro-login">Login</button>
+        </div>
+    </dialog>
     <script>
         (function () {
             var splash = document.getElementById('intro-splash');
+            var choice = document.getElementById('intro-choice');
             if (!splash) return;
+            choice.addEventListener('cancel', function (event) { event.preventDefault(); });
+            document.getElementById('intro-make-shirt').addEventListener('click', function () {
+                choice.close();
+                enterStoreAsGuest('custom-builder', { skipGuide: true });
+            });
+            document.getElementById('intro-continue').addEventListener('click', function () {
+                choice.close();
+                enterStoreAsGuest('menu', { skipGuide: true, showWelcomePromos: true });
+            });
+            document.getElementById('intro-login').addEventListener('click', function () {
+                choice.close();
+                openAuthModal('login');
+            });
             document.documentElement.classList.add('splash-on');
             setTimeout(function () {
                 splash.classList.add('is-hiding');
                 setTimeout(function () {
                     if (splash.parentNode) splash.parentNode.removeChild(splash);
                     document.documentElement.classList.remove('splash-on');
+                    if (!window.location.hash || window.location.hash === '#home' || window.location.hash === '#menu') {
+                        choice.showModal();
+                    }
                 }, 1000);
             }, 6000);
         })();
@@ -6827,6 +6912,18 @@
     </div>
 
     <div class="container">
+        <nav class="side-quick-menu" aria-label="Shop menu" hidden>
+            <p class="side-menu-title">What would you like to do?</p>
+            <div class="side-menu-links">
+                <button type="button" data-store-page-link="custom-builder" onclick="navigateMenuToPage('custom-builder')">Make a T-shirt</button>
+                <button type="button" data-store-page-link="quick-picks" onclick="navigateMenuToPage('quick-picks')">Browse Graphics</button>
+                <button type="button" class="sale-menu-link" data-store-page-link="on-sale" onclick="navigateMenuToPage('on-sale')">On Sale</button>
+                <button type="button" data-store-page-link="quick-pick-builder" onclick="navigateMenuToPage('quick-pick-builder')">Graphics Builder</button>
+                <button type="button" data-store-page-link="prints-only" onclick="openPrintsOnlyMenu()">Prints Only</button>
+                <button type="button" data-store-page-link="company-builder" onclick="navigateMenuToPage('company-builder')">Company Orders</button>
+                <button type="button" data-store-page-link="cart" onclick="navigateMenuToPage('cart')">View Cart</button>
+            </div>
+        </nav>
         <section class="home-landing" id="home-page" data-store-page="home">
             <div class="home-landing-top login-only">
                 <div class="home-login-card login-only" id="home-login-card">
@@ -9823,6 +9920,14 @@
         }
 
         function openLoginSalePage() {
+            if (startupSalesFlowPending) {
+                closeLoginSalePopup({ suppressRewards: true });
+                startupSalesFlowPending = false;
+                startupRewardsFlowPending = true;
+                startupRewardsNextPage = 'on-sale';
+                openRewardsInfoPopup();
+                return;
+            }
             closeLoginSalePopup({ suppressRewards: true });
             enterStoreAsGuest('on-sale', { skipGuide: true });
         }
@@ -11863,6 +11968,7 @@
         let startupAuthFlowPending = false;
         let startupBuilderFlowPending = false;
         let startupRewardsFlowPending = false;
+        let startupRewardsNextPage = '';
         let customerGuideActive = false;
         let customerGuideStepIndex = 0;
         let loginSalePopupOpen = false;
@@ -12964,7 +13070,7 @@
         }
 
         function enterStoreAsGuest(targetPageOverride, options) {
-            closeLoginSalePopup();
+            if (!options?.showWelcomePromos) closeLoginSalePopup();
             persistGuestStoreAccess(true);
             closeAuthModal();
             const requestedTarget = STORE_PAGES.includes(targetPageOverride) ? targetPageOverride : '';
@@ -12972,6 +13078,7 @@
                 ? 'menu'
                 : (getStorePageFromHash() === 'home' ? 'quick-picks' : getStorePageFromHash()));
             navigateToPage(targetPage);
+            if (options?.showWelcomePromos) startGuestWelcomePromoFlow(targetPage);
             if (targetPage === 'quick-picks' && !options?.skipGuide) {
                 maybeStartCustomerGuide();
             }
@@ -13201,7 +13308,25 @@
             if (!startupRewardsFlowPending) return;
             startupRewardsFlowPending = false;
             startupSalesFlowPending = false;
-            renderStorePage('custom-builder', true);
+            const nextPage = startupRewardsNextPage || 'custom-builder';
+            startupRewardsNextPage = '';
+            renderStorePage(nextPage, true);
+        }
+
+        function startGuestWelcomePromoFlow(nextPage) {
+            startupSalesFlowPending = true;
+            startupRewardsFlowPending = false;
+            startupRewardsNextPage = nextPage || 'menu';
+            const items = getLoginSalePopupItems();
+            if (items.length) {
+                renderLoginSalePopup(items[0], items);
+                markLoginSalePopupSeen();
+                openLoginSalePopup();
+                return;
+            }
+            startupSalesFlowPending = false;
+            startupRewardsFlowPending = true;
+            openRewardsInfoPopup();
         }
 
         function startStartupAuthFlow() {
@@ -13304,7 +13429,7 @@
                 link.hidden = isHomePage;
             });
             document.body.classList.remove('top-mini-menu-open');
-            if (sideQuickMenu) sideQuickMenu.hidden = isHomePage;
+            if (sideQuickMenu) sideQuickMenu.hidden = page !== 'menu';
             if (footerEl) footerEl.hidden = useMobileHomeLanding || isHomePage;
             if (hideHomeExtras) {
                 document.getElementById('voice-settings-panel')?.classList.remove('open');
