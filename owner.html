@@ -1027,6 +1027,57 @@
             flex-direction: column;
             gap: 12px;
         }
+        .admin-order-board {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 16px;
+            align-items: start;
+        }
+        @media (max-width: 900px) {
+            .admin-order-board { grid-template-columns: 1fr; }
+        }
+        .admin-order-stage-box {
+            border-radius: 18px;
+            padding: 14px;
+            background: rgba(255,255,255,0.03);
+            border: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            min-width: 0;
+        }
+        .admin-order-stage-box.stage-new { border-top: 4px solid #4da3ff; }
+        .admin-order-stage-box.stage-processing { border-top: 4px solid #ffb347; }
+        .admin-order-stage-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+        .admin-order-stage-head h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 1.05rem;
+        }
+        .admin-order-stage-count {
+            min-width: 28px;
+            padding: 3px 10px;
+            border-radius: 999px;
+            background: rgba(255,255,255,0.12);
+            color: #fff;
+            font-weight: 700;
+            text-align: center;
+        }
+        .admin-order-accept-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #4da3ff, #2563eb);
+            box-shadow: 0 6px 16px rgba(37,99,235,0.28);
+        }
+        .admin-order-finish-btn {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #55d68a, #249d68);
+            box-shadow: 0 6px 16px rgba(36,157,104,0.28);
+        }
         .admin-sale-card {
             border-radius: 16px;
             padding: 14px;
@@ -3089,12 +3140,13 @@
                     return String(order.status || 'pending').toLowerCase() === adminOrderFilter;
                 })
                 : allOrders;
+            const isBoardView = adminOrderView === 'active' && adminOrderFilter === 'all';
             const filterStatusEl = document.getElementById('admin-orders-filter-status');
             const clearFilterBtn = document.getElementById('admin-orders-clear-filter');
             const titleEl = document.getElementById('admin-orders-panel-title');
             const subtitleEl = document.getElementById('admin-orders-panel-subtitle');
-            if (titleEl) titleEl.textContent = isHistoryView ? 'Order History' : (isSalesView ? 'Sales Orders' : (adminOrderFilter === 'paid' ? 'Paid Orders' : (adminOrderFilter === 'pending' ? 'Pending Orders' : 'Recent Orders')));
-            if (subtitleEl) subtitleEl.textContent = isHistoryView ? 'Completed orders moved out of the active list.' : (isSalesView ? 'All active paid and pending orders.' : (adminOrderFilter === 'paid' ? 'All active paid orders.' : (adminOrderFilter === 'pending' ? 'All active pending orders.' : 'The latest customer activity saved by checkout.')));
+            if (titleEl) titleEl.textContent = isBoardView ? 'Order Workflow' : (isHistoryView ? 'Order History' : (isSalesView ? 'Sales Orders' : (adminOrderFilter === 'paid' ? 'Paid Orders' : (adminOrderFilter === 'pending' ? 'Pending Orders' : 'Recent Orders'))));
+            if (subtitleEl) subtitleEl.textContent = isBoardView ? 'Accept new orders to start processing, then mark them finished to email the customer.' : (isHistoryView ? 'Completed orders moved out of the active list.' : (isSalesView ? 'All active paid and pending orders.' : (adminOrderFilter === 'paid' ? 'All active paid orders.' : (adminOrderFilter === 'pending' ? 'All active pending orders.' : 'The latest customer activity saved by checkout.'))));
             if (filterStatusEl) {
                 filterStatusEl.textContent = adminOrderFilter === 'paid'
                     ? 'Showing paid orders only.'
@@ -3102,7 +3154,7 @@
                 filterStatusEl.style.display = adminOrderFilter === 'all' ? 'none' : '';
             }
             if (clearFilterBtn) clearFilterBtn.style.display = adminOrderFilter === 'all' ? 'none' : '';
-            if (!orders.length) {
+            if (!orders.length && !isBoardView) {
                 listEl.innerHTML = adminOrderView === 'history'
                     ? '<div class="admin-empty">No completed orders are in history yet.</div>'
                     : adminOrderFilter === 'all'
@@ -3110,7 +3162,7 @@
                     : '<div class="admin-empty">No ' + escapeHtml(adminOrderFilter) + ' orders are currently available.</div>';
                 return;
             }
-            listEl.innerHTML = orders.map(function(order) {
+            const renderOrderCard = function(order, actionsHtml) {
                 const items = Array.isArray(order.items) ? order.items : [];
                 const shipping = order.shipping || {};
                 const fulfillmentMethod = String(order.fulfillmentMethod || shipping.fulfillmentMethod || 'delivery').toLowerCase() === 'pickup' ? 'pickup' : 'delivery';
@@ -3129,7 +3181,7 @@
                     + '<div><strong>' + escapeHtml(order.id || 'Order') + '</strong><p>' + escapeHtml(formatAccountOrderDate(order.createdAt)) + '</p></div>'
                         + '<div class="admin-order-meta"><span class="account-order-badge ' + (String(order.status || '').toLowerCase() === 'paid' ? 'paid' : 'pending') + '">' + escapeHtml(order.status || 'pending') + '</span><span class="account-order-badge">' + escapeHtml(String(order.source || '').toUpperCase()) + '</span><span class="account-order-badge">' + escapeHtml(fulfillmentMethod === 'pickup' ? 'PICKUP' : 'DELIVERY') + '</span><span class="account-order-total">' + escapeHtml(formatPriceAmount(Number(order.total || 0))) + '</span></div>'
                     + '</div>'
-                    + (adminOrderView === 'active' || isSalesView ? '<div class="admin-order-actions"><button type="button" class="owner-primary-btn admin-order-done-btn" data-order-id="' + escapeHtml(order.id || '') + '">Done</button></div>' : '')
+                    + (actionsHtml || '')
                     + '<p>' + escapeHtml(order.customerName || order.customerEmail || 'Customer not provided') + '</p>'
                     + '<p>' + escapeHtml(String(order.itemCount || 0)) + ' item(s)</p>'
                     + (shippingAmount > 0 ? '<p><strong>' + escapeHtml(fulfillmentMethod === 'pickup' ? 'Pickup charge:' : 'Delivery charge:') + '</strong> ' + escapeHtml(formatPriceAmount(shippingAmount)) + '</p>' : '')
@@ -3174,7 +3226,35 @@
                         }).join('') + '</div></div>'
                         : '')
                     + '</div>';
-            }).join('');
+            };
+
+            const orderActionButton = function(className, orderId, label) {
+                return '<div class="admin-order-actions"><button type="button" class="owner-primary-btn ' + className + '" data-order-id="' + escapeHtml(orderId || '') + '">' + escapeHtml(label) + '</button></div>';
+            };
+
+            if (isBoardView) {
+                const boardOrders = (Array.isArray(sales && sales.activeOrders) ? sales.activeOrders : allOrders).slice().sort(function(a, b) {
+                    return new Date(a.createdAt || 0).getTime() - new Date(b.createdAt || 0).getTime();
+                });
+                const newOrders = boardOrders.filter(function(order) { return order.stage !== 'processing'; });
+                const processingOrders = boardOrders.filter(function(order) { return order.stage === 'processing'; });
+                const renderStageBox = function(stageClass, title, stageOrders, emptyText, buttonClass, buttonLabel) {
+                    return '<section class="admin-order-stage-box ' + stageClass + '">'
+                        + '<div class="admin-order-stage-head"><h4>' + escapeHtml(title) + '</h4><span class="admin-order-stage-count">' + stageOrders.length + '</span></div>'
+                        + (stageOrders.length
+                            ? stageOrders.map(function(order) { return renderOrderCard(order, orderActionButton(buttonClass, order.id, buttonLabel)); }).join('')
+                            : '<div class="admin-empty">' + escapeHtml(emptyText) + '</div>')
+                        + '</section>';
+                };
+                listEl.innerHTML = '<div class="admin-order-board">'
+                    + renderStageBox('stage-new', 'New Orders', newOrders, 'No new orders right now.', 'admin-order-accept-btn', 'Accept')
+                    + renderStageBox('stage-processing', 'Processing', processingOrders, 'No orders are being processed.', 'admin-order-finish-btn', 'Finished')
+                    + '</div>';
+            } else {
+                listEl.innerHTML = orders.map(function(order) {
+                    return renderOrderCard(order, (adminOrderView === 'active' || isSalesView) ? orderActionButton('admin-order-done-btn', order.id, 'Done') : '');
+                }).join('');
+            }
 
             listEl.querySelectorAll('.admin-order-item-media-wrap img.admin-order-item-media').forEach(function(imgEl) {
                 const fallbackEl = imgEl.nextElementSibling;
@@ -3206,6 +3286,51 @@
                         button.disabled = false;
                         button.textContent = 'Done';
                         window.alert(err.message || 'Unable to complete this order.');
+                    }
+                });
+            });
+            listEl.querySelectorAll('.admin-order-accept-btn').forEach(function(button) {
+                button.addEventListener('click', async function() {
+                    const orderId = String(button.getAttribute('data-order-id') || '').trim();
+                    if (!orderId) return;
+                    button.disabled = true;
+                    button.textContent = 'Accepting...';
+                    try {
+                        const resp = await fetchWithApiCandidates('/api/admin/orders/' + encodeURIComponent(orderId) + '/accept', {
+                            method: 'POST',
+                            headers: getAdminAuthHeaders()
+                        });
+                        const data = await resp.json().catch(function() { return {}; });
+                        if (!resp.ok) throw new Error(data.error || 'Unable to accept this order.');
+                        await loadAdminDashboard();
+                    } catch (err) {
+                        button.disabled = false;
+                        button.textContent = 'Accept';
+                        window.alert(err.message || 'Unable to accept this order.');
+                    }
+                });
+            });
+            listEl.querySelectorAll('.admin-order-finish-btn').forEach(function(button) {
+                button.addEventListener('click', async function() {
+                    const orderId = String(button.getAttribute('data-order-id') || '').trim();
+                    if (!orderId || !window.confirm('Mark order ' + orderId + ' as finished and email the customer that it is ready?')) return;
+                    button.disabled = true;
+                    button.textContent = 'Sending...';
+                    try {
+                        const resp = await fetchWithApiCandidates('/api/admin/orders/' + encodeURIComponent(orderId) + '/finish', {
+                            method: 'POST',
+                            headers: getAdminAuthHeaders()
+                        });
+                        const data = await resp.json().catch(function() { return {}; });
+                        if (!resp.ok) throw new Error(data.error || 'Unable to finish this order.');
+                        await loadAdminDashboard();
+                        window.alert(data.emailSent
+                            ? 'Order finished. Ready email sent to ' + data.emailTo + '.'
+                            : 'Order finished and moved to Order History, but the email was not sent: ' + (data.emailError || 'unknown error') + '.');
+                    } catch (err) {
+                        button.disabled = false;
+                        button.textContent = 'Finished';
+                        window.alert(err.message || 'Unable to finish this order.');
                     }
                 });
             });

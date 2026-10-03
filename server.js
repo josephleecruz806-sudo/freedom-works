@@ -43,6 +43,7 @@ const SMTP_SECURE = String(process.env.SMTP_SECURE || (SMTP_PORT === 465 ? 'true
 const SMTP_USER = String(process.env.SMTP_USER || '').trim();
 const SMTP_PASS = String(process.env.SMTP_PASS || '').trim();
 const SMTP_FROM = String(process.env.SMTP_FROM || SMTP_USER || OWNER_NOTIFY_EMAIL).trim();
+const SITE_URL = String(process.env.SITE_URL || 'https://freedom-works.onrender.com').trim().replace(/\/+$/, '');
 const stripe = STRIPE_SECRET_KEY ? new Stripe(STRIPE_SECRET_KEY) : null;
 const UPSTASH_REDIS_REST_URL = String(process.env.UPSTASH_REDIS_REST_URL || '').trim().replace(/\/+$/, '');
 const UPSTASH_REDIS_REST_TOKEN = String(process.env.UPSTASH_REDIS_REST_TOKEN || '').trim();
@@ -54,6 +55,7 @@ const inventoryPath = path.join(dataDir, 'inventory.json');
 const designSalesPath = path.join(dataDir, 'design-sales.json');
 const designNamesPath = path.join(dataDir, 'design-names.json');
 let emailTransport = null;
+const passwordResetCooldowns = new Map();
 const BASE_DESIGN_PRICE = 24.99;
 const DESIGN_SALE_SIZES = new Set([
   'Newborn', '6M', '9M', '12M', '18M', '18-24M',
@@ -1120,6 +1122,53 @@ async function sendCustomerSaleAnnouncement(subject, message, saleTitle) {
   return { ok: true, sent, failed, total: recipientEmails.length };
 }
 
+async function sendOrderReadyEmail(order) {
+  const transport = getEmailTransport();
+  const email = getOrderReceiptEmail(order);
+  if (!transport) return { sent: false, reason: 'SMTP is not configured on the server.' };
+  if (!email) return { sent: false, reason: 'This order has no customer email.' };
+
+  const name = getOrderContactName(order);
+  const isPickup = getOrderFulfillmentDetails(order).isPickup;
+  const readyLine = isPickup
+    ? 'Great news - your order is ready for pickup!'
+    : 'Great news - your order is ready and will be on its way to you soon!';
+
+  await transport.sendMail({
+    from: SMTP_FROM,
+    to: email,
+    replyTo: OWNER_NOTIFY_EMAIL || SMTP_USER || SMTP_FROM,
+    subject: `Your Freedom Works order is ready - ${order.id}`,
+    text: [
+      `Hi ${name},`,
+      '',
+      readyLine,
+      '',
+      `Order: ${order.id}`,
+      `Total: ${formatMoney(order.total)}`,
+      '',
+      'Thank you for shopping with Freedom Works!',
+    ].join('\n'),
+    html: `
+      <div style="font-family:Arial,Helvetica,sans-serif;max-width:640px;margin:0 auto;color:#11213d;background:#f7f9fc;padding:24px;border-radius:18px;">
+        <div style="background:linear-gradient(135deg,#11213d,#22407d);color:#ffffff;padding:20px 24px;border-radius:14px;">
+          <div style="font-size:12px;font-weight:700;letter-spacing:1px;text-transform:uppercase;opacity:0.8;">Freedom Works</div>
+          <h2 style="margin:10px 0 0;font-size:26px;line-height:1.2;">Your order is ready!</h2>
+        </div>
+        <div style="padding:20px 6px 0;font-size:16px;line-height:1.6;color:#1f2d3d;">
+          <p style="margin:0 0 12px;">Hi ${escapeHtml(name)},</p>
+          <p style="margin:0 0 12px;">${escapeHtml(readyLine)}</p>
+          <p style="margin:0 0 4px;"><strong>Order:</strong> ${escapeHtml(order.id)}</p>
+          <p style="margin:0 0 12px;"><strong>Total:</strong> ${escapeHtml(formatMoney(order.total))}</p>
+          <p style="margin:18px 0 0;">Thank you for shopping with Freedom Works!</p>
+        </div>
+      </div>
+    `,
+  });
+
+  return { sent: true, email };
+}
+
 async function notifyOwnerOfNewOrder(order) {
   const emailSent = await sendOwnerEmailNotification(order).catch(() => false);
 
@@ -1179,6 +1228,7 @@ function createAuthToken(subject) {
     id: subject.id,
     email: subject.email,
     role: subject.role || 'customer',
+    authVersion: Number(subject.authVersion || 0),
     exp: Date.now() + (1000 * 60 * 60 * 24 * 30),
   })).toString('base64url');
   const signature = signTokenPayload(payload);
@@ -1213,7 +1263,9 @@ function getCustomerFromAuthHeader(req) {
   const payload = verifyAuthToken(token);
   if (!payload || payload.role !== 'customer') return null;
   const customers = readCustomers();
-  return customers.find((customer) => customer.id === payload.id && customer.email === payload.email) || null;
+  return customers.find((customer) => customer.id === payload.id
+    && customer.email === payload.email
+    && Number(customer.authVersion || 0) === Number(payload.authVersion || 0)) || null;
 }
 
 function getAdminFromAuthHeader(req) {
@@ -1635,6 +1687,9 @@ function getSalesSummary() {
   const activeOrders = orders.map((order) => ({
     id: order.id,
     status: order.status || 'pending',
+    stage: order.workflowStage === 'processing' ? 'processing' : 'new',
+    acceptedAt: order.acceptedAt || null,
+    fulfillmentMethod: order.fulfillmentMethod || order?.shipping?.fulfillmentMethod || '',
     total: Number(order.total || 0),
     shippingAmount: Number(order.shippingAmount || 0),
     source: order.source || 'stripe',
@@ -2175,6 +2230,59 @@ app.post('/api/admin/orders/:orderId/complete', requireAdmin, async (req, res) =
   return res.json({ ok: true, orderId, status: order.status });
 });
 
+app.post('/api/admin/orders/:orderId/accept', requireAdmin, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+  if (!orderId) return res.status(400).json({ error: 'Order ID is required.' });
+
+  const orders = readOrders();
+  const order = orders.find((entry) => String(entry.id || '') === orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+  if (String(order.status || '').toLowerCase() === 'completed') {
+    return res.status(409).json({ error: 'This order is already finished.' });
+  }
+
+  order.workflowStage = 'processing';
+  order.acceptedAt = new Date().toISOString();
+  order.updatedAt = order.acceptedAt;
+  await writeOrders(orders);
+  return res.json({ ok: true, orderId, stage: order.workflowStage });
+});
+
+app.post('/api/admin/orders/:orderId/finish', requireAdmin, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+  if (!orderId) return res.status(400).json({ error: 'Order ID is required.' });
+
+  const orders = readOrders();
+  const order = orders.find((entry) => String(entry.id || '') === orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+
+  order.status = 'completed';
+  order.workflowStage = 'finished';
+  order.completedAt = new Date().toISOString();
+  order.updatedAt = order.completedAt;
+  await writeOrders(orders);
+
+  let emailResult;
+  try {
+    emailResult = await sendOrderReadyEmail(order);
+  } catch (err) {
+    emailResult = { sent: false, reason: err.message || 'Email failed to send.' };
+  }
+  if (emailResult.sent) {
+    order.readyEmailSentAt = new Date().toISOString();
+    await writeOrders(orders);
+  }
+
+  return res.json({
+    ok: true,
+    orderId,
+    status: order.status,
+    emailSent: Boolean(emailResult.sent),
+    emailTo: emailResult.email || '',
+    emailError: emailResult.sent ? '' : (emailResult.reason || ''),
+  });
+});
+
 app.get('/api/admin/design-sales', requireAdmin, (_req, res) => {
   res.json({
     ok: true,
@@ -2503,6 +2611,100 @@ app.post('/api/customers/register', async (req, res) => {
     token: createAuthToken(customer),
     customer: sanitizeCustomer(customer),
   });
+});
+
+app.post('/api/customers/forgot-password', async (req, res) => {
+  const genericMessage = 'If an account exists for that email, a password reset link will be sent shortly.';
+  const email = normalizeEmail(req.body?.email);
+  const transport = getEmailTransport();
+  if (!transport) {
+    return res.status(503).json({ error: 'Password reset email is temporarily unavailable. Please try again later.' });
+  }
+  if (!email || !email.includes('@')) {
+    return res.json({ ok: true, message: genericMessage });
+  }
+
+  const now = Date.now();
+  for (const [limitedEmail, nextAllowedAt] of passwordResetCooldowns) {
+    if (nextAllowedAt <= now) passwordResetCooldowns.delete(limitedEmail);
+  }
+  if ((passwordResetCooldowns.get(email) || 0) > now) {
+    return res.json({ ok: true, message: genericMessage });
+  }
+  passwordResetCooldowns.set(email, now + 60_000);
+
+  const customers = readCustomers();
+  const customer = customers.find((entry) => entry.email === email);
+  if (!customer) return res.json({ ok: true, message: genericMessage });
+
+  const token = crypto.randomBytes(32).toString('base64url');
+  customer.resetPasswordTokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  customer.resetPasswordExpiresAt = now + (30 * 60 * 1000);
+  const persisted = await writeCustomers(customers);
+  if (!persisted) {
+    delete customer.resetPasswordTokenHash;
+    delete customer.resetPasswordExpiresAt;
+    await writeArrayFile(customersPath, customers);
+    passwordResetCooldowns.delete(email);
+    console.error('Customer password reset token could not be persisted.');
+    return res.json({ ok: true, message: genericMessage });
+  }
+
+  const resetUrl = new URL('/', SITE_URL);
+  resetUrl.hash = `reset-password=${encodeURIComponent(token)}`;
+  try {
+    await transport.sendMail({
+      from: SMTP_FROM,
+      to: email,
+      subject: 'Reset your Freedom Works password',
+      text: `We received a request to reset the password for your Freedom Works account.\n\nUse this one-time link within 30 minutes:\n${resetUrl.toString()}\n\nIf you did not request this, you can ignore this email. Your password will not change.`,
+    });
+  } catch (err) {
+    delete customer.resetPasswordTokenHash;
+    delete customer.resetPasswordExpiresAt;
+    await writeCustomers(customers);
+    passwordResetCooldowns.delete(email);
+    console.error('Customer password reset email failed:', err.message || err);
+    return res.json({ ok: true, message: genericMessage });
+  }
+
+  res.json({ ok: true, message: genericMessage });
+});
+
+app.post('/api/customers/reset-password', async (req, res) => {
+  const token = String(req.body?.token || '').trim();
+  const password = String(req.body?.password || '');
+  if (password.length < 8 || password.length > 256) {
+    return res.status(400).json({ error: 'Password must be between 8 and 256 characters.' });
+  }
+  if (!token || token.length > 128) {
+    return res.status(400).json({ error: 'This password reset link is invalid or expired. Request a new one.' });
+  }
+
+  const tokenHash = crypto.createHash('sha256').update(token).digest('hex');
+  const customers = readCustomers();
+  const customerIndex = customers.findIndex((entry) => entry.resetPasswordTokenHash
+    && safeEqualHex(entry.resetPasswordTokenHash, tokenHash)
+    && Number(entry.resetPasswordExpiresAt || 0) > Date.now());
+  if (customerIndex < 0) {
+    return res.status(400).json({ error: 'This password reset link is invalid or expired. Request a new one.' });
+  }
+
+  const customer = customers[customerIndex];
+  const originalCustomer = { ...customer };
+  Object.assign(customer, createPasswordRecord(password), {
+    authVersion: Number(customer.authVersion || 0) + 1,
+    resetPasswordTokenHash: '',
+    resetPasswordExpiresAt: 0,
+  });
+  const persisted = await writeCustomers(customers);
+  if (!persisted) {
+    customers[customerIndex] = originalCustomer;
+    await writeArrayFile(customersPath, customers);
+    return res.status(503).json({ error: 'Password reset is temporarily unavailable. Please try again later.' });
+  }
+
+  res.json({ ok: true });
 });
 
 app.post('/api/customers/login', (req, res) => {

@@ -4229,6 +4229,18 @@
         #auth-status-msg.success {
             color: #b8f7cf;
         }
+        .auth-secondary-action {
+            display: block;
+            margin: 12px auto 0;
+            padding: 4px 8px;
+            border: 0;
+            background: transparent;
+            color: #cfe0ff;
+            font: inherit;
+            font-size: 0.88rem;
+            text-decoration: underline;
+            cursor: pointer;
+        }
         #account-modal-overlay {
             display: none;
             position: fixed;
@@ -8028,16 +8040,18 @@
                         <label for="auth-name">Full Name</label>
                         <input id="auth-name" type="text" placeholder="Jane Smith" autocomplete="name" autocapitalize="words">
                     </div>
-                    <div class="stripe-field">
+                    <div class="stripe-field" id="auth-email-field">
                         <label for="auth-email">Email</label>
                         <input id="auth-email" type="email" placeholder="jane@example.com" autocomplete="email" inputmode="email" autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
-                    <div class="stripe-field">
-                        <label for="auth-password">Password</label>
+                    <div class="stripe-field" id="auth-password-field">
+                        <label for="auth-password" id="auth-password-label">Password</label>
                         <input id="auth-password" type="password" placeholder="At least 8 characters" autocomplete="current-password" autocapitalize="none" autocorrect="off" spellcheck="false">
                     </div>
                 </div>
                 <button id="auth-submit-btn" type="submit">Log In</button>
+                <button type="button" class="auth-secondary-action" id="auth-forgot-btn" onclick="setAuthMode('forgot')" style="display:none;">Forgot password?</button>
+                <button type="button" class="auth-secondary-action" id="auth-return-btn" onclick="setAuthMode('login')" style="display:none;">Back to login</button>
                 <div id="auth-status-msg" role="alert"></div>
             </form>
         </div>
@@ -11948,6 +11962,7 @@
         let storePageHistory = [];
         let suppressStoreHistoryPush = false;
         let authMode = 'login';
+        let authResetToken = '';
         let guestStoreAccess = false;
         let startupSalesFlowPending = false;
         let startupAuthFlowPending = false;
@@ -13216,7 +13231,7 @@
         }
 
         function setAuthMode(mode) {
-            authMode = mode === 'register' ? 'register' : (mode === 'owner' ? 'owner' : 'login');
+            authMode = ['register', 'owner', 'forgot', 'reset'].includes(mode) ? mode : 'login';
             const loginBtn = document.getElementById('auth-mode-login');
             const registerBtn = document.getElementById('auth-mode-register');
             const ownerBtn = document.getElementById('auth-mode-owner');
@@ -13224,24 +13239,46 @@
             const subtitle = document.getElementById('auth-modal-subtitle');
             const submitBtn = document.getElementById('auth-submit-btn');
             const nameField = document.getElementById('auth-name-field');
+            const emailField = document.getElementById('auth-email-field');
+            const passwordField = document.getElementById('auth-password-field');
             const passwordInput = document.getElementById('auth-password');
+            const passwordLabel = document.getElementById('auth-password-label');
+            const forgotBtn = document.getElementById('auth-forgot-btn');
+            const returnBtn = document.getElementById('auth-return-btn');
             const statusEl = document.getElementById('auth-status-msg');
             if (loginBtn) loginBtn.classList.toggle('active', authMode === 'login');
             if (registerBtn) registerBtn.classList.toggle('active', authMode === 'register');
             if (ownerBtn) ownerBtn.classList.toggle('active', authMode === 'owner');
-            if (title) title.textContent = authMode === 'register'
-                ? 'Create Customer Account'
-                : (authMode === 'owner' ? 'Owner Login' : 'Customer Login');
-            if (subtitle) subtitle.textContent = authMode === 'register'
-                ? 'Create an account to unlock the store and save your details for checkout.'
-                : (authMode === 'owner'
-                    ? 'Use your owner email and password to open the private owner dashboard.'
-                    : 'Log in to access the store and save your account details.');
-            if (submitBtn) submitBtn.textContent = authMode === 'register'
-                ? 'Create Account'
-                : (authMode === 'owner' ? 'Open Owner Dashboard' : 'Log In');
+            if (loginBtn) loginBtn.style.display = ['login', 'register'].includes(authMode) ? '' : 'none';
+            if (registerBtn) registerBtn.style.display = ['login', 'register'].includes(authMode) ? '' : 'none';
+            if (title) title.textContent = ({
+                register: 'Create Customer Account',
+                owner: 'Owner Login',
+                forgot: 'Reset Your Password',
+                reset: 'Choose a New Password',
+                login: 'Customer Login',
+            })[authMode];
+            if (subtitle) subtitle.textContent = ({
+                register: 'Create an account to unlock the store and save your details for checkout.',
+                owner: 'Use your owner email and password to open the private owner dashboard.',
+                forgot: 'Enter the email address for your account and we will send a reset link.',
+                reset: 'Choose a new password for your account.',
+                login: 'Log in to access the store and save your account details.',
+            })[authMode];
+            if (submitBtn) submitBtn.textContent = ({
+                register: 'Create Account',
+                owner: 'Open Owner Dashboard',
+                forgot: 'Send Reset Link',
+                reset: 'Update Password',
+                login: 'Log In',
+            })[authMode];
             if (nameField) nameField.style.display = authMode === 'register' ? '' : 'none';
-            if (passwordInput) passwordInput.autocomplete = authMode === 'register' ? 'new-password' : 'current-password';
+            if (emailField) emailField.style.display = authMode === 'reset' ? 'none' : '';
+            if (passwordField) passwordField.style.display = authMode === 'forgot' ? 'none' : '';
+            if (passwordLabel) passwordLabel.textContent = authMode === 'reset' ? 'New Password' : 'Password';
+            if (passwordInput) passwordInput.autocomplete = ['register', 'reset'].includes(authMode) ? 'new-password' : 'current-password';
+            if (forgotBtn) forgotBtn.style.display = authMode === 'login' ? '' : 'none';
+            if (returnBtn) returnBtn.style.display = ['forgot', 'reset'].includes(authMode) ? '' : 'none';
             if (statusEl) {
                 statusEl.textContent = '';
                 statusEl.classList.remove('success');
@@ -20091,6 +20128,37 @@
             submitBtn.disabled = true;
 
             try {
+                if (authMode === 'forgot') {
+                    if (!email || !email.includes('@')) throw new Error('Please enter a valid email address.');
+                    const resp = await postAuthWithRetry(CUSTOMER_AUTH_ENDPOINT + '/forgot-password', { email }, statusEl);
+                    const data = await parseApiResponseJson(resp);
+                    if (!resp.ok) throw new Error(data.error || 'Unable to send a password reset email.');
+                    statusEl.textContent = data.message || 'If an account exists for that email, a password reset link will be sent shortly.';
+                    statusEl.classList.add('success');
+                    return;
+                }
+
+                if (authMode === 'reset') {
+                    if (!authResetToken) throw new Error('This password reset link is invalid or expired. Request a new one.');
+                    if (password.length < 8) throw new Error('Password must be at least 8 characters.');
+                    const resp = await postAuthWithRetry(CUSTOMER_AUTH_ENDPOINT + '/reset-password', {
+                        token: authResetToken,
+                        password,
+                    }, statusEl);
+                    const data = await parseApiResponseJson(resp);
+                    if (!resp.ok) throw new Error(data.error || 'Unable to update your password.');
+                    authResetToken = '';
+                    const cleanUrl = new URL(window.location.href);
+                    cleanUrl.searchParams.delete('reset-password');
+                    cleanUrl.hash = 'home';
+                    window.history.replaceState(null, '', cleanUrl.pathname + cleanUrl.search + cleanUrl.hash);
+                    document.getElementById('auth-form').reset();
+                    setAuthMode('login');
+                    statusEl.textContent = 'Password updated. Please log in with your new password.';
+                    statusEl.classList.add('success');
+                    return;
+                }
+
                 const isRegisterMode = authMode === 'register';
                 if (isRegisterMode) {
                     if (!name) throw new Error('Please enter your name.');
@@ -20403,6 +20471,11 @@
             // Switch away from the default "Create Account" home markup right away,
             // instead of waiting on the catalog/sale fetches below.
             renderStorePage(getStartupStorePage(), false);
+            const resetFragment = window.location.hash.startsWith('#') ? window.location.hash.slice(1) : '';
+            authResetToken = new URLSearchParams(resetFragment).get('reset-password')
+                || new URLSearchParams(window.location.search || '').get('reset-password')
+                || '';
+            if (authResetToken) openAuthModal('reset');
             await initializeQuickPickCatalog();
             syncQuickPickLandingSizeOptions();
             renderOnSaleGallery();
