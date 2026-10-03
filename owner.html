@@ -365,6 +365,83 @@
             gap: 8px;
             margin-bottom: 10px;
         }
+        .admin-stock-metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 12px;
+            margin: 0 0 16px;
+        }
+        .admin-stock-metric-group {
+            min-width: 0;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            background: rgba(255,255,255,0.04);
+        }
+        .admin-stock-metric-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: baseline;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .admin-stock-metric-head h4 {
+            margin: 0;
+            color: #fff;
+            font-size: 0.92rem;
+        }
+        .admin-stock-metric-head span {
+            color: #9fb1d6;
+            font-size: 0.75rem;
+        }
+        .admin-stock-metric-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(105px, 1fr));
+            gap: 8px;
+        }
+        .admin-stock-metric-card {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 4px 8px;
+            min-width: 0;
+            padding: 9px 10px;
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 12px;
+            background: rgba(255,255,255,0.045);
+        }
+        .admin-stock-metric-label {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            min-width: 0;
+            color: #dfe7ff;
+            font-size: 0.78rem;
+            font-weight: 700;
+        }
+        .admin-stock-metric-swatch {
+            width: 12px;
+            height: 12px;
+            flex: none;
+            border: 1px solid rgba(255,255,255,0.35);
+            border-radius: 50%;
+        }
+        .admin-stock-metric-card strong {
+            color: #fff;
+            font-size: 0.95rem;
+            text-align: right;
+        }
+        .admin-stock-metric-card small {
+            grid-column: 1 / -1;
+            color: #9fb1d6;
+            font-size: 0.68rem;
+        }
+        .admin-stock-metric-empty {
+            grid-column: 1 / -1;
+            padding: 10px;
+            color: #9fb1d6;
+            font-size: 0.8rem;
+        }
         .admin-offer-list {
             display: grid;
             gap: 12px;
@@ -1147,6 +1224,7 @@
             .admin-form-grid,
             .admin-overview-grid,
             .admin-highlight-grid,
+            .admin-stock-metrics-grid,
             .admin-mini-grid,
             .admin-source-grid {
                 grid-template-columns: 1fr;
@@ -1490,6 +1568,7 @@
                             <div class="admin-form-grid">
                                 <div class="stripe-field" style="grid-column:1 / -1;">
                                     <p class="admin-design-picker-note" id="admin-color-stock-summary">No colors added yet.</p>
+                                    <div class="admin-stock-metrics-grid" id="admin-stock-metrics" aria-live="polite"></div>
                                     <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
                                         <label for="admin-color-stock-view">Show</label>
                                         <select id="admin-color-stock-view" aria-label="Filter color stock entries" style="max-width:260px;">
@@ -2074,12 +2153,67 @@
             }).join('');
         }
 
+        function renderAdminStockMetrics(entries) {
+            const metricsEl = document.getElementById('admin-stock-metrics');
+            if (!metricsEl) return;
+            const sizeTotals = new Map();
+            const colorTotals = new Map();
+            (Array.isArray(entries) ? entries : []).forEach(function(entry) {
+                const available = entry.outOfStock ? 0 : entry.stock;
+                if (entry.size) {
+                    const sizeTotal = sizeTotals.get(entry.size) || { units: 0, variants: 0 };
+                    sizeTotal.units += available;
+                    sizeTotal.variants += 1;
+                    sizeTotals.set(entry.size, sizeTotal);
+                }
+                const colorKey = String(entry.color || '').trim().toLowerCase();
+                const colorTotal = colorTotals.get(colorKey) || { color: entry.color, units: 0, variants: 0 };
+                colorTotal.units += available;
+                colorTotal.variants += 1;
+                colorTotals.set(colorKey, colorTotal);
+            });
+
+            function renderMetricCards(records, getLabel, getDescription, getSwatch) {
+                if (!records.length) return '<div class="admin-stock-metric-empty">No tracked stock yet.</div>';
+                return records.map(function(record) {
+                    const swatch = getSwatch ? '<span class="admin-stock-metric-swatch" style="background:' + escapeHtml(getSwatch(record)) + ';"></span>' : '';
+                    return '<div class="admin-stock-metric-card">'
+                        + '<span class="admin-stock-metric-label">' + swatch + escapeHtml(getLabel(record)) + '</span>'
+                        + '<strong>' + record.units + '</strong>'
+                        + '<small>' + escapeHtml(getDescription(record)) + '</small>'
+                        + '</div>';
+                }).join('');
+            }
+
+            const sizes = Array.from(sizeTotals.entries())
+                .sort(function(a, b) { return ADMIN_INVENTORY_SIZE_OPTIONS.indexOf(a[0]) - ADMIN_INVENTORY_SIZE_OPTIONS.indexOf(b[0]); })
+                .map(function(entry) { return { size: entry[0], units: entry[1].units, variants: entry[1].variants }; });
+            const colors = Array.from(colorTotals.values())
+                .sort(function(a, b) {
+                    const aIndex = ADMIN_WEBSITE_COLORS.findIndex(function(color) { return color.name.toLowerCase() === String(a.color).toLowerCase(); });
+                    const bIndex = ADMIN_WEBSITE_COLORS.findIndex(function(color) { return color.name.toLowerCase() === String(b.color).toLowerCase(); });
+                    return aIndex - bIndex || String(a.color).localeCompare(String(b.color));
+                });
+
+            metricsEl.innerHTML = '<section class="admin-stock-metric-group" aria-label="Available stock by size">'
+                + '<div class="admin-stock-metric-head"><h4>Stock by size</h4><span>Available units</span></div>'
+                + '<div class="admin-stock-metric-list">'
+                + renderMetricCards(sizes, function(record) { return getAdminSizeLabel(record.size); }, function(record) { return record.variants + ' tracked color' + (record.variants === 1 ? '' : 's'); })
+                + '</div></section>'
+                + '<section class="admin-stock-metric-group" aria-label="Available stock by color">'
+                + '<div class="admin-stock-metric-head"><h4>Stock by color</h4><span>Available units</span></div>'
+                + '<div class="admin-stock-metric-list">'
+                + renderMetricCards(colors, function(record) { return record.color; }, function(record) { return record.variants + ' tracked entr' + (record.variants === 1 ? 'y' : 'ies'); }, function(record) { return getAdminWebsiteColorHex(record.color); })
+                + '</div></section>';
+        }
+
         function renderAdminColorStockEditor() {
             adminColorStockEntries = normalizeAdminColorStockEntries(adminColorStockEntries);
             const listEl = document.getElementById('admin-color-stock-list');
             const summaryEl = document.getElementById('admin-color-stock-summary');
             if (!listEl || !summaryEl) return;
             populateAdminColorStockSelect();
+            renderAdminStockMetrics(adminColorStockEntries);
 
             if (!adminColorStockEntries.length) {
                 listEl.innerHTML = '<div class="admin-empty">Add a website color, size, and how many are in stock.</div>';
@@ -2087,7 +2221,7 @@
                 return;
             }
 
-            const totalUnits = adminColorStockEntries.reduce(function(sum, entry) { return sum + entry.stock; }, 0);
+            const totalUnits = adminColorStockEntries.reduce(function(sum, entry) { return sum + (entry.outOfStock ? 0 : entry.stock); }, 0);
             const colorTotals = new Map();
             adminColorStockEntries.forEach(function(entry) {
                 const key = String(entry.color || '').trim().toLowerCase();
