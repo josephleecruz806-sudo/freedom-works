@@ -1438,6 +1438,13 @@
                             <div class="admin-form-grid">
                                 <div class="stripe-field" style="grid-column:1 / -1;">
                                     <p class="admin-design-picker-note" id="admin-color-stock-summary">No colors added yet.</p>
+                                    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:10px;">
+                                        <label for="admin-color-stock-view">Show</label>
+                                        <select id="admin-color-stock-view" aria-label="Filter color stock entries" style="max-width:260px;">
+                                            <option value="all">All colors and sizes</option>
+                                            <option value="out-colors">Colors with no stock</option>
+                                        </select>
+                                    </div>
                                     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;align-items:center;">
                                         <select id="admin-color-stock-name" style="max-width:200px;"></select>
                                         <select id="admin-color-stock-size" style="max-width:160px;"></select>
@@ -1446,6 +1453,7 @@
                                     <div class="admin-color-stock-add-options">
                                         <label style="display:flex;align-items:center;gap:6px;"><input id="admin-color-stock-out" type="checkbox"> Out of stock</label>
                                         <button id="admin-color-stock-add-btn" type="button" class="owner-secondary-btn">Add to Inventory</button>
+                                        <button id="admin-color-stock-all-out-btn" type="button" class="owner-secondary-btn">All sizes out of stock</button>
                                     </div>
                                     <div id="admin-color-stock-list"></div>
                                 </div>
@@ -2028,8 +2036,32 @@
             }
 
             const totalUnits = adminColorStockEntries.reduce(function(sum, entry) { return sum + entry.stock; }, 0);
-            summaryEl.textContent = adminColorStockEntries.length + ' color/size combo' + (adminColorStockEntries.length === 1 ? '' : 's') + ' tracked, ' + totalUnits + ' total shirts in stock.';
-            listEl.innerHTML = adminColorStockEntries.map(function(entry, index) {
+            const colorTotals = new Map();
+            adminColorStockEntries.forEach(function(entry) {
+                const key = String(entry.color || '').trim().toLowerCase();
+                const total = colorTotals.get(key) || { stock: 0, outOfStock: false };
+                total.stock += entry.stock;
+                if (!entry.size) total.outOfStock = total.outOfStock || entry.outOfStock;
+                colorTotals.set(key, total);
+            });
+            const outOfStockColors = new Set(Array.from(colorTotals.entries())
+                .filter(function(entry) { return entry[1].outOfStock || entry[1].stock <= 0; })
+                .map(function(entry) { return entry[0]; }));
+            const viewEl = document.getElementById('admin-color-stock-view');
+            const view = String(viewEl && viewEl.value || 'all');
+            const visibleEntries = adminColorStockEntries.map(function(entry, index) {
+                return { entry: entry, index: index };
+            }).filter(function(record) {
+                return view !== 'out-colors' || outOfStockColors.has(String(record.entry.color || '').trim().toLowerCase());
+            });
+            summaryEl.textContent = 'Showing ' + visibleEntries.length + ' of ' + adminColorStockEntries.length + ' color/size combos; ' + totalUnits + ' total shirts in stock.';
+            if (!visibleEntries.length) {
+                listEl.innerHTML = '<div class="admin-empty">No colors have zero stock across their tracked sizes.</div>';
+                return;
+            }
+            listEl.innerHTML = visibleEntries.map(function(record) {
+                const entry = record.entry;
+                const index = record.index;
                 const isOut = entry.outOfStock || entry.stock <= 0;
                 return '<div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:1px solid rgba(255,255,255,0.12);border-radius:12px;padding:10px 12px;margin-bottom:8px;">'
                     + '<span style="display:inline-block;width:22px;height:22px;border-radius:50%;border:1px solid rgba(255,255,255,0.4);background:' + escapeHtml(getAdminWebsiteColorHex(entry.color)) + ';flex:none;"></span>'
@@ -2105,6 +2137,27 @@
             renderAdminColorStockEditor();
             if (selectEl) selectEl.value = colorName;
             if (sizeSelectEl) sizeSelectEl.value = size;
+            saveAdminColorStock();
+        }
+
+        function markAdminColorAllSizesOutOfStock() {
+            const selectEl = document.getElementById('admin-color-stock-name');
+            const colorName = String(selectEl && selectEl.value || '').trim();
+            if (!colorName) return;
+            ADMIN_INVENTORY_SIZE_OPTIONS.forEach(function(size) {
+                const existingEntry = adminColorStockEntries.find(function(entry) {
+                    return String(entry.color || '').trim().toLowerCase() === colorName.toLowerCase()
+                        && String(entry.size || '').trim().toLowerCase() === size.toLowerCase();
+                });
+                if (existingEntry) {
+                    existingEntry.stock = 0;
+                    existingEntry.outOfStock = true;
+                } else {
+                    adminColorStockEntries.push({ color: colorName, size: size, stock: 0, outOfStock: true });
+                }
+            });
+            renderAdminColorStockEditor();
+            if (selectEl) selectEl.value = colorName;
             saveAdminColorStock();
         }
 
@@ -2610,8 +2663,8 @@
                 { label: 'In Stock', value: String((Array.isArray(adminDashboardState.inventory) ? adminDashboardState.inventory : []).filter(function(item) { return Number(item.stock || 0) > 0; }).length), note: 'Inventory items currently available.', action: 'in-stock' },
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory-units' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
-                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Inventory records with no stock.', action: 'out-of-stock' },
-                { label: 'Out Of Stock Colors', value: String(Number(inventorySummary.outOfStockColors || 0)), note: 'Colors with no stock in any tracked size.', action: 'out-of-stock-colors' }
+                { label: 'Out Of Stock Items', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Standalone inventory records at zero stock, not shirt sizes.', action: 'out-of-stock' },
+                { label: 'Out Of Stock Colors', value: String(Number(inventorySummary.outOfStockColors || 0)), note: 'Shirt colors with no units available across tracked sizes.', action: 'out-of-stock-colors' }
                 ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' },
                 { label: 'Customers', value: String(Number(adminDashboardState.customers?.length || 0)), note: 'Registered customer accounts.', action: 'customers' },
                 { label: 'Add New Designs', value: 'Open', note: 'Upload designs to the storefront gallery.', action: 'add-designs' },
@@ -2645,6 +2698,9 @@
                 const filter = action === 'in-stock' ? 'in-stock' : (action === 'low-stock' ? 'low' : (action === 'out-of-stock' ? 'out' : 'all'));
                 const filterEl = document.getElementById('admin-inventory-filter');
                 if (filterEl) filterEl.value = filter;
+                const colorStockViewEl = document.getElementById('admin-color-stock-view');
+                if (colorStockViewEl) colorStockViewEl.value = action === 'out-of-stock-colors' ? 'out-colors' : 'all';
+                renderAdminColorStockEditor();
                 const searchEl = document.getElementById('admin-inventory-search');
                 if (searchEl) searchEl.value = '';
                 renderAdminInventory(adminDashboardState.inventory);
@@ -3498,6 +3554,14 @@
 
         document.getElementById('admin-color-stock-add-btn').addEventListener('click', function() {
             addAdminColorStockEntryFromInput();
+        });
+
+        document.getElementById('admin-color-stock-view').addEventListener('change', function() {
+            renderAdminColorStockEditor();
+        });
+
+        document.getElementById('admin-color-stock-all-out-btn').addEventListener('click', function() {
+            markAdminColorAllSizesOutOfStock();
         });
 
         document.getElementById('admin-color-stock-out').addEventListener('change', function(event) {
