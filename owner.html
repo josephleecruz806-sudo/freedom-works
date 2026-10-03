@@ -3246,8 +3246,21 @@
                     + '</div>';
             };
 
-            const orderActionButton = function(className, orderId, label) {
-                return '<div class="admin-order-actions"><button type="button" class="owner-primary-btn ' + className + '" data-order-id="' + escapeHtml(orderId || '') + '">' + escapeHtml(label) + '</button></div>';
+            const orderActionButton = function(className, orderId, label, order) {
+                const source = String(order && order.source || '').toLowerCase();
+                const status = String(order && order.status || '').toLowerCase();
+                const canConfirmExternalPayment = order
+                    && source !== 'stripe'
+                    && status !== 'paid'
+                    && order.paymentVerified !== true;
+                return '<div class="admin-order-actions">'
+                    + (canConfirmExternalPayment
+                        ? '<button type="button" class="owner-secondary-btn admin-order-mark-paid-btn" data-order-id="' + escapeHtml(orderId || '') + '">Mark Paid</button>'
+                        : '')
+                    + (label
+                        ? '<button type="button" class="owner-primary-btn ' + className + '" data-order-id="' + escapeHtml(orderId || '') + '">' + escapeHtml(label) + '</button>'
+                        : '')
+                    + '</div>';
             };
 
             if (isBoardView) {
@@ -3260,7 +3273,7 @@
                     return '<section class="admin-order-stage-box ' + stageClass + '">'
                         + '<div class="admin-order-stage-head"><h4>' + escapeHtml(title) + '</h4><span class="admin-order-stage-count">' + stageOrders.length + '</span></div>'
                         + (stageOrders.length
-                            ? stageOrders.map(function(order) { return renderOrderCard(order, orderActionButton(buttonClass, order.id, buttonLabel)); }).join('')
+                            ? stageOrders.map(function(order) { return renderOrderCard(order, orderActionButton(buttonClass, order.id, buttonLabel, order)); }).join('')
                             : '<div class="admin-empty">' + escapeHtml(emptyText) + '</div>')
                         + '</section>';
                 };
@@ -3272,7 +3285,12 @@
                 listEl.innerHTML = orders.map(function(order) {
                     const canMarkDone = adminOrderView === 'active'
                         || (isSalesView && String(order.status || '').toLowerCase() !== 'completed');
-                    return renderOrderCard(order, canMarkDone ? orderActionButton('admin-order-done-btn', order.id, 'Done') : '');
+                    const canMarkPaid = String(order.source || '').toLowerCase() !== 'stripe'
+                        && String(order.status || '').toLowerCase() !== 'paid'
+                        && order.paymentVerified !== true;
+                    return renderOrderCard(order, canMarkDone || canMarkPaid
+                        ? orderActionButton('admin-order-done-btn', order.id, canMarkDone ? 'Done' : '', order)
+                        : '');
                 }).join('');
             }
 
@@ -3306,6 +3324,27 @@
                         button.disabled = false;
                         button.textContent = 'Done';
                         window.alert(err.message || 'Unable to complete this order.');
+                    }
+                });
+            });
+            listEl.querySelectorAll('.admin-order-mark-paid-btn').forEach(function(button) {
+                button.addEventListener('click', async function() {
+                    const orderId = String(button.getAttribute('data-order-id') || '').trim();
+                    if (!orderId || !window.confirm('Confirm you received payment for order ' + orderId + '?')) return;
+                    button.disabled = true;
+                    button.textContent = 'Saving...';
+                    try {
+                        const resp = await fetchWithApiCandidates('/api/admin/orders/' + encodeURIComponent(orderId) + '/mark-paid', {
+                            method: 'POST',
+                            headers: getAdminAuthHeaders()
+                        });
+                        const data = await resp.json().catch(function() { return {}; });
+                        if (!resp.ok) throw new Error(data.error || 'Unable to mark this order as paid.');
+                        await loadAdminDashboard();
+                    } catch (err) {
+                        button.disabled = false;
+                        button.textContent = 'Mark Paid';
+                        window.alert(err.message || 'Unable to mark this order as paid.');
                     }
                 });
             });

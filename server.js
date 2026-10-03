@@ -1666,9 +1666,10 @@ function isOwnerDashboardTestOrder(order) {
 
 function isOwnerDashboardPaidOrder(order) {
   const status = String(order?.status || '').toLowerCase();
-  return (status === 'paid' || status === 'completed')
-    && String(order?.source || 'stripe').toLowerCase() === 'stripe'
-    && Boolean(String(order?.paymentIntentId || '').trim());
+  if (status !== 'paid' && status !== 'completed') return false;
+  const source = String(order?.source || 'stripe').toLowerCase();
+  if (source === 'stripe') return Boolean(String(order?.paymentIntentId || '').trim());
+  return order?.paymentVerified === true && order?.paymentMethod === 'owner-confirmed';
 }
 
 function getSalesSummary() {
@@ -2224,6 +2225,32 @@ app.get('/api/admin/dashboard', requireAdmin, (_req, res) => {
     designSales: getSanitizedDesignSales(),
     customers: getCustomerAccountsSummary(),
   });
+});
+
+app.post('/api/admin/orders/:orderId/mark-paid', requireAdmin, async (req, res) => {
+  const orderId = String(req.params.orderId || '').trim();
+  if (!orderId) return res.status(400).json({ error: 'Order ID is required.' });
+
+  const orders = readOrders();
+  const order = orders.find((entry) => String(entry.id || '') === orderId);
+  if (!order) return res.status(404).json({ error: 'Order not found.' });
+  if (isOwnerDashboardTestOrder(order)) {
+    return res.status(409).json({ error: 'Test and example orders cannot be marked as paid.' });
+  }
+  if (String(order.source || '').toLowerCase() === 'stripe') {
+    return res.status(409).json({ error: 'Stripe orders are marked paid automatically after Stripe confirms payment.' });
+  }
+  if (isOwnerDashboardPaidOrder(order)) {
+    return res.status(409).json({ error: 'This order is already marked as paid.' });
+  }
+
+  order.status = 'paid';
+  order.paymentVerified = true;
+  order.paymentMethod = 'owner-confirmed';
+  order.paymentReceivedAt = new Date().toISOString();
+  order.updatedAt = order.paymentReceivedAt;
+  await writeOrders(orders);
+  return res.json({ ok: true, orderId, status: order.status });
 });
 
 app.post('/api/admin/orders/:orderId/complete', requireAdmin, async (req, res) => {
