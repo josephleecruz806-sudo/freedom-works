@@ -1391,9 +1391,9 @@
                             <h3 class="admin-section-title">Sales Trend Grid</h3>
                             <p id="admin-trend-description">Compare the last six months of paid sales and see whether this month is moving up or down.</p>
                             <div class="admin-trend-controls" id="admin-trend-controls">
-                                <button type="button" class="admin-trend-toggle" data-trend-mode="days">Days</button>
-                                <button type="button" class="admin-trend-toggle" data-trend-mode="weeks">Weeks</button>
                                 <button type="button" class="admin-trend-toggle active" data-trend-mode="months">Months</button>
+                                <button type="button" class="admin-trend-toggle" data-trend-mode="weeks">Weeks</button>
+                                <button type="button" class="admin-trend-toggle" data-trend-mode="days">Days</button>
                             </div>
                         </div>
                         <div class="admin-trend-summary">
@@ -2505,7 +2505,8 @@
                 entries.forEach(function(entry) {
                     const parsed = new Date(entry.createdAt || 0);
                     if (Number.isNaN(parsed.getTime())) return;
-                    const key = parsed.toISOString().slice(0, 10);
+                    const localDay = new Date(parsed.getFullYear(), parsed.getMonth(), parsed.getDate());
+                    const key = localDay.toISOString().slice(0, 10);
                     const idx = bucketIndex.get(key);
                     if (idx === undefined) return;
                     buckets[idx].total += Number(entry.total || 0);
