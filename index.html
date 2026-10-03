@@ -6690,25 +6690,25 @@
         }
         #intro-splash-logo {
             position: absolute;
-            top: 50%;
+            top: clamp(24px, 8vh, 84px);
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             width: min(72vw, 620px);
             aspect-ratio: 620 / 390;
-            max-height: 72vh;
+            max-height: 56vh;
             object-fit: contain;
             animation: none !important;
             transition: none !important;
             filter: drop-shadow(0 0 22px rgba(255, 255, 255, 0.7));
         }
         #intro-choice {
-            width: min(420px, calc(100% - 32px));
+            width: min(520px, calc(100% - 32px));
             max-height: calc(100vh - 32px);
             margin: auto;
-            padding: 28px;
-            border: 1px solid rgba(255, 255, 255, 0.25);
-            border-radius: 8px;
-            background: #14243d;
+            padding: 24px;
+            border: 1px solid #4268a8;
+            border-radius: 20px;
+            background: #183766;
             color: #fff;
             box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5);
             text-align: center;
@@ -6734,21 +6734,6 @@
         .intro-choice-actions button {
             flex: 1 1 155px;
             min-height: 46px;
-            padding: 10px;
-            border: 1px solid #7ab8d0;
-            border-radius: 4px;
-            background: #167e91;
-            color: #fff;
-            font: inherit;
-            font-weight: 700;
-            cursor: pointer;
-        }
-        .intro-choice-actions button:last-child {
-            background: transparent;
-        }
-        .intro-choice-actions button:hover,
-        .intro-choice-actions button:focus-visible {
-            background: #245b69;
         }
         /* A filter on body turns it into the containing block for fixed children, which shifts the splash. */
         html.splash-on body.theme-shift-anim {
@@ -6796,9 +6781,9 @@
         <h2 id="intro-choice-title">Welcome to Freedom Works</h2>
         <p id="intro-choice-text">Would you like to make a T-shirt or continue to the website?</p>
         <div class="intro-choice-actions">
-            <button type="button" id="intro-make-shirt" autofocus>Make a T-shirt</button>
-            <button type="button" id="intro-continue">Continue to website</button>
-            <button type="button" id="intro-login">Login</button>
+            <button type="button" id="intro-make-shirt" class="home-main-btn" autofocus>Make a T-shirt</button>
+            <button type="button" id="intro-continue" class="home-secondary-btn">Continue to website</button>
+            <button type="button" id="intro-login" class="home-secondary-btn">Login</button>
         </div>
     </dialog>
     <script>

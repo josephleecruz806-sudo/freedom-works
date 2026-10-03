@@ -1601,20 +1601,37 @@ function getSalesSummary() {
   const pendingSales = pendingOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const unitsSold = paidOrders.reduce((sum, order) => {
     const items = Array.isArray(order.items) ? order.items : [];
-    return sum + items.length;
+    return sum + items.reduce((itemSum, item) => {
+      const quantity = Math.max(1, Math.round(Number(item?.quantity || item?.qty || 1)) || 1);
+      return itemSum + quantity;
+    }, 0);
   }, 0);
   const uniqueCustomers = new Set();
   for (const order of paidOrders) {
     const email = normalizeEmail(order?.customer?.email);
     if (email) uniqueCustomers.add(email);
   }
-  const recentOrders = orders.slice(0, 8).map((order) => ({
+  const activeOrders = orders.map((order) => ({
     id: order.id,
     status: order.status || 'pending',
     total: Number(order.total || 0),
     shippingAmount: Number(order.shippingAmount || 0),
     source: order.source || 'stripe',
     createdAt: order.createdAt,
+    customerName: order?.customer?.name || '',
+    customerEmail: order?.customer?.email || '',
+    shipping: order?.shipping || {},
+    items: Array.isArray(order?.items) ? order.items : [],
+    itemCount: Array.isArray(order.items) ? order.items.length : 0,
+  }));
+  const allOrderHistory = historyOrders.map((order) => ({
+    id: order.id,
+    status: order.status || 'completed',
+    total: Number(order.total || 0),
+    shippingAmount: Number(order.shippingAmount || 0),
+    source: order.source || 'stripe',
+    createdAt: order.createdAt,
+    completedAt: order.completedAt || order.updatedAt || order.createdAt,
     customerName: order?.customer?.name || '',
     customerEmail: order?.customer?.email || '',
     shipping: order?.shipping || {},
@@ -1686,20 +1703,8 @@ function getSalesSummary() {
     pendingSales: Number(pendingSales.toFixed(2)),
     orderCount: orders.length,
     orderHistoryCount: historyOrders.length,
-    orderHistory: historyOrders.slice(0, 8).map((order) => ({
-      id: order.id,
-      status: order.status || 'completed',
-      total: Number(order.total || 0),
-      shippingAmount: Number(order.shippingAmount || 0),
-      source: order.source || 'stripe',
-      createdAt: order.createdAt,
-      completedAt: order.completedAt || order.updatedAt || order.createdAt,
-      customerName: order?.customer?.name || '',
-      customerEmail: order?.customer?.email || '',
-      shipping: order?.shipping || {},
-      items: Array.isArray(order?.items) ? order.items : [],
-      itemCount: Array.isArray(order.items) ? order.items.length : 0,
-    })),
+    orderHistory: allOrderHistory.slice(0, 8),
+    allOrderHistory,
     paidOrderCount: paidOrders.length,
     pendingOrderCount: pendingOrders.length,
     unitsSold,
@@ -1709,7 +1714,8 @@ function getSalesSummary() {
     paidSalesTimeline,
     monthlySales,
     monthTrend,
-    recentOrders,
+    recentOrders: activeOrders.slice(0, 8),
+    activeOrders,
   };
 }
 
