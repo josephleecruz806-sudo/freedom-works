@@ -3286,6 +3286,7 @@
                     const canMarkDone = adminOrderView === 'active'
                         || (isSalesView && String(order.status || '').toLowerCase() !== 'completed');
                     const canMarkPaid = String(order.source || '').toLowerCase() !== 'stripe'
+                        && !String(order.paymentIntentId || '').trim()
                         && String(order.status || '').toLowerCase() !== 'paid'
                         && order.paymentVerified !== true;
                     return renderOrderCard(order, canMarkDone || canMarkPaid

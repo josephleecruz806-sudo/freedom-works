@@ -1669,7 +1669,10 @@ function isOwnerDashboardPaidOrder(order) {
   if (status !== 'paid' && status !== 'completed') return false;
   const source = String(order?.source || 'stripe').toLowerCase();
   if (source === 'stripe') return Boolean(String(order?.paymentIntentId || '').trim());
-  return order?.paymentVerified === true && order?.paymentMethod === 'owner-confirmed';
+  return order?.paymentVerified === true && (
+    order?.paymentMethod === 'owner-confirmed'
+    || (order?.paymentMethod === 'stripe-cashapp-pay' && Boolean(String(order?.paymentIntentId || '').trim()))
+  );
 }
 
 function getSalesSummary() {
@@ -1923,13 +1926,30 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
     const existing = readOrders();
     const idx = existing.findIndex((o) => o.paymentIntentId === intent.id);
     if (idx >= 0) {
-      existing[idx] = {
-        ...existing[idx],
+      const order = existing[idx];
+      const wasPaid = isOwnerDashboardPaidOrder(order);
+      Object.assign(order, {
         status: 'paid',
         paymentVerified: true,
+        paymentMethod: Array.isArray(intent.payment_method_types) && intent.payment_method_types.includes('cashapp')
+          ? 'stripe-cashapp-pay'
+          : 'stripe-card',
         updatedAt: new Date().toISOString(),
-      };
-      await writeOrders(existing);
+      });
+      if (!wasPaid && order.paymentMethod === 'stripe-cashapp-pay') {
+        if (order.customer?.id || order.customer?.email) {
+          const rewards = await finalizeRewardsForOrder(order);
+          if (rewards.ok) order.rewardPointsEarned = Number(rewards.pointsEarned || 0);
+        }
+        await decrementInventoryForOrder(order);
+        order.paymentFinalizedAt = new Date().toISOString();
+        await writeOrders(existing);
+        sendCustomerReceipt(order).catch((err) => {
+          console.error('Failed to send customer receipt:', err.message || err);
+        });
+      } else {
+        await writeOrders(existing);
+      }
     }
   }
 
@@ -2237,7 +2257,7 @@ app.post('/api/admin/orders/:orderId/mark-paid', requireAdmin, async (req, res) 
   if (isOwnerDashboardTestOrder(order)) {
     return res.status(409).json({ error: 'Test and example orders cannot be marked as paid.' });
   }
-  if (String(order.source || '').toLowerCase() === 'stripe') {
+  if (String(order.source || '').toLowerCase() === 'stripe' || String(order.paymentIntentId || '').trim()) {
     return res.status(409).json({ error: 'Stripe orders are marked paid automatically after Stripe confirms payment.' });
   }
   if (isOwnerDashboardPaidOrder(order)) {
@@ -2826,6 +2846,31 @@ app.post('/create-payment-intent', async (req, res) => {
   }
 });
 
+app.post('/create-cashapp-payment-intent', async (req, res) => {
+  if (!stripe) {
+    return res.status(500).json({ error: 'Stripe secret key is not configured on the server.' });
+  }
+
+  const amount = Number(req.body?.amount);
+  const receiptEmail = typeof req.body?.receipt_email === 'string' ? req.body.receipt_email.trim() : '';
+  if (!Number.isInteger(amount) || amount < 50) {
+    return res.status(400).json({ error: 'Invalid amount. Minimum is $0.50.' });
+  }
+
+  try {
+    const intent = await stripe.paymentIntents.create({
+      amount,
+      currency: 'usd',
+      payment_method_types: ['cashapp'],
+      ...(receiptEmail ? { receipt_email: receiptEmail } : {}),
+    });
+    res.json({ clientSecret: intent.client_secret, paymentIntentId: intent.id });
+  } catch (err) {
+    console.error('Failed to create Cash App Pay intent:', err.message || err);
+    res.status(503).json({ error: err.message || 'Cash App Pay is unavailable. Check that it is enabled in Stripe.' });
+  }
+});
+
 app.post('/api/orders', async (req, res) => {
   const payload = req.body || {};
   const items = Array.isArray(payload.items) ? payload.items.map(sanitizeOrderItem) : [];
@@ -2856,9 +2901,10 @@ app.post('/api/orders', async (req, res) => {
   const source = String(payload.source || 'stripe').trim().toLowerCase();
   const paymentIntentId = String(payload.paymentIntentId || '').trim();
   let paymentVerified = false;
+  let paymentMethod = '';
   if (paymentIntentId) {
-    if (source !== 'stripe') {
-      return res.status(400).json({ error: 'A Stripe payment intent can only be used for a Stripe order.' });
+    if (source !== 'stripe' && source !== 'cashapp') {
+      return res.status(400).json({ error: 'Unsupported Stripe payment method for this order.' });
     }
     if (!stripe) {
       return res.status(503).json({ error: 'Stripe payment verification is not configured.' });
@@ -2871,12 +2917,19 @@ app.post('/api/orders', async (req, res) => {
       console.error('Failed to verify order payment intent:', err.message || err);
       return res.status(502).json({ error: 'Unable to verify the payment right now. Please contact the store owner.' });
     }
-    if (paymentIntent.status !== 'succeeded'
-      || paymentIntent.currency !== 'usd'
-      || paymentIntent.amount_received !== Math.round(total * 100)) {
-      return res.status(400).json({ error: 'The Stripe payment does not match this order or is not complete.' });
+    const expectedPaymentType = source === 'cashapp' ? 'cashapp' : 'card';
+    const isSucceeded = paymentIntent.status === 'succeeded';
+    const isAwaitingPayment = ['requires_payment_method', 'requires_confirmation', 'requires_action', 'processing'].includes(paymentIntent.status);
+    if (paymentIntent.currency !== 'usd'
+      || paymentIntent.amount !== Math.round(total * 100)
+      || (isSucceeded && paymentIntent.amount_received !== Math.round(total * 100))
+      || !Array.isArray(paymentIntent.payment_method_types)
+      || !paymentIntent.payment_method_types.includes(expectedPaymentType)
+      || (!isSucceeded && !isAwaitingPayment)) {
+      return res.status(400).json({ error: 'The Stripe payment does not match this order or cannot be completed.' });
     }
-    paymentVerified = true;
+    paymentVerified = isSucceeded;
+    paymentMethod = source === 'cashapp' ? 'stripe-cashapp-pay' : 'stripe-card';
   }
 
   const order = {
@@ -2885,6 +2938,7 @@ app.post('/api/orders', async (req, res) => {
     source,
     paymentIntentId,
     paymentVerified,
+    ...(paymentMethod ? { paymentMethod } : {}),
     fulfillmentMethod,
     customer: {
       id: authenticatedCustomer?.id || payload.customer?.id || '',
@@ -2911,24 +2965,27 @@ app.post('/api/orders', async (req, res) => {
     updatedAt: new Date().toISOString(),
   };
 
-  const rewards = authenticatedCustomer ? await finalizeRewardsForOrder(order) : { ok: false, pointsEarned: 0 };
-  if (rewards.ok) {
-    order.rewardPointsEarned = Number(rewards.pointsEarned || 0);
+  if (paymentVerified) {
+    const rewards = authenticatedCustomer ? await finalizeRewardsForOrder(order) : { ok: false, pointsEarned: 0 };
+    if (rewards.ok) order.rewardPointsEarned = Number(rewards.pointsEarned || 0);
+    order.paymentFinalizedAt = new Date().toISOString();
   }
 
   await appendOrder(order);
-  decrementInventoryForOrder(order).catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to update color inventory for order:', err.message || err);
-  });
+  if (paymentVerified) {
+    decrementInventoryForOrder(order).catch((err) => {
+      console.error('Failed to update color inventory for order:', err.message || err);
+    });
+  }
   notifyOwnerOfNewOrder(order).catch((err) => {
     // eslint-disable-next-line no-console
     console.error('Failed to send order notification:', err.message || err);
   });
-  sendCustomerReceipt(order).catch((err) => {
-    // eslint-disable-next-line no-console
-    console.error('Failed to send customer receipt:', err.message || err);
-  });
+  if (paymentVerified) {
+    sendCustomerReceipt(order).catch((err) => {
+      console.error('Failed to send customer receipt:', err.message || err);
+    });
+  }
   res.status(201).json({ ok: true, orderId: order.id });
 });
 

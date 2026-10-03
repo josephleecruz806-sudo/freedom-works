@@ -7929,7 +7929,7 @@
             <!-- Payment form -->
             <div id="stripe-form-wrap">
                 <h2 id="stripe-modal-title">Secure Checkout</h2>
-                <p class="stripe-subtitle">Pay securely by card with Stripe, or use Cash App. Custom shirt pricing includes the shirt, print cost shown before checkout, and labor.</p>
+                <p class="stripe-subtitle">Pay securely by card or Cash App Pay through Stripe. Custom shirt pricing includes the shirt, print cost shown before checkout, and labor.</p>
 
                 <!-- Order summary -->
                 <div id="stripe-order-summary">
@@ -8009,7 +8009,7 @@
                     </div>
 
                     <button id="stripe-pay-btn" type="submit">Pay <span id="stripe-pay-amount">$0.00</span></button>
-                    <button id="cashapp-pay-btn" type="button" onclick="startCashAppCheckout()">Pay with Cash App</button>
+                    <button id="cashapp-pay-btn" type="button" onclick="startCashAppCheckout()">Pay with Cash App Pay</button>
                     <button id="checkout-back-btn" class="checkout-back-btn" type="button" onclick="goToCartFromCheckout()">Back To Cart</button>
                     <div id="cashapp-note"></div>
                     <div id="stripe-error-msg" role="alert"></div>
@@ -19253,11 +19253,13 @@
             return buildApiUrl('/create-payment-intent');
         }
 
+        function getCashAppPaymentIntentEndpoint() {
+            return buildApiUrl('/create-cashapp-payment-intent');
+        }
+
         function getOrderApiEndpoint() {
             return buildApiUrl('/api/orders');
         }
-        const CASH_APP_CASHTAG = '$freedomworksstore';
-        const CASH_APP_CASHTAG_PATH = CASH_APP_CASHTAG.replace(/^\$/, '');
         let STRIPE_PUBLISHABLE_KEY = typeof window.STRIPE_PUBLISHABLE_KEY === 'string' && window.STRIPE_PUBLISHABLE_KEY.trim()
             ? window.STRIPE_PUBLISHABLE_KEY.trim()
             : '';
@@ -19443,9 +19445,15 @@
                 : '';
             document.getElementById('cashapp-note').textContent = '';
             const stripePayBtn = document.getElementById('stripe-pay-btn');
+            const cashAppPayBtn = document.getElementById('cashapp-pay-btn');
             stripePayBtn.disabled = !cardCheckoutEnabled;
+            cashAppPayBtn.disabled = !cardCheckoutEnabled;
             if (!cardCheckoutEnabled) {
                 stripePayBtn.textContent = 'Card Payment Temporarily Unavailable';
+                cashAppPayBtn.textContent = 'Cash App Pay Temporarily Unavailable';
+            } else {
+                stripePayBtn.innerHTML = 'Pay <span id="stripe-pay-amount">' + escapeHtml(formatPriceAmount(getCheckoutTotal())) + '</span>';
+                cashAppPayBtn.textContent = 'Pay with Cash App Pay';
             }
             document.getElementById('stripe-payment-form').reset();
             const deliveryRadio = document.getElementById('fulfillment-delivery');
@@ -19485,6 +19493,51 @@
             if (typeof window._mascotCheckout === 'function') window._mascotCheckout();
         }
 
+        function completeCheckoutSuccess() {
+            cart = [];
+            cartThumbs = [];
+            try { localStorage.setItem('cart', JSON.stringify(cart)); } catch (e) {}
+            updateCart();
+            document.getElementById('stripe-form-wrap').style.display = 'none';
+            document.getElementById('stripe-success-msg').style.display = 'block';
+            document.getElementById('stripe-modal-overlay').classList.add('open');
+            updateModalBodyLock();
+        }
+
+        async function handleCashAppPaymentReturn() {
+            const returnUrl = new URL(window.location.href);
+            const clientSecret = returnUrl.searchParams.get('payment_intent_client_secret') || '';
+            if (!clientSecret || returnUrl.searchParams.get('redirect_pm_type') !== 'cashapp') return;
+
+            const overlay = document.getElementById('stripe-modal-overlay');
+            const formWrap = document.getElementById('stripe-form-wrap');
+            const successEl = document.getElementById('stripe-success-msg');
+            const errorEl = document.getElementById('stripe-error-msg');
+            overlay.classList.add('open');
+            formWrap.style.display = '';
+            successEl.style.display = 'none';
+            updateModalBodyLock();
+            try {
+                await loadStripeConfig();
+                if (!canUseCardCheckout()) throw new Error('Unable to verify this Cash App Pay transaction.');
+                if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
+                const result = await stripeInstance.retrievePaymentIntent(clientSecret);
+                if (result.error) throw new Error(result.error.message || 'Unable to verify this Cash App Pay transaction.');
+                if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                    completeCheckoutSuccess();
+                } else {
+                    errorEl.textContent = 'Cash App did not confirm this payment. Please try again or contact the store.';
+                }
+            } catch (err) {
+                errorEl.textContent = err.message || 'Unable to verify this Cash App Pay transaction.';
+            } finally {
+                ['payment_intent', 'payment_intent_client_secret', 'redirect_pm_type', 'redirect_status'].forEach(function(key) {
+                    returnUrl.searchParams.delete(key);
+                });
+                window.history.replaceState({}, '', returnUrl.toString());
+            }
+        }
+
         function checkout(event) {
             const trigger = event && event.currentTarget instanceof HTMLElement ? event.currentTarget : null;
             if (trigger) {
@@ -19503,85 +19556,64 @@
             void openStripeModal();
         }
 
-        function buildCashAppHttpsUrl(total) {
-            const normalizedTotal = Number(total || 0);
-            const amount = normalizedTotal > 0 ? normalizedTotal.toFixed(2) : '';
-            const params = amount ? ('?amount=' + encodeURIComponent(amount)) : '';
-            return 'https://cash.app/$' + CASH_APP_CASHTAG_PATH + params;
-        }
-
-        function buildCashAppDeepLink(total) {
-            const normalizedTotal = Number(total || 0);
-            const amount = normalizedTotal > 0 ? normalizedTotal.toFixed(2) : '';
-            const params = [
-                'recipient=' + encodeURIComponent(CASH_APP_CASHTAG_PATH)
-            ];
-            if (amount) params.push('amount=' + encodeURIComponent(amount));
-            return 'cashapp://pay?' + params.join('&');
-        }
-
-        function buildCashAppCheckoutUrl(total) {
-            return buildCashAppHttpsUrl(total);
-        }
-
-        function launchCashAppCheckout(total) {
-            const httpsUrl = buildCashAppHttpsUrl(total);
-            const deepLinkUrl = buildCashAppDeepLink(total);
-            const isMobile = isLikelyMobileDevice();
-
-            if (isMobile) {
-                window.location.assign(deepLinkUrl);
-                setTimeout(() => {
-                    if (document.visibilityState === 'visible') {
-                        window.location.assign(httpsUrl);
-                    }
-                }, 900);
-                return;
-            }
-
-            const popup = window.open(httpsUrl, '_blank', 'noopener,noreferrer');
-            if (!popup) {
-                window.location.assign(httpsUrl);
-            }
-        }
-
-        function setCashAppNote(noteEl, total, infoParts, shipping, orderRef) {
-            if (!noteEl) return;
-            noteEl.textContent = 'Opening Cash App for $' + Number(total || 0).toFixed(2) + ' to ' + CASH_APP_CASHTAG + '.'
-                + (infoParts.length
-                    ? ' Include this in your Cash App note: ' + infoParts.join(' | ')
-                    : '')
-                + ' ' + (shipping.fulfillmentMethod === 'pickup' ? 'Pickup: ' : 'Delivery: ') + formatShippingAddress(shipping)
-                + (orderRef ? ' Order Ref: ' + orderRef : '');
-        }
-
         async function startCashAppCheckout() {
             const total = getCheckoutTotal();
             const note = document.getElementById('cashapp-note');
+            const button = document.getElementById('cashapp-pay-btn');
+            const errorEl = document.getElementById('stripe-error-msg');
             const includeInfo = !!document.getElementById('add-checkout-info')?.checked;
             const name = includeInfo ? (document.getElementById('stripe-name')?.value || '').trim() : '';
             const email = includeInfo ? (document.getElementById('stripe-email')?.value || '').trim() : '';
             const shipping = getCheckoutShippingDetails();
-            if (!validateCheckoutShipping(shipping, note)) return;
-            const infoParts = [];
-            if (name) infoParts.push('Name: ' + name);
-            if (email) infoParts.push('Email: ' + email);
+            if (!validateCheckoutShipping(shipping, errorEl)) return;
+            if (!canUseCardCheckout()) {
+                errorEl.textContent = 'Cash App Pay is temporarily unavailable. Please try again later.';
+                return;
+            }
 
-            setCashAppNote(note, total, infoParts, shipping, '');
-            launchCashAppCheckout(total);
+            button.disabled = true;
+            button.textContent = 'Connecting to Cash App Pay...';
+            errorEl.textContent = '';
+            note.textContent = '';
+            try {
+                await discoverWorkingApiBase();
+                if (!stripeInstance) stripeInstance = Stripe(STRIPE_PUBLISHABLE_KEY);
+                const itemsSnapshot = cart.map(item => ({ ...item }));
+                const receiptEmail = email || shipping.email || customerSession?.customer?.email || '';
+                const intentResponse = await fetch(getCashAppPaymentIntentEndpoint(), {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ amount: Math.round(total * 100), receipt_email: receiptEmail })
+                });
+                const intentData = await intentResponse.json().catch(function() { return {}; });
+                if (!intentResponse.ok) throw new Error(intentData.error || 'Unable to start Cash App Pay.');
 
-            const itemsSnapshot = cart.map(item => ({ ...item }));
-            void (async function saveCashAppOrder() {
-                let orderRef = '';
-                try {
-                    orderRef = await saveOrderRecord('cashapp', itemsSnapshot, total, '', name, email, shipping);
-                } catch (e) {
-                    // If order save fails, still let customer proceed to Cash App.
+                await saveOrderRecord('cashapp', itemsSnapshot, total, intentData.paymentIntentId, name, email, shipping);
+                const billingDetails = {};
+                if (name) billingDetails.name = name;
+                if (receiptEmail) billingDetails.email = receiptEmail;
+                const returnUrl = new URL(window.location.href);
+                returnUrl.hash = '';
+                const result = await stripeInstance.confirmCashappPayment(intentData.clientSecret, {
+                    payment_method: {
+                        type: 'cashapp',
+                        billing_details: billingDetails
+                    },
+                    return_url: returnUrl.toString()
+                });
+                if (result.error) throw new Error(result.error.message || 'Cash App Pay could not be confirmed.');
+                if (result.paymentIntent && result.paymentIntent.status === 'succeeded') {
+                    completeCheckoutSuccess();
+                } else {
+                    note.textContent = 'Complete the Cash App authorization. Your order will be marked paid automatically after Stripe confirms it.';
+                    button.disabled = false;
+                    button.textContent = 'Pay with Cash App Pay';
                 }
-                if (orderRef) {
-                    setCashAppNote(note, total, infoParts, shipping, orderRef);
-                }
-            })();
+            } catch (err) {
+                errorEl.textContent = err.message || 'Unable to complete Cash App Pay.';
+                button.disabled = false;
+                button.textContent = 'Pay with Cash App Pay';
+            }
         }
 
         function toggleCheckoutInfoFields() {
@@ -19659,7 +19691,7 @@
                 }))
             };
 
-            if (customerSession?.localOnly) {
+            if (customerSession?.localOnly && !(source === 'cashapp' && paymentIntentId)) {
                 const localOrderId = appendLocalCustomerOrder({
                     id: 'ord_' + Date.now(),
                     status: paymentIntentId ? 'paid' : 'pending',
@@ -19689,6 +19721,10 @@
                 });
 
                 if (!resp.ok) {
+                    if (source === 'cashapp' && paymentIntentId) {
+                        const data = await resp.json().catch(() => ({}));
+                        throw new Error(data.error || 'Cash App Pay order could not be saved securely. Please do not complete payment; contact the store.');
+                    }
                     if (resp.status === 404 || resp.status >= 500) {
                         return appendLocalCustomerOrder({
                             id: 'ord_' + Date.now(),
@@ -19716,6 +19752,9 @@
                 return data.orderId || '';
             } catch (err) {
                 if (err && err.name === 'TypeError') {
+                    if (source === 'cashapp' && paymentIntentId) {
+                        throw new Error('Cash App Pay order could not be saved because the store server is unavailable. Please try again later.');
+                    }
                     return appendLocalCustomerOrder({
                         id: 'ord_' + Date.now(),
                         status: paymentIntentId ? 'paid' : 'pending',
@@ -20445,12 +20484,7 @@
                         email,
                         shipping
                     );
-                    cart = [];
-                    cartThumbs = [];
-                    try { localStorage.setItem('cart', JSON.stringify(cart)); } catch(e) {}
-                    updateCart();
-                    document.getElementById('stripe-form-wrap').style.display = 'none';
-                    document.getElementById('stripe-success-msg').style.display = 'block';
+                    completeCheckoutSuccess();
                 }
             } catch (err) {
                 errEl.textContent = err.message || 'Something went wrong. Please try again.';
@@ -20464,6 +20498,7 @@
         updateCustomPriceDisplay();
         updateCustomerAccountUi();
         updateAdminUi();
+        handleCashAppPaymentReturn();
         
         // Ensure shirt mockup renders on page load
         window.addEventListener('DOMContentLoaded', async () => {
@@ -20787,5 +20822,3 @@
     </script>
 </body>
 </html>
-
-
