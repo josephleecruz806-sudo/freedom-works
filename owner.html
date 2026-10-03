@@ -2610,7 +2610,8 @@
                 { label: 'In Stock', value: String((Array.isArray(adminDashboardState.inventory) ? adminDashboardState.inventory : []).filter(function(item) { return Number(item.stock || 0) > 0; }).length), note: 'Inventory items currently available.', action: 'in-stock' },
                 { label: 'Inventory Units', value: String(Number(inventorySummary.totalUnits || 0)), note: 'Total units currently on hand.', action: 'inventory-units' },
                 { label: 'Low Stock', value: String(Number(inventorySummary.lowStock || 0)), note: 'Items at or below reorder level.', action: 'low-stock' },
-                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Items needing immediate attention.', action: 'out-of-stock' }
+                { label: 'Out Of Stock', value: String(Number(inventorySummary.outOfStock || 0)), note: 'Inventory records with no stock.', action: 'out-of-stock' },
+                { label: 'Out Of Stock Colors', value: String(Number(inventorySummary.outOfStockColors || 0)), note: 'Colors with no stock in any tracked size.', action: 'out-of-stock-colors' }
                 ,{ label: 'Order History', value: String(Number(salesSummary.orderHistoryCount || 0)), note: 'Completed orders moved out of the active list.', action: 'history' },
                 { label: 'Customers', value: String(Number(adminDashboardState.customers?.length || 0)), note: 'Registered customer accounts.', action: 'customers' },
                 { label: 'Add New Designs', value: 'Open', note: 'Upload designs to the storefront gallery.', action: 'add-designs' },
@@ -2640,7 +2641,7 @@
                 adminNewOrderAlert = false;
                 renderAdminStats(adminDashboardState.inventorySummary, adminDashboardState.sales);
             }
-            if (action === 'inventory' || action === 'inventory-units' || action === 'in-stock' || action === 'low-stock' || action === 'out-of-stock') {
+            if (action === 'inventory' || action === 'inventory-units' || action === 'in-stock' || action === 'low-stock' || action === 'out-of-stock' || action === 'out-of-stock-colors') {
                 const filter = action === 'in-stock' ? 'in-stock' : (action === 'low-stock' ? 'low' : (action === 'out-of-stock' ? 'out' : 'all'));
                 const filterEl = document.getElementById('admin-inventory-filter');
                 if (filterEl) filterEl.value = filter;
@@ -2673,7 +2674,7 @@
                         ? 'admin-name-design-panel'
                         : action === 'special-offers'
                             ? 'admin-special-offers-panel'
-                : (action === 'inventory' || action === 'inventory-units' || action === 'in-stock' || action === 'low-stock' || action === 'out-of-stock'
+                : (action === 'inventory' || action === 'inventory-units' || action === 'in-stock' || action === 'low-stock' || action === 'out-of-stock' || action === 'out-of-stock-colors'
                     ? 'admin-inventory-tools'
                     : 'admin-recent-orders-panel');
             const source = document.getElementById(sourceId);
@@ -2685,6 +2686,7 @@
                 'in-stock': 'In Stock',
                 'low-stock': 'Low Stock',
                 'out-of-stock': 'Out Of Stock',
+                'out-of-stock-colors': 'Out Of Stock Colors',
                 history: 'Order History',
                 paid: 'Paid Orders',
                 pending: 'Pending Orders',

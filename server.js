@@ -1358,6 +1358,22 @@ function sanitizeInventoryItem(item) {
 
 function getInventorySummary(items) {
   const records = Array.isArray(items) ? items : [];
+  const colorTotals = new Map();
+  records.forEach((item) => {
+    const entries = Array.isArray(item?.colorStock) ? item.colorStock : [];
+    entries.forEach((entry) => {
+      const color = String(entry?.color || '').trim();
+      if (!color) return;
+      const key = color.toLowerCase();
+      const total = colorTotals.get(key) || { stock: 0, outOfStock: false };
+      total.stock += Math.max(0, Math.round(Number(entry?.stock || 0)) || 0);
+      if (!String(entry?.size || '').trim()) {
+        total.outOfStock = total.outOfStock || entry?.outOfStock === true;
+      }
+      colorTotals.set(key, total);
+    });
+  });
+  const outOfStockColors = Array.from(colorTotals.values()).filter((color) => color.outOfStock || color.stock <= 0).length;
   return records.reduce((summary, item) => {
     const stock = Number(item.stock || 0);
     const reorderLevel = Number(item.reorderLevel || 0);
@@ -1373,6 +1389,7 @@ function getInventorySummary(items) {
     totalUnits: 0,
     lowStock: 0,
     outOfStock: 0,
+    outOfStockColors,
   });
 }
 
