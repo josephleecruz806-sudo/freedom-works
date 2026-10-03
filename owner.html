@@ -1118,7 +1118,8 @@
             background: rgba(255,255,255,0.08);
             color: #dfe7ff;
         }
-        .account-order-badge.paid {
+        .account-order-badge.paid,
+        .account-order-badge.completed {
             background: rgba(78, 201, 126, 0.18);
             color: #b8f7cf;
         }
@@ -2706,7 +2707,7 @@
             const salesSummary = sales || {};
             const cards = [
                 { label: 'Sales', value: formatPriceAmount(Number(salesSummary.revenue || 0) + Number(salesSummary.pendingSales || 0)), note: 'Paid and pending order totals combined.', action: 'sales' },
-                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Sales from paid orders.', action: 'revenue' },
+                { label: 'Revenue', value: formatPriceAmount(Number(salesSummary.revenue || 0)), note: 'Paid sales, including completed orders.', action: 'revenue' },
                 { label: 'Pending Sales', value: formatPriceAmount(Number(salesSummary.pendingSales || 0)), note: 'Sales value from orders not yet paid.', action: 'pending-sales' },
                 { label: 'Paid Orders', value: String(Number(salesSummary.paidOrderCount || 0)), note: 'Orders already marked as paid.', action: 'paid' },
                 { label: 'Pending Orders', value: String(Number(salesSummary.pendingOrderCount || 0)), note: 'Orders still waiting on completion.', action: 'pending' },
@@ -2760,10 +2761,12 @@
                 inventoryPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
                 return;
             }
-            adminOrderView = action === 'history' ? 'history' : (action === 'sales' ? 'sales' : 'active');
-            adminOrderFilter = adminOrderView === 'history' || adminOrderView === 'sales'
-                ? 'all'
-                : (['paid', 'revenue', 'average-order', 'units-sold'].includes(action) ? 'paid' : (action === 'pending' || action === 'pending-sales' ? 'pending' : 'all'));
+            adminOrderView = action === 'history' ? 'history' : (action === 'sales' || action === 'revenue' ? 'sales' : 'active');
+            adminOrderFilter = action === 'revenue'
+                ? 'revenue'
+                : (adminOrderView === 'history' || adminOrderView === 'sales'
+                    ? 'all'
+                    : (['paid', 'average-order', 'units-sold'].includes(action) ? 'paid' : (action === 'pending' || action === 'pending-sales' ? 'pending' : 'all')));
             renderAdminSales(adminDashboardState.sales);
             showAdminMetricModal(action);
             ordersPanel?.scrollIntoView({ behavior: 'smooth', block: 'start' });
@@ -3132,25 +3135,40 @@
             const isSalesView = adminOrderView === 'sales';
             const allOrders = isHistoryView
                 ? (Array.isArray(sales && sales.allOrderHistory) ? sales.allOrderHistory : (Array.isArray(sales && sales.orderHistory) ? sales.orderHistory : []))
-                : (isSalesView || adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
+                : (isSalesView
                     ? (Array.isArray(sales && sales.activeOrders) ? sales.activeOrders : (Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : []))
-                    : (Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : []));
-            const orders = adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
+                        .concat(Array.isArray(sales && sales.allOrderHistory) ? sales.allOrderHistory : (Array.isArray(sales && sales.orderHistory) ? sales.orderHistory : []))
+                        .sort(function(a, b) {
+                            return new Date(b.createdAt || 0).getTime() - new Date(a.createdAt || 0).getTime();
+                        })
+                    : (adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
+                    ? (Array.isArray(sales && sales.activeOrders) ? sales.activeOrders : (Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : []))
+                    : (Array.isArray(sales && sales.recentOrders) ? sales.recentOrders : [])));
+            const orders = adminOrderFilter === 'revenue'
                 ? allOrders.filter(function(order) {
-                    return String(order.status || 'pending').toLowerCase() === adminOrderFilter;
+                    return order.paymentVerified === true;
                 })
-                : allOrders;
+                : (adminOrderFilter === 'paid' || adminOrderFilter === 'pending'
+                ? allOrders.filter(function(order) {
+                    const status = String(order.status || 'pending').toLowerCase();
+                    return adminOrderFilter === 'paid'
+                        ? status === 'paid' && order.paymentVerified === true
+                        : status === 'pending';
+                })
+                : allOrders);
             const isBoardView = adminOrderView === 'active' && adminOrderFilter === 'all';
             const filterStatusEl = document.getElementById('admin-orders-filter-status');
             const clearFilterBtn = document.getElementById('admin-orders-clear-filter');
             const titleEl = document.getElementById('admin-orders-panel-title');
             const subtitleEl = document.getElementById('admin-orders-panel-subtitle');
-            if (titleEl) titleEl.textContent = isBoardView ? 'Order Workflow' : (isHistoryView ? 'Order History' : (isSalesView ? 'Sales Orders' : (adminOrderFilter === 'paid' ? 'Paid Orders' : (adminOrderFilter === 'pending' ? 'Pending Orders' : 'Recent Orders'))));
-            if (subtitleEl) subtitleEl.textContent = isBoardView ? 'Accept new orders to start processing, then mark them finished to email the customer.' : (isHistoryView ? 'Completed orders moved out of the active list.' : (isSalesView ? 'All active paid and pending orders.' : (adminOrderFilter === 'paid' ? 'All active paid orders.' : (adminOrderFilter === 'pending' ? 'All active pending orders.' : 'The latest customer activity saved by checkout.'))));
+            if (titleEl) titleEl.textContent = isBoardView ? 'Order Workflow' : (isHistoryView ? 'Order History' : (adminOrderFilter === 'revenue' ? 'Revenue Orders' : (isSalesView ? 'Sales Orders' : (adminOrderFilter === 'paid' ? 'Paid Orders' : (adminOrderFilter === 'pending' ? 'Pending Orders' : 'Recent Orders')))));
+            if (subtitleEl) subtitleEl.textContent = isBoardView ? 'Accept new orders to start processing, then mark them finished to email the customer.' : (isHistoryView ? 'Completed orders moved out of the active list.' : (adminOrderFilter === 'revenue' ? 'All verified paid orders counted toward revenue.' : (isSalesView ? 'All active and completed orders.' : (adminOrderFilter === 'paid' ? 'All verified paid orders.' : (adminOrderFilter === 'pending' ? 'All active pending orders.' : 'The latest customer activity saved by checkout.')))));
             if (filterStatusEl) {
-                filterStatusEl.textContent = adminOrderFilter === 'paid'
+                filterStatusEl.textContent = adminOrderFilter === 'revenue'
+                    ? 'Showing verified paid orders only.'
+                    : (adminOrderFilter === 'paid'
                     ? 'Showing paid orders only.'
-                    : (adminOrderFilter === 'pending' ? 'Showing pending orders only.' : '');
+                    : (adminOrderFilter === 'pending' ? 'Showing pending orders only.' : ''));
                 filterStatusEl.style.display = adminOrderFilter === 'all' ? 'none' : '';
             }
             if (clearFilterBtn) clearFilterBtn.style.display = adminOrderFilter === 'all' ? 'none' : '';
@@ -3159,7 +3177,7 @@
                     ? '<div class="admin-empty">No completed orders are in history yet.</div>'
                     : adminOrderFilter === 'all'
                     ? '<div class="admin-empty">No orders have been saved yet, so sales will show up here after checkout activity.</div>'
-                    : '<div class="admin-empty">No ' + escapeHtml(adminOrderFilter) + ' orders are currently available.</div>';
+                    : '<div class="admin-empty">No ' + escapeHtml(adminOrderFilter === 'revenue' ? 'paid or completed' : adminOrderFilter) + ' orders are currently available.</div>';
                 return;
             }
             const renderOrderCard = function(order, actionsHtml) {
@@ -3179,7 +3197,7 @@
                 return '<div class="admin-sale-card">'
                     + '<div class="admin-sale-card-top">'
                     + '<div><strong>' + escapeHtml(order.id || 'Order') + '</strong><p>' + escapeHtml(formatAccountOrderDate(order.createdAt)) + '</p></div>'
-                        + '<div class="admin-order-meta"><span class="account-order-badge ' + (String(order.status || '').toLowerCase() === 'paid' ? 'paid' : 'pending') + '">' + escapeHtml(order.status || 'pending') + '</span><span class="account-order-badge">' + escapeHtml(String(order.source || '').toUpperCase()) + '</span><span class="account-order-badge">' + escapeHtml(fulfillmentMethod === 'pickup' ? 'PICKUP' : 'DELIVERY') + '</span><span class="account-order-total">' + escapeHtml(formatPriceAmount(Number(order.total || 0))) + '</span></div>'
+                        + '<div class="admin-order-meta"><span class="account-order-badge ' + (String(order.status || '').toLowerCase() === 'paid' ? 'paid' : (String(order.status || '').toLowerCase() === 'completed' ? 'completed' : 'pending')) + '">' + escapeHtml(order.status || 'pending') + '</span><span class="account-order-badge">' + escapeHtml(String(order.source || '').toUpperCase()) + '</span><span class="account-order-badge">' + escapeHtml(fulfillmentMethod === 'pickup' ? 'PICKUP' : 'DELIVERY') + '</span><span class="account-order-total">' + escapeHtml(formatPriceAmount(Number(order.total || 0))) + '</span></div>'
                     + '</div>'
                     + (actionsHtml || '')
                     + '<p>' + escapeHtml(order.customerName || order.customerEmail || 'Customer not provided') + '</p>'
@@ -3252,7 +3270,9 @@
                     + '</div>';
             } else {
                 listEl.innerHTML = orders.map(function(order) {
-                    return renderOrderCard(order, (adminOrderView === 'active' || isSalesView) ? orderActionButton('admin-order-done-btn', order.id, 'Done') : '');
+                    const canMarkDone = adminOrderView === 'active'
+                        || (isSalesView && String(order.status || '').toLowerCase() !== 'completed');
+                    return renderOrderCard(order, canMarkDone ? orderActionButton('admin-order-done-btn', order.id, 'Done') : '');
                 }).join('');
             }
 

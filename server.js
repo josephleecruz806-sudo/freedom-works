@@ -1645,6 +1645,10 @@ function isOwnerDashboardTestOrder(order) {
     order?.customer?.email,
     order?.shipping?.fullName,
     order?.shipping?.email,
+    order?.isTest ? 'test' : '',
+    order?.isExample ? 'example' : '',
+    order?.metadata?.test ? 'test' : '',
+    order?.metadata?.example ? 'example' : '',
     ...(Array.isArray(order?.items) ? order.items.flatMap((item) => [
       item?.name,
       item?.designName,
@@ -1656,20 +1660,24 @@ function isOwnerDashboardTestOrder(order) {
     ]) : []),
   ].map(normalise).join(' ');
 
-  return /(?:^|[^a-z])(test|demo|sample|mock)(?:$|[^a-z])/i.test(combined)
-    || ['test', 'demo', 'sample', 'mock'].includes(normalise(order?.source));
+  return /(?:^|[^a-z])(test|demo|sample|mock|example)s?(?:$|[^a-z])/i.test(combined)
+    || ['test', 'demo', 'sample', 'mock', 'example', 'sandbox'].includes(normalise(order?.source));
+}
+
+function isOwnerDashboardPaidOrder(order) {
+  const status = String(order?.status || '').toLowerCase();
+  return (status === 'paid' || status === 'completed')
+    && String(order?.source || 'stripe').toLowerCase() === 'stripe'
+    && Boolean(String(order?.paymentIntentId || '').trim());
 }
 
 function getSalesSummary() {
   const allOrders = readOrders().filter((order) => !isOwnerDashboardTestOrder(order));
   const historyOrders = allOrders.filter((order) => String(order.status || '').toLowerCase() === 'completed');
   const orders = allOrders.filter((order) => String(order.status || '').toLowerCase() !== 'completed');
-  const paidOrders = orders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
-  const pendingOrders = orders.filter((order) => String(order.status || '').toLowerCase() !== 'paid');
-  // Completed orders were paid before being marked done, so they must keep counting toward
-  // revenue/trend stats - otherwise clicking "Done" on an order makes a real sale disappear
-  // from the Sales Trend Grid and other sales totals below.
-  const soldOrders = [...paidOrders, ...historyOrders];
+  const paidOrders = orders.filter(isOwnerDashboardPaidOrder);
+  const pendingOrders = orders.filter((order) => !isOwnerDashboardPaidOrder(order));
+  const soldOrders = [...paidOrders, ...historyOrders.filter(isOwnerDashboardPaidOrder)];
   const revenue = soldOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const pendingSales = pendingOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const unitsSold = soldOrders.reduce((sum, order) => {
@@ -1692,6 +1700,7 @@ function getSalesSummary() {
     fulfillmentMethod: order.fulfillmentMethod || order?.shipping?.fulfillmentMethod || '',
     total: Number(order.total || 0),
     shippingAmount: Number(order.shippingAmount || 0),
+    paymentVerified: isOwnerDashboardPaidOrder(order),
     source: order.source || 'stripe',
     createdAt: order.createdAt,
     customerName: order?.customer?.name || '',
@@ -1705,6 +1714,7 @@ function getSalesSummary() {
     status: order.status || 'completed',
     total: Number(order.total || 0),
     shippingAmount: Number(order.shippingAmount || 0),
+    paymentVerified: isOwnerDashboardPaidOrder(order),
     source: order.source || 'stripe',
     createdAt: order.createdAt,
     completedAt: order.completedAt || order.updatedAt || order.createdAt,
@@ -1714,7 +1724,7 @@ function getSalesSummary() {
     items: Array.isArray(order?.items) ? order.items : [],
     itemCount: Array.isArray(order.items) ? order.items.length : 0,
   }));
-  const salesBySource = [...orders, ...historyOrders].reduce((acc, order) => {
+  const salesBySource = soldOrders.reduce((acc, order) => {
     const source = String(order.source || 'stripe');
     acc[source] = (acc[source] || 0) + Number(order.total || 0);
     return acc;
@@ -1915,6 +1925,7 @@ app.post('/stripe-webhook', express.raw({ type: 'application/json' }), async (re
       existing[idx] = {
         ...existing[idx],
         status: 'paid',
+        paymentVerified: true,
         updatedAt: new Date().toISOString(),
       };
       await writeOrders(existing);
@@ -2815,11 +2826,38 @@ app.post('/api/orders', async (req, res) => {
     return res.status(400).json({ error: 'A full delivery address is required.' });
   }
 
+  const source = String(payload.source || 'stripe').trim().toLowerCase();
+  const paymentIntentId = String(payload.paymentIntentId || '').trim();
+  let paymentVerified = false;
+  if (paymentIntentId) {
+    if (source !== 'stripe') {
+      return res.status(400).json({ error: 'A Stripe payment intent can only be used for a Stripe order.' });
+    }
+    if (!stripe) {
+      return res.status(503).json({ error: 'Stripe payment verification is not configured.' });
+    }
+
+    let paymentIntent;
+    try {
+      paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+    } catch (err) {
+      console.error('Failed to verify order payment intent:', err.message || err);
+      return res.status(502).json({ error: 'Unable to verify the payment right now. Please contact the store owner.' });
+    }
+    if (paymentIntent.status !== 'succeeded'
+      || paymentIntent.currency !== 'usd'
+      || paymentIntent.amount_received !== Math.round(total * 100)) {
+      return res.status(400).json({ error: 'The Stripe payment does not match this order or is not complete.' });
+    }
+    paymentVerified = true;
+  }
+
   const order = {
     id: `ord_${Date.now()}`,
-    status: payload.paymentIntentId ? 'paid' : 'pending',
-    source: payload.source || 'stripe',
-    paymentIntentId: payload.paymentIntentId || '',
+    status: paymentVerified ? 'paid' : 'pending',
+    source,
+    paymentIntentId,
+    paymentVerified,
     fulfillmentMethod,
     customer: {
       id: authenticatedCustomer?.id || payload.customer?.id || '',
