@@ -1614,9 +1614,13 @@ function getSalesSummary() {
   const orders = allOrders.filter((order) => String(order.status || '').toLowerCase() !== 'completed');
   const paidOrders = orders.filter((order) => String(order.status || '').toLowerCase() === 'paid');
   const pendingOrders = orders.filter((order) => String(order.status || '').toLowerCase() !== 'paid');
-  const revenue = paidOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  // Completed orders were paid before being marked done, so they must keep counting toward
+  // revenue/trend stats - otherwise clicking "Done" on an order makes a real sale disappear
+  // from the Sales Trend Grid and other sales totals below.
+  const soldOrders = [...paidOrders, ...historyOrders];
+  const revenue = soldOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
   const pendingSales = pendingOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
-  const unitsSold = paidOrders.reduce((sum, order) => {
+  const unitsSold = soldOrders.reduce((sum, order) => {
     const items = Array.isArray(order.items) ? order.items : [];
     return sum + items.reduce((itemSum, item) => {
       const quantity = Math.max(1, Math.round(Number(item?.quantity || item?.qty || 1)) || 1);
@@ -1624,7 +1628,7 @@ function getSalesSummary() {
     }, 0);
   }, 0);
   const uniqueCustomers = new Set();
-  for (const order of paidOrders) {
+  for (const order of soldOrders) {
     const email = normalizeEmail(order?.customer?.email);
     if (email) uniqueCustomers.add(email);
   }
@@ -1655,12 +1659,12 @@ function getSalesSummary() {
     items: Array.isArray(order?.items) ? order.items : [],
     itemCount: Array.isArray(order.items) ? order.items.length : 0,
   }));
-  const salesBySource = orders.reduce((acc, order) => {
+  const salesBySource = [...orders, ...historyOrders].reduce((acc, order) => {
     const source = String(order.source || 'stripe');
     acc[source] = (acc[source] || 0) + Number(order.total || 0);
     return acc;
   }, {});
-  const paidSalesTimeline = paidOrders
+  const paidSalesTimeline = soldOrders
     .map((order) => ({
       id: order.id,
       createdAt: order.createdAt || order.updatedAt || order.date || null,
@@ -1685,7 +1689,7 @@ function getSalesSummary() {
     monthlySales.push(bucket);
   }
 
-  for (const order of paidOrders) {
+  for (const order of soldOrders) {
     const createdAt = new Date(order.createdAt || order.updatedAt || order.date || 0);
     if (Number.isNaN(createdAt.getTime())) continue;
     const key = `${createdAt.getFullYear()}-${String(createdAt.getMonth() + 1).padStart(2, '0')}`;
@@ -1722,11 +1726,11 @@ function getSalesSummary() {
     orderHistoryCount: historyOrders.length,
     orderHistory: allOrderHistory.slice(0, 8),
     allOrderHistory,
-    paidOrderCount: paidOrders.length,
+    paidOrderCount: soldOrders.length,
     pendingOrderCount: pendingOrders.length,
     unitsSold,
     customerCount: uniqueCustomers.size,
-    averageOrderValue: paidOrders.length ? Number((revenue / paidOrders.length).toFixed(2)) : 0,
+    averageOrderValue: soldOrders.length ? Number((revenue / soldOrders.length).toFixed(2)) : 0,
     salesBySource,
     paidSalesTimeline,
     monthlySales,
